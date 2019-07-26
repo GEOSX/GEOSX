@@ -25,6 +25,10 @@
 #include "common/TimingMacros.hpp"
 #include "MPI_Communications/CommunicationTools.hpp"
 
+#if HAVE_TRIBOLCOUPLING
+#include "coupling/TribolCoupling.hpp"
+#endif
+
 namespace geosx
 {
 
@@ -127,11 +131,37 @@ void EventManager::Run(dataRepository::ManagedGroup * domain)
   {
     GEOS_LOG_RANK_0("The restart-file was written during step " << m_currentSubEvent << " of the event loop.  Resuming from that point.");
   }
+#if HAVE_TRIBOLCOUPLING
+  TribolCoupling::Initialize(this, domain) ;
+#endif
 
   // Run problem
   // Note: if currentSubEvent > 0, then we are resuming from a restart file
-  while((m_time < m_maxTime) && (m_cycle < m_maxCycle) && (exitFlag == 0))
-  {
+  while(1) {
+    int terminate = ((m_time < m_maxTime) && (m_cycle < m_maxCycle) && (exitFlag == 0)) ? 0 : 1 ;
+
+    if (cycle > 0) {
+#if HAVE_TRIBOLCOUPLING
+       TribolCoupling::SyncTermination(&terminate) ;
+#endif
+
+       if (terminate) {
+          break ;
+       }
+
+#if HAVE_TRIBOLCOUPLING
+       real64 newDt ;
+       TribolCoupling::SyncTimestep(&newDt) ;
+
+       if (newDt < dt)
+       {
+           std::cout << "     dt: " << dt << ", coupled dt=" << newDt << std::endl;
+           GEOS_ERROR( "TRIBOL coupling error" );
+       }
+#endif
+    } else if (terminate) {
+      break ;
+    }
     // Determine the cycle timestep
     if (m_currentSubEvent == 0)
     {
@@ -149,7 +179,6 @@ void EventManager::Run(dataRepository::ManagedGroup * domain)
 #ifdef GEOSX_USE_MPI
       // Find the min dt across procfesses
       GEOSX_MARK_BEGIN("EventManager::MPI calls");
-
       real64 dt_global;
       MPI_Allreduce(&m_dt, &dt_global, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_GEOSX);
       m_dt = dt_global;
@@ -204,6 +233,9 @@ void EventManager::Run(dataRepository::ManagedGroup * domain)
   {
     subEvent->Cleanup(m_time, m_cycle, 0, 0, domain);
   });
+#if HAVE_TRIBOLCOUPLING
+  TribolCoupling::Cleanup() ;
+#endif
 }
 
 } /* namespace geosx */

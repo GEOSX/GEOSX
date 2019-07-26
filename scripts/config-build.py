@@ -172,12 +172,12 @@ cmakeline = extract_cmake_location(cachefile)
 cmakeline = "cmake"
 assert cmakeline, "Host config file doesn't contain valid cmake location, value was %s" % cmakeline
 
-# Add cache file option
-cmakeline += " -C %s" % cachefile
 # Add build type (opt or debug)
 cmakeline += " -DCMAKE_BUILD_TYPE=" + args.buildtype
 # Set install dir
 cmakeline += " -DCMAKE_INSTALL_PREFIX=%s" % installpath
+# Add cache file option
+cmakeline += " -C %s" % cachefile
 
 if args.exportcompilercommands:
     cmakeline += " -DCMAKE_EXPORT_COMPILE_COMMANDS=on"

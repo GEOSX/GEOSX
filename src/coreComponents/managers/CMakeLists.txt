@@ -62,6 +62,10 @@ if( ENABLE_MATHPRESSO )
    set( dependencyList ${dependencyList} mathpresso )
 endif()
 
+if( ENABLE_TRIBOL )
+   set( dependencyList ${dependencyList} coupling )
+endif()
+
 blt_add_library( NAME                  managers
                  SOURCES               ${managers_sources}
                  HEADERS               ${managers_headers}

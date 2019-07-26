@@ -2241,7 +2241,7 @@ void SiloFile::WritePolygonMeshObject(const std::string& meshName,
   // write multimesh object
   int rank = 0;
 #ifdef GEOSX_USE_MPI
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_rank(MPI_COMM_GEOSX, &rank);
 #endif
   if (rank == 0)
   {

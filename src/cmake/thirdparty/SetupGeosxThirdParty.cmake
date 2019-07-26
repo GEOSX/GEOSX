@@ -578,4 +578,73 @@ if(UNCRUSTIFY_FOUND)
     
 endif()
 
+################################
+# TRIBOL
+################################
+if (ENABLE_TRIBOL)
+  set(CHAI_DIR ${GEOSX_TPL_DIR}/chai)
+  set(TRIBOL_DIR ${GEOSX_TPL_DIR}/tribol)
+  set(VISTA_DIR ${GEOSX_TPL_DIR}/vista)
+  set(RXB_DIR ${GEOSX_TPL_DIR}/rxb)
+  set(WORLDS_CORE_DIR ${GEOSX_TPL_DIR}/worlds_core)
+  set(LLNL_GLOBALID_DIR ${GEOSX_TPL_DIR}/LLNL_GlobalID)
+
+  # ale3d chai version differs from github version
+  include (${CHAI_DIR}/lib/cmake/chai-targets.cmake)
+  set (CHAI_INCLUDE_DIRS ${CHAI_DIR}/include)
+  blt_register_library( NAME chai
+                        INCLUDES ${CHAI_INCLUDE_DIRS}
+                        LIBRARIES ${CHAI_LIBRARY}
+                        TREAT_INCLUDES_AS_SYSTEM ON )
+
+  include(cmake/thirdparty/FindLLNL_GlobalID.cmake)
+  blt_register_library( NAME llnl_globalid
+                        INCLUDES ${LLNL_GLOBALID_INCLUDE_DIRS} 
+                        TREAT_INCLUDES_AS_SYSTEM ON )
+
+  # Register extra axom libraries needed for tribol
+  blt_register_library( NAME axom_utils
+                        INCLUDES ${ATK_INCLUDE_DIRS} 
+                        LIBRARIES  axom_utils
+                        TREAT_INCLUDES_AS_SYSTEM ON)
+                        
+  blt_register_library( NAME mint
+                        INCLUDES ${ATK_INCLUDE_DIRS} 
+                        LIBRARIES  mint
+                        TREAT_INCLUDES_AS_SYSTEM ON)
+                        
+  set( thirdPartyLibs ${thirdPartyLibs} mint axom_utils)
+  include(cmake/thirdparty/FindTribol.cmake)
+  blt_register_library( NAME tribol
+                        DEPENDS_ON slic mint
+                        INCLUDES ${TRIBOL_INCLUDE_DIRS} 
+                        LIBRARIES  ${TRIBOL_LIBRARY}
+                        TREAT_INCLUDES_AS_SYSTEM ON )
+
+  include(cmake/thirdparty/FindVista.cmake)
+  blt_register_library( NAME vista
+                        DEPENDS_ON llnl_globalid chai
+                        INCLUDES ${VISTA_INCLUDE_DIRS} 
+                        LIBRARIES  ${VISTA_LIBRARY}
+                        TREAT_INCLUDES_AS_SYSTEM ON )
+
+  include(cmake/thirdparty/FindRXB.cmake)
+  blt_register_library( NAME rxb
+                        DEPENDS_ON llnl_globalid mpi
+                        INCLUDES ${RXB_INCLUDE_DIRS} 
+                        LIBRARIES  ${RXB_LIBRARIES}
+                        TREAT_INCLUDES_AS_SYSTEM ON )
+
+  include(cmake/thirdparty/FindWorldsCore.cmake)
+  blt_register_library( NAME worlds_core
+                        DEPENDS_ON llnl_globalid rxb vista mpi
+                        INCLUDES ${WORLDS_CORE_INCLUDE_DIRS} 
+                        LIBRARIES  ${WORLDS_CORE_LIBRARIES}
+                        TREAT_INCLUDES_AS_SYSTEM ON )
+
+else()
+  message( "Not using tribol" )
+endif()
+
 message(STATUS "Leaving SetupGeosxThirdParty.cmake\n")
+

@@ -1,0 +1,85 @@
+<?xml version="1.0" ?>
+<!--# # -->
+
+<Problem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="geos_v0.0.xsd">
+
+  
+  <Solvers>
+    <SolidMechanics_LagrangianFEM name="lagsolve" 
+                                  courant="0.25"/>
+  </Solvers>
+
+  
+  <Mesh>
+    <InternalMesh name="mesh1"
+                  elementTypes="C3D8" 
+                  xCoords="0.00075, 1.00075"
+                  yCoords="-0.5, 0.5"
+                  zCoords="-0.5, 0.5"
+                  nx="4"
+                  ny="4"
+                  nz="4"
+                  cellBlockNames="cb1"/>
+  </Mesh>
+
+
+  <Events maxTime="15.0">
+    <!-- This event is applied every cycle, and overrides the
+    solver time-step request -->
+    <PeriodicEvent name="solverApplications"
+                   forceDt="5.0e-4"
+                   target="/Solvers/lagsolve" />
+
+    <PeriodicEvent name="outputs"
+                   timeFrequency="0.05"
+                   target="/Outputs/siloOutput" />
+  </Events>
+
+
+  <NumericalMethods>
+
+    <BasisFunctions>
+        <LagrangeBasis3 name="linearBasis"  degree = "1"  />
+    </BasisFunctions>
+    
+    <QuadratureRules>
+        <GaussQuadrature3 name="gaussian"   degree="2"  />    
+    </QuadratureRules>
+    
+    <FiniteElements>
+        <finiteElementSpace name="FE1" basis="linearBasis" quadrature="gaussian" />
+    </FiniteElements>
+  </NumericalMethods>
+
+  <ElementRegions>
+    <ElementRegion name="Region2" cellBlocks="cb1" numericalMethod="FE1" material="al" materialList="al"/>
+  </ElementRegions>
+
+  <Constitutive>
+      <LinearElasticIsotropic name="al"
+                              density0="2.703"
+                              BulkModulus0="0.742178928"
+                              ShearModulus0="0.276"/>
+  </Constitutive>
+
+
+  <BoundaryConditions>
+    <Dirichlet name="initVel"  
+               initialCondition="1"  
+               setNames="all"
+               objectPath="nodeManager"
+               fieldName="Velocity"
+               dataType="r1Tensor" 
+               component="0"
+               scale="-0.0002"/>
+
+  </BoundaryConditions>
+  <Partition>
+    <SpatialPartition xPar="1" yPar="1" zPar="1"/>
+  </Partition>
+  
+  <Outputs>
+    <Silo name="siloOutput" parallelThreads="32" plotFileRoot="plot" slaveDirectory="sub" writeFEMEdges="0" writeFEMFaces="1" writePlot="1" writeRestart="0"/>
+  </Outputs>
+
+</Problem>

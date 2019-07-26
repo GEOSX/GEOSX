@@ -37,6 +37,10 @@ add_subdirectory(thirdparty)
 ################################
 #add_subdirectory(components)
 
+if(ENABLE_TRIBOL)
+   add_definitions(-DHAVE_TRIBOLCOUPLING)
+endif()
+
 set( externalComponentsLinkList "" ) 
 add_subdirectory(externalComponents)
 add_subdirectory(coreComponents)

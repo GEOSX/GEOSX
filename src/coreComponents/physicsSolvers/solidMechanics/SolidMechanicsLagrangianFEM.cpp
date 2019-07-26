@@ -395,6 +395,15 @@ void SolidMechanicsLagrangianFEM::InitializePostInitialConditions_PreSubGroups( 
       }
     });
   }
+
+#if HAVE_TRIBOLCOUPLING
+  std::map<string, string_array > fieldNames;
+  fieldNames["node"].push_back("Velocity");
+
+  CommunicationTools::SynchronizeFields( fieldNames,
+                                         mesh,
+                                         domain->getReference< array1d<NeighborCommunicator> >( domain->viewKeys.neighbors ) );
+#endif
 }
 
 real64 SolidMechanicsLagrangianFEM::SolverStep( real64 const& time_n,
@@ -480,8 +489,19 @@ real64 SolidMechanicsLagrangianFEM::ExplicitStep( real64 const& time_n,
 
   fsManager->ApplyFieldValue( time_n, domain, "nodeManager", keys::Acceleration );
 
+#if HAVE_TRIBOLCOUPLING
+  // rewind for leapfrog
+  SolidMechanicsLagrangianFEMKernels::velocityUpdate( acc, vel, -dt/2, numNodes );
+#endif
+
+
+#if HAVE_TRIBOLCOUPLING
+  TribolCoupling::ApplyTribolForces(domain, time_n, dt, cycleNumber) ;
+  SolidMechanicsLagrangianFEMKernels::velocityUpdate( acc, vel, dt, numNodes );
+#else
   //3: v^{n+1/2} = v^{n} + a^{n} dt/2
-  SolidMechanicsLagrangianFEMKernels::velocityUpdate( acc, vel, dt/2 );
+  SolidMechanicsLagrangianFEMKernels::velocityUpdate( acc, vel, dt/2, numNodes );
+#endif
 
   fsManager->ApplyFieldValue( time_n, domain, "nodeManager", keys::Velocity );
 

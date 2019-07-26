@@ -24,6 +24,11 @@
 #include "managers/FieldSpecification/FieldSpecificationManager.hpp"
 #include "managers/Functions/NewFunctionManager.hpp"
 
+#if HAVE_TRIBOLCOUPLING
+#include <functional>
+#include "coupling/TribolCoupling.hpp"
+#endif
+
 #ifdef GEOSX_USE_MKL
 #include <mkl.h>
 #endif
@@ -53,7 +58,19 @@ void setupMPI( int argc, char * argv[] )
 {
 #ifdef GEOSX_USE_MPI
   MPI_Init( &argc, &argv );
+#if HAVE_TRIBOLCOUPLING
+  std::string cmdline ;
+  // Combine the command line arguments into a single string.
+  for (int i = 0 ; i < argc ; ++i) {
+    cmdline += argv[i] ;
+  }
+  // Hash the command line.
+  int codeID = std::hash<std::string>{}(cmdline) ;
+  MPI_Comm MPI_OTHER_COMM ;
+  TribolCoupling::InitCommSubset(MPI_COMM_WORLD, &MPI_COMM_GEOSX, &MPI_OTHER_COMM, codeID) ;
+#else
   MPI_Comm_dup( MPI_COMM_WORLD, &MPI_COMM_GEOSX );
+#endif
 #endif
 }
 
