@@ -42,7 +42,7 @@ namespace constitutive
  * of the data indicates the distinction from a parameter and a state variable,
  * with the parameters being "T const" and the state variables being "T".
  *
- * @note If an allocation occurs on  the underlying Array after a KernelWrapper
+ * @note If an allocation occurs on the underlying Array after a KernelWrapper
  * is created, then the ArrayView members of that KernelWrapper are silently
  * invalid.
  */
@@ -87,12 +87,54 @@ public:
 
 private:
   /**
+   * @brief New interface proposal for small strain update
+   * @param[in] k Element index.
+   * @param[in] q Quadrature point index.
+   * @param[in] strainIncrement Strain increment in voight notation (linearized strain)
+   * @param[out] stress New stress value (Cauchy stress)
+   * @param[out] stiffness New tangent stiffness value
+   */
+  GEOSX_HOST_DEVICE
+  virtual void SmallStrainUpdate( localIndex const k,
+                                  localIndex const q,
+                                  real64 const ( & strainIncrement )[6],
+                                  real64 ( & stress )[6],
+                                  real64 ( & stiffness )[6][6] )
+  {
+    GEOSX_UNUSED_VAR(k);
+    GEOSX_UNUSED_VAR(q);
+    GEOSX_UNUSED_VAR(strainIncrement);
+    GEOSX_UNUSED_VAR(stress);
+    GEOSX_UNUSED_VAR(stiffness);
+    GEOSX_ERROR("SolidBase::SmallStrainUpdate() not implemented");
+  }
+  
+  /**
+   * @brief Save history variables in preparation for next timestep
+   * @param[in] k Element index.
+   * @param[in] q Quadrature point index.
+   */
+  GEOSX_HOST_DEVICE
+  virtual void SaveConvergedState( localIndex const k, localIndex const q )
+  {
+    GEOSX_UNUSED_VAR(k);
+    GEOSX_UNUSED_VAR(q);
+  }
+  
+  //////////////// LEGACY INTERFACE BELOW -- TO REVISIT ////////////////////////
+  
+  /**
    * accessor to return the stiffness at a given element
    * @param k the element number
    * @param c the stiffness array
    */
   GEOSX_HOST_DEVICE
-  virtual void GetStiffness( localIndex const k, real64 ( &c )[6][6] ) const = 0;
+  virtual void GetStiffness( localIndex const k, real64 ( &c )[6][6] ) const
+  {
+    GEOSX_UNUSED_VAR(k);
+    GEOSX_UNUSED_VAR(c);
+    GEOSX_ERROR("SolidBase::GetStiffness() not implemented");
+  }
 
   /**
    * @brief Calculate stress using input generated under small strain
@@ -104,7 +146,13 @@ private:
   GEOSX_HOST_DEVICE
   virtual void SmallStrainNoState( localIndex const k,
                                    real64 const ( &voigtStrain )[ 6 ],
-                                   real64 ( &stress )[ 6 ] ) const = 0;
+                                   real64 ( &stress )[ 6 ] ) const
+  {
+    GEOSX_UNUSED_VAR(k);
+    GEOSX_UNUSED_VAR(voigtStrain);
+    GEOSX_UNUSED_VAR(stress);
+    GEOSX_ERROR("SolidBase::SmallStrainNoState not implemented");
+  }
 
   /**
    * @brief Update the constitutive state using input generated under small
@@ -117,7 +165,13 @@ private:
   GEOSX_HOST_DEVICE
   virtual void SmallStrain( localIndex const k,
                             localIndex const q,
-                            real64 const ( &voigtStrainInc )[ 6 ] ) const = 0;
+                            real64 const ( &voigtStrainInc )[ 6 ] ) const
+  {
+    GEOSX_UNUSED_VAR(k);
+    GEOSX_UNUSED_VAR(q);
+    GEOSX_UNUSED_VAR(voigtStrainInc);
+    GEOSX_ERROR("SolidBase::SmallStrain not implemented");
+  }
 
   /**
    * @brief Hypoelastic update to the constitutive state using input generated
@@ -132,7 +186,14 @@ private:
   virtual void HypoElastic( localIndex const k,
                             localIndex const q,
                             real64 const ( &Ddt )[ 6 ],
-                            real64 const ( &Rot )[ 3 ][ 3 ] ) const = 0;
+                            real64 const ( &Rot )[ 3 ][ 3 ] ) const
+  {
+    GEOSX_UNUSED_VAR(k);
+    GEOSX_UNUSED_VAR(q);
+    GEOSX_UNUSED_VAR(Ddt);
+    GEOSX_UNUSED_VAR(Rot);
+    GEOSX_ERROR("SolidBase::HypoElastic not implemented");
+  }
 
   /**
    * @brief Hyper-elastic stress update
@@ -143,7 +204,13 @@ private:
   GEOSX_HOST_DEVICE
   virtual void HyperElastic( localIndex const k,
                              real64 const (&FmI)[3][3],
-                             real64 ( &stress )[ 6 ] ) const = 0;
+                             real64 ( &stress )[ 6 ] ) const
+  {
+    GEOSX_UNUSED_VAR(k);
+    GEOSX_UNUSED_VAR(FmI);
+    GEOSX_UNUSED_VAR(stress);
+    GEOSX_ERROR("SolidBase::HyperElastic() not implemented");
+  }
 
   /**
    * @brief Hyper-elastic state update
@@ -154,8 +221,13 @@ private:
   GEOSX_HOST_DEVICE
   virtual void HyperElastic( localIndex const k,
                              localIndex const q,
-                             real64 const (&FmI)[3][3] ) const = 0;
-
+                             real64 const (&FmI)[3][3] ) const
+  {
+    GEOSX_UNUSED_VAR(k);
+    GEOSX_UNUSED_VAR(q);
+    GEOSX_UNUSED_VAR(FmI);
+    GEOSX_ERROR("SolidBase::HyperElastic() not implemented");
+  }
 
 };
 
@@ -186,7 +258,7 @@ public:
 
   virtual void AllocateConstitutiveData( dataRepository::Group * const parent,
                                          localIndex const numConstitutivePointsPerParentIndex ) override;
-
+  
   struct viewKeyStruct : public ConstitutiveBase::viewKeyStruct
   {
     static constexpr auto defaultDensityString  = "defaultDensity";
@@ -218,16 +290,28 @@ public:
   }
 
   /// Non-const/Mutable accessor for density.
-  arrayView2d< real64 >       const & getDensity()       { return m_density; }
+  arrayView2d< real64 > const & getDensity()
+  {
+    return m_density;
+  }
 
   /// Const/non-mutable accessor for density
-  arrayView2d< real64 const > const & getDensity() const { return m_density; }
+  arrayView2d< real64 const > const & getDensity() const
+  {
+    return m_density;
+  }
 
   /// Non-const/mutable accessor for stress
-  arrayView3d< real64, solid::STRESS_USD >       const & getStress()       { return m_stress; }
+  arrayView3d< real64, solid::STRESS_USD > const & getStress()
+  {
+    return m_stress;
+  }
 
   /// Const/non-mutable accessor for stress
-  arrayView3d< real64 const, solid::STRESS_USD > const & getStress() const { return m_stress; }
+  arrayView3d< real64 const, solid::STRESS_USD > const & getStress() const
+  {
+    return m_stress;
+  }
 
   ///@}
 
@@ -239,8 +323,8 @@ protected:
   array2d< real64 > m_density;
 
   /// The material stress at a quadrature point.
-
   array3d< real64, solid::STRESS_PERMUTATION > m_stress;
+  
   /// band-aid fix...going to have to remove this after we clean up
   /// initialization for constitutive models.
   bool m_postProcessed = false;

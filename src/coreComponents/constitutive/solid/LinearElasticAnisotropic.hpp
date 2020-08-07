@@ -67,8 +67,7 @@ public:
 
   /// Deleted move assignment operator
   LinearElasticAnisotropicUpdates & operator=( LinearElasticAnisotropicUpdates && ) =  delete;
-
-
+                            
   GEOSX_HOST_DEVICE
   virtual void SmallStrainNoState( localIndex const k,
                                    real64 const ( &voigtStrain )[ 6 ],
@@ -95,7 +94,6 @@ public:
                              localIndex const q,
                              real64 const (&FmI)[3][3] ) const override final;
 
-
   /**
    * accessor to return the stiffness at a given element
    * @param k the element number
@@ -111,7 +109,6 @@ public:
   /// element.
   arrayView3d< real64 const, solid::STIFFNESS_USD > const m_stiffnessView;
 };
-
 
 GEOSX_FORCE_INLINE
 GEOSX_HOST_DEVICE

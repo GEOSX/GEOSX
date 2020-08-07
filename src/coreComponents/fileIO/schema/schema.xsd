@@ -1309,6 +1309,7 @@
 			<xsd:element name="CompositionalMultiphaseFluid" type="CompositionalMultiphaseFluidType" />
 			<xsd:element name="CompressibleSinglePhaseFluid" type="CompressibleSinglePhaseFluidType" />
 			<xsd:element name="Contact" type="ContactType" />
+			<xsd:element name="DruckerPrager" type="DruckerPragerType" />
 			<xsd:element name="LinearElasticAnisotropic" type="LinearElasticAnisotropicType" />
 			<xsd:element name="LinearElasticIsotropic" type="LinearElasticIsotropicType" />
 			<xsd:element name="LinearElasticTransverseIsotropic" type="LinearElasticTransverseIsotropicType" />
@@ -1435,6 +1436,24 @@
 		<xsd:attribute name="apertureTolerance" type="real64" default="1e-09" />
 		<!--penaltyStiffness => Value of the penetration penalty stiffness. Units of Pressure/length-->
 		<xsd:attribute name="penaltyStiffness" type="real64" default="0" />
+		<!--name => A name is required for any non-unique nodes-->
+		<xsd:attribute name="name" type="string" use="required" />
+	</xsd:complexType>
+	<xsd:complexType name="DruckerPragerType">
+		<!--defaultBulkModulus => Elastic bulk modulus parameter-->
+		<xsd:attribute name="defaultBulkModulus" type="real64" default="1e+09" />
+		<!--defaultCohesion => Initial cohesion parameter-->
+		<xsd:attribute name="defaultCohesion" type="real64" default="5e+06" />
+		<!--defaultDensity => Default Material Density-->
+		<xsd:attribute name="defaultDensity" type="real64" use="required" />
+		<!--defaultHardeningRate => Cohesion hardening/softening rate parameter-->
+		<xsd:attribute name="defaultHardeningRate" type="real64" default="1e+08" />
+		<!--defaultShearModulus => Elastic shear modulus parameter-->
+		<xsd:attribute name="defaultShearModulus" type="real64" default="6e+08" />
+		<!--defaultTanDilationAngle => Plastic potential slope parameter tan(psi)-->
+		<xsd:attribute name="defaultTanDilationAngle" type="real64" default="0.5" />
+		<!--defaultTanFrictionAngle => Yield surface slope parameter tan(phi)-->
+		<xsd:attribute name="defaultTanFrictionAngle" type="real64" default="1" />
 		<!--name => A name is required for any non-unique nodes-->
 		<xsd:attribute name="name" type="string" use="required" />
 	</xsd:complexType>

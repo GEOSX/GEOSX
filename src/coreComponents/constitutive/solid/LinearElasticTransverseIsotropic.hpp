@@ -78,8 +78,7 @@ public:
 
   /// Deleted move assignment operator
   LinearElasticTransverseIsotropicUpdates & operator=( LinearElasticTransverseIsotropicUpdates && ) =  delete;
-
-
+  
   GEOSX_HOST_DEVICE
   virtual void SmallStrainNoState( localIndex const k,
                                    real64 const ( &voigtStrain )[ 6 ],
@@ -141,7 +140,6 @@ private:
   /// A reference to the ArrayView holding c66 for each element.
   arrayView1d< real64 const > const m_c66;
 };
-
 
 GEOSX_FORCE_INLINE
 GEOSX_HOST_DEVICE
@@ -215,8 +213,6 @@ LinearElasticTransverseIsotropicUpdates::
 {
   GEOSX_ERROR( "LinearElasticTransverseIsotropicKernelWrapper::HyperElastic() is not implemented!" );
 }
-
-
 
 /**
  * @class LinearElasticTransverseIsotropic

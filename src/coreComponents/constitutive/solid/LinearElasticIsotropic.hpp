@@ -18,6 +18,7 @@
 
 #ifndef GEOSX_CONSTITUTIVE_SOLID_LINEARELASTICISOTROPIC_HPP_
 #define GEOSX_CONSTITUTIVE_SOLID_LINEARELASTICISOTROPIC_HPP_
+
 #include "SolidBase.hpp"
 #include "constitutive/ExponentialRelation.hpp"
 #include "LvArray/src/tensorOps.hpp"
@@ -69,7 +70,6 @@ public:
 
   /// Deleted move assignment operator
   LinearElasticIsotropicUpdates & operator=( LinearElasticIsotropicUpdates && ) =  delete;
-
 
   /**
    * accessor to return the stiffness at a given element
@@ -161,7 +161,6 @@ private:
   arrayView1d< real64 const > const m_shearModulus;
 
 };
-
 
 GEOSX_HOST_DEVICE
 GEOSX_FORCE_INLINE

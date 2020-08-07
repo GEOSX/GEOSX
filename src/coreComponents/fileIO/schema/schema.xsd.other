@@ -618,6 +618,7 @@
 			<xsd:element name="CompositionalMultiphaseFluid" type="CompositionalMultiphaseFluidType" />
 			<xsd:element name="CompressibleSinglePhaseFluid" type="CompressibleSinglePhaseFluidType" />
 			<xsd:element name="Contact" type="ContactType" />
+			<xsd:element name="DruckerPrager" type="DruckerPragerType" />
 			<xsd:element name="LinearElasticAnisotropic" type="LinearElasticAnisotropicType" />
 			<xsd:element name="LinearElasticIsotropic" type="LinearElasticIsotropicType" />
 			<xsd:element name="LinearElasticTransverseIsotropic" type="LinearElasticTransverseIsotropicType" />
@@ -758,6 +759,30 @@
 		<xsd:choice minOccurs="0" maxOccurs="1">
 			<xsd:element name="TableFunction" type="TableFunctionType" />
 		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="DruckerPragerType">
+		<!--BulkModulus => Elastic bulk modulus field-->
+		<xsd:attribute name="BulkModulus" type="real64_array" />
+		<!--HardeningRate => Hardening rate field-->
+		<xsd:attribute name="HardeningRate" type="real64_array" />
+		<!--NewCohesion => New cohesion field-->
+		<xsd:attribute name="NewCohesion" type="real64_array2d" />
+		<!--NewStress => New stress field-->
+		<xsd:attribute name="NewStress" type="real64_array3d" />
+		<!--OldCohesion => Old cohesion field-->
+		<xsd:attribute name="OldCohesion" type="real64_array2d" />
+		<!--OldStress => Old stress field-->
+		<xsd:attribute name="OldStress" type="real64_array3d" />
+		<!--ShearModulus => Elastic shear modulus field-->
+		<xsd:attribute name="ShearModulus" type="real64_array" />
+		<!--TanDilationAngle => Plastic potential slope tan(psi) field-->
+		<xsd:attribute name="TanDilationAngle" type="real64_array" />
+		<!--TanFrictionAngle => Yield surface slope tan(phi) field-->
+		<xsd:attribute name="TanFrictionAngle" type="real64_array" />
+		<!--density => Material Density-->
+		<xsd:attribute name="density" type="real64_array2d" />
+		<!--stress => Material Stress-->
+		<xsd:attribute name="stress" type="real64_array3d" />
 	</xsd:complexType>
 	<xsd:complexType name="LinearElasticAnisotropicType">
 		<!--density => Material Density-->

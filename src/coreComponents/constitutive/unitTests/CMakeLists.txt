@@ -3,6 +3,8 @@
 #
 
 set( gtest_geosx_tests
+     testDelftEgg.cpp
+     testDruckerPrager.cpp
      testLinearElasticIsotropic.cpp
      testLinearElasticAnisotropic.cpp
      testRelPerm.cpp

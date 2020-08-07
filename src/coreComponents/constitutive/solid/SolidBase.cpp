@@ -21,13 +21,11 @@
 
 namespace geosx
 {
-
 using namespace dataRepository;
-
 
 namespace constitutive
 {
-
+  
 SolidBase::SolidBase( string const & name,
                       Group * const parent ):
   ConstitutiveBase( name, parent ),
@@ -49,19 +47,19 @@ SolidBase::SolidBase( string const & name,
     setDescription( "Material Stress" );
 }
 
+
 SolidBase::~SolidBase()
 {}
 
-void
-SolidBase::DeliverClone( string const & GEOSX_UNUSED_PARAM( name ),
-                         Group * const GEOSX_UNUSED_PARAM( parent ),
-                         std::unique_ptr< ConstitutiveBase > & clone ) const
+
+void SolidBase::DeliverClone( string const & GEOSX_UNUSED_PARAM( name ),
+                              Group * const GEOSX_UNUSED_PARAM( parent ),
+                              std::unique_ptr< ConstitutiveBase > & clone ) const
 {
   SolidBase * const newConstitutiveRelation = dynamic_cast< SolidBase * >(clone.get());
 
   newConstitutiveRelation->m_defaultDensity = m_defaultDensity;
   newConstitutiveRelation->m_density = m_density;
-
   newConstitutiveRelation->m_stress = m_stress;
 }
 
@@ -70,13 +68,15 @@ void SolidBase::AllocateConstitutiveData( dataRepository::Group * const parent,
                                           localIndex const numConstitutivePointsPerParentIndex )
 {
   ConstitutiveBase::AllocateConstitutiveData( parent, numConstitutivePointsPerParentIndex );
-
   this->resize( parent->size() );
+  
   m_density.resize( parent->size(), numConstitutivePointsPerParentIndex );
   m_density.setValues< serialPolicy >( m_defaultDensity );
+
 
   m_stress.resize( parent->size(), numConstitutivePointsPerParentIndex, 6 );
 }
 
-}
+
+} /* namespace constitutive */
 } /* namespace geosx */
