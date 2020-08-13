@@ -12,8 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-
-
 #include "gtest/gtest.h"
 
 #include "constitutive/ConstitutiveManager.hpp"
@@ -64,20 +62,20 @@ TEST( LinearElasticIsotropicTests, testStateUpdatePoint )
   arrayView3d< real64, solid::STRESS_USD > const & stress = cm.getStress();
 
   real64 const strain = 0.1;
-  real64 Ddt[ 6 ] = { 0 };
-  real64 Rot[ 3 ][ 3 ] = { { 0 } };
+  real64 Ddt[6] = { 0 };
+  real64 Rot[3][3] = { { 0 } };
 
   {
-    Ddt[ 0 ] = strain;
-    Rot[ 0 ][ 0 ] = 1;
-    Rot[ 1 ][ 1 ] = 1;
-    Rot[ 2 ][ 2 ] = 1;
+    Ddt[0] = strain;
+    Rot[0][0] = 1;
+    Rot[1][1] = 1;
+    Rot[2][2] = 1;
 
     cmw.HypoElastic( 0, 0, Ddt, Rot );
 
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 0 ), (2.0/3.0*strain)*2*G + strain*K );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 1 ), (-1.0/3.0*strain)*2*G + strain*K );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 2 ), (-1.0/3.0*strain)*2*G + strain*K );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 0 ), ( 2.0 / 3.0 * strain ) * 2 * G + strain * K );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 1 ), ( -1.0 / 3.0 * strain ) * 2 * G + strain * K );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 2 ), ( -1.0 / 3.0 * strain ) * 2 * G + strain * K );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 3 ), 0 );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 4 ), 0 );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 5 ), 0 );
@@ -87,17 +85,16 @@ TEST( LinearElasticIsotropicTests, testStateUpdatePoint )
     stress.setValues< serialPolicy >( 0 );
     LvArray::tensorOps::fill< 6 >( Ddt, 0 );
 
-    Ddt[ 1 ] = strain;
-    Rot[ 0 ][ 0 ] = 1;
-    Rot[ 1 ][ 1 ] = 1;
-    Rot[ 2 ][ 2 ] = 1;
+    Ddt[1] = strain;
+    Rot[0][0] = 1;
+    Rot[1][1] = 1;
+    Rot[2][2] = 1;
 
     cmw.HypoElastic( 0, 0, Ddt, Rot );
 
-
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 0 ), (-1.0/3.0*strain)*2*G + strain*K );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 1 ), (2.0/3.0*strain)*2*G + strain*K );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 2 ), (-1.0/3.0*strain)*2*G + strain*K );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 0 ), ( -1.0 / 3.0 * strain ) * 2 * G + strain * K );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 1 ), ( 2.0 / 3.0 * strain ) * 2 * G + strain * K );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 2 ), ( -1.0 / 3.0 * strain ) * 2 * G + strain * K );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 3 ), 0 );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 4 ), 0 );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 5 ), 0 );
@@ -107,17 +104,16 @@ TEST( LinearElasticIsotropicTests, testStateUpdatePoint )
     stress.setValues< serialPolicy >( 0 );
     LvArray::tensorOps::fill< 6 >( Ddt, 0 );
 
-    Ddt[ 2 ] = strain;
-    Rot[ 0 ][ 0 ] = 1;
-    Rot[ 1 ][ 1 ] = 1;
-    Rot[ 2 ][ 2 ] = 1;
+    Ddt[2] = strain;
+    Rot[0][0] = 1;
+    Rot[1][1] = 1;
+    Rot[2][2] = 1;
 
     cmw.HypoElastic( 0, 0, Ddt, Rot );
 
-
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 0 ), (-1.0/3.0*strain)*2*G + strain*K );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 1 ), (-1.0/3.0*strain)*2*G + strain*K );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 2 ), (2.0/3.0*strain)*2*G + strain*K );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 0 ), ( -1.0 / 3.0 * strain ) * 2 * G + strain * K );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 1 ), ( -1.0 / 3.0 * strain ) * 2 * G + strain * K );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 2 ), ( 2.0 / 3.0 * strain ) * 2 * G + strain * K );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 3 ), 0 );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 4 ), 0 );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 5 ), 0 );
@@ -127,30 +123,10 @@ TEST( LinearElasticIsotropicTests, testStateUpdatePoint )
     stress.setValues< serialPolicy >( 0 );
     LvArray::tensorOps::fill< 6 >( Ddt, 0 );
 
-    Ddt[ 5 ] = strain;
-    Rot[ 0 ][ 0 ] = 1;
-    Rot[ 1 ][ 1 ] = 1;
-    Rot[ 2 ][ 2 ] = 1;
-
-    cmw.HypoElastic( 0, 0, Ddt, Rot );
-
-
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 0 ), 0 );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 1 ), 0 );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 2 ), 0 );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 3 ), 0 );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 4 ), 0 );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 5 ), strain*2*G );
-  }
-
-  {
-    stress.setValues< serialPolicy >( 0 );
-    LvArray::tensorOps::fill< 6 >( Ddt, 0 );
-
-    Ddt[ 4 ] = strain;
-    Rot[ 0 ][ 0 ] = 1;
-    Rot[ 1 ][ 1 ] = 1;
-    Rot[ 2 ][ 2 ] = 1;
+    Ddt[5] = strain;
+    Rot[0][0] = 1;
+    Rot[1][1] = 1;
+    Rot[2][2] = 1;
 
     cmw.HypoElastic( 0, 0, Ddt, Rot );
 
@@ -158,7 +134,26 @@ TEST( LinearElasticIsotropicTests, testStateUpdatePoint )
     EXPECT_DOUBLE_EQ( stress( 0, 0, 1 ), 0 );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 2 ), 0 );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 3 ), 0 );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 4 ), strain*2*G );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 4 ), 0 );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 5 ), strain * 2 * G );
+  }
+
+  {
+    stress.setValues< serialPolicy >( 0 );
+    LvArray::tensorOps::fill< 6 >( Ddt, 0 );
+
+    Ddt[4] = strain;
+    Rot[0][0] = 1;
+    Rot[1][1] = 1;
+    Rot[2][2] = 1;
+
+    cmw.HypoElastic( 0, 0, Ddt, Rot );
+
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 0 ), 0 );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 1 ), 0 );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 2 ), 0 );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 3 ), 0 );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 4 ), strain * 2 * G );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 5 ), 0 );
   }
 
@@ -166,23 +161,21 @@ TEST( LinearElasticIsotropicTests, testStateUpdatePoint )
     stress.setValues< serialPolicy >( 0 );
     LvArray::tensorOps::fill< 6 >( Ddt, 0 );
 
-    Ddt[ 3 ] = strain;
-    Rot[ 0 ][ 0 ] = 1;
-    Rot[ 1 ][ 1 ] = 1;
-    Rot[ 2 ][ 2 ] = 1;
+    Ddt[3] = strain;
+    Rot[0][0] = 1;
+    Rot[1][1] = 1;
+    Rot[2][2] = 1;
 
     cmw.HypoElastic( 0, 0, Ddt, Rot );
 
     EXPECT_DOUBLE_EQ( stress( 0, 0, 0 ), 0 );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 1 ), 0 );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 2 ), 0 );
-    EXPECT_DOUBLE_EQ( stress( 0, 0, 3 ), strain*2*G );
+    EXPECT_DOUBLE_EQ( stress( 0, 0, 3 ), strain * 2 * G );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 4 ), 0 );
     EXPECT_DOUBLE_EQ( stress( 0, 0, 5 ), 0 );
   }
 }
-
-
 
 TEST( LinearElasticIsotropicTests, testXML )
 {
@@ -198,16 +191,16 @@ TEST( LinearElasticIsotropicTests, testXML )
     "</Constitutive>";
 
   xmlWrapper::xmlDocument xmlDocument;
-  xmlWrapper::xmlResult xmlResult = xmlDocument.load_buffer( inputStream.c_str(), inputStream.size() );
+  xmlWrapper::xmlResult xmlResult =
+    xmlDocument.load_buffer( inputStream.c_str(), inputStream.size() );
   if( !xmlResult )
   {
     GEOSX_LOG_RANK_0( "XML parsed with errors!" );
-    GEOSX_LOG_RANK_0( "Error description: " << xmlResult.description());
+    GEOSX_LOG_RANK_0( "Error description: " << xmlResult.description() );
     GEOSX_LOG_RANK_0( "Error offset: " << xmlResult.offset );
   }
 
   xmlWrapper::xmlNode xmlConstitutiveNode = xmlDocument.child( "Constitutive" );
   constitutiveManager.ProcessInputFileRecursive( xmlConstitutiveNode );
   constitutiveManager.PostProcessInputRecursive();
-
 }

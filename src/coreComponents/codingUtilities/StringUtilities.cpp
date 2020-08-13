@@ -25,11 +25,11 @@ namespace geosx
 {
 namespace stringutilities
 {
-
 /**
  * String tokenizing function
  **/
-string_array Tokenize( const std::string & str, const std::string & delimiters )
+string_array
+Tokenize( const std::string & str, const std::string & delimiters )
 {
   string_array tokens;
 
@@ -39,12 +39,11 @@ string_array Tokenize( const std::string & str, const std::string & delimiters )
   }
   else
   {
-
     bool usesNonWhitespaceDelimiters = false;
-    std::string::size_type i =0;
+    std::string::size_type i = 0;
     while( delimiters[i] && !usesNonWhitespaceDelimiters )
     {
-      usesNonWhitespaceDelimiters |= !isspace( int(delimiters[i]) );
+      usesNonWhitespaceDelimiters |= !isspace( int( delimiters[i] ) );
       ++i;
     }
 
@@ -54,33 +53,32 @@ string_array Tokenize( const std::string & str, const std::string & delimiters )
       size_t lastPos = 0;
 
       size_t newPos = lastPos;
-      while( (newPos=str.find_first_of( delimiters, lastPos )) != std::string::npos )
+      while( ( newPos = str.find_first_of( delimiters, lastPos ) ) != std::string::npos )
       {
-        tokens.emplace_back( str.substr( lastPos, newPos-lastPos ));
+        tokens.emplace_back( str.substr( lastPos, newPos - lastPos ) );
         lastPos = newPos + 1;
       }
-      tokens.emplace_back( str.substr( lastPos, str.length()-lastPos ));
+      tokens.emplace_back( str.substr( lastPos, str.length() - lastPos ) );
     }
     else
     {
       // whitespace delimiters
       // skip multiple adjacent delimiters
       size_t lastPos = str.find_first_not_of( delimiters, 0 );
-      lastPos = (lastPos == std::string::npos) ? 0 : lastPos;
+      lastPos = ( lastPos == std::string::npos ) ? 0 : lastPos;
 
       size_t newPos = lastPos;
-      while( (newPos=str.find_first_of( delimiters, lastPos )) != std::string::npos )
+      while( ( newPos = str.find_first_of( delimiters, lastPos ) ) != std::string::npos )
       {
-        tokens.emplace_back( str.substr( lastPos, newPos-lastPos ));
+        tokens.emplace_back( str.substr( lastPos, newPos - lastPos ) );
         lastPos = str.find_first_not_of( delimiters, newPos );
       }
-      if( lastPos!= std::string::npos )
-        tokens.emplace_back( str.substr( lastPos, str.length()-lastPos ));
-
+      if( lastPos != std::string::npos )
+        tokens.emplace_back( str.substr( lastPos, str.length() - lastPos ) );
     }
   }
   return tokens;
 }
 
-}
-}
+}  // namespace stringutilities
+}  // namespace geosx

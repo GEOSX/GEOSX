@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 class FiniteElementDiscretizationManager : public dataRepository::Group
 {
 public:
@@ -31,11 +30,13 @@ public:
   FiniteElementDiscretizationManager( string const & name, Group * const parent );
   virtual ~FiniteElementDiscretizationManager() override;
 
-  virtual Group * CreateChild( string const & childKey, string const & childName ) override;
+  virtual Group *
+  CreateChild( string const & childKey,
+               string const & childName ) override;
 
   /// This function is used to expand any catalogs in the data structure
-  virtual void ExpandObjectCatalogs() override;
-
+  virtual void
+  ExpandObjectCatalogs() override;
 };
 
 } /* namespace geosx */

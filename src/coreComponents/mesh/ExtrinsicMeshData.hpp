@@ -35,31 +35,32 @@
  * @param DESCRIPTION A string literal that contains a description of the data for
  *   use in sphinx documentation.
  */
-#define EXTRINSIC_MESH_DATA_TRAIT( NAME,                                           \
-                                   KEY,                                            \
-                                   TYPE,                                           \
-                                   DEFAULT,                                        \
-                                   PLOTLEVEL,                                      \
-                                   RESTARTFLAG,                                    \
-                                   DESCRIPTION )                                   \
-/** @struct NAME                                                                */ \
-/** @brief Trait struct for NAME data                                           */ \
-  struct NAME                                                                      \
-  {                                                                                \
-    /** The key for registration with the data repository.                      */ \
-    static constexpr auto key = KEY;                                               \
-    /** The actual type to be registered.                                       */ \
-    using type = TYPE;                                                             \
-    /** The template type T for registration of a container<T>.                 */ \
-    using dataType = internal::typeHelper_t< TYPE >;                               \
-    /** The dataRepository::DefaultValue for NAME.                              */ \
-    static constexpr dataType defaultValue = DEFAULT;                              \
-    /** The default dataRepository::PlotLevel for NAME.                         */ \
-    static constexpr auto plotLevel = dataRepository::PlotLevel::PLOTLEVEL;        \
-    /** The default dataRepository::RestartFlags for NAME.                      */ \
-    static constexpr auto restartFlag = dataRepository::RestartFlags::RESTARTFLAG; \
-    /** Description of the NAME data for use in sphinx documentation            */ \
-    static constexpr auto description = DESCRIPTION;                               \
+#define EXTRINSIC_MESH_DATA_TRAIT( NAME,                                             \
+                                   KEY,                                              \
+                                   TYPE,                                             \
+                                   DEFAULT,                                          \
+                                   PLOTLEVEL,                                        \
+                                   RESTARTFLAG,                                      \
+                                   DESCRIPTION )                                     \
+  /** @struct NAME                                                                */ \
+  /** @brief Trait struct for NAME data                                           */ \
+  struct NAME                                                                        \
+  {                                                                                  \
+    /** The key for registration with the data repository.                      */   \
+    static constexpr auto key = KEY;                                                 \
+    /** The actual type to be registered.                                       */   \
+    using type = TYPE;                                                               \
+    /** The template type T for registration of a container<T>.                 */   \
+    using dataType = internal::typeHelper_t< TYPE >;                                 \
+    /** The dataRepository::DefaultValue for NAME.                              */   \
+    static constexpr dataType defaultValue = DEFAULT;                                \
+    /** The default dataRepository::PlotLevel for NAME.                         */   \
+    static constexpr auto plotLevel = dataRepository::PlotLevel::PLOTLEVEL;          \
+    /** The default dataRepository::RestartFlags for NAME.                      */   \
+    static constexpr auto restartFlag =                                              \
+      dataRepository::RestartFlags::RESTARTFLAG;                                     \
+    /** Description of the NAME data for use in sphinx documentation            */   \
+    static constexpr auto description = DESCRIPTION;                                 \
   }
 
 namespace geosx
@@ -69,10 +70,11 @@ namespace geosx
  */
 namespace extrinsicMeshData
 {
-
 namespace internal
 {
-template< typename TYPE, bool HAS_TYPE = std::enable_if_t< traits::HasAlias_value_type< TYPE >, std::true_type >::value >
+template< typename TYPE,
+          bool HAS_TYPE =
+            std::enable_if_t< traits::HasAlias_value_type< TYPE >, std::true_type >::value >
 struct typeHelper
 {
   using type = typename TYPE::value_type;
@@ -81,49 +83,53 @@ struct typeHelper
 template< typename TYPE >
 struct typeHelper< TYPE, false >
 {
-  using type = TYPE;  //typename std::enable_if< std::is_fundamental<TYPE>::value, TYPE>::type;
+  using type =
+    TYPE;  //typename std::enable_if< std::is_fundamental<TYPE>::value, TYPE>::type;
 };
 
 template< typename T >
 using typeHelper_t = typename typeHelper< T >::type;
-}
+}  // namespace internal
 
+EXTRINSIC_MESH_DATA_TRAIT(
+  ParentIndex,
+  "parentIndex",
+  array1d< localIndex >,
+  -1,
+  LEVEL_2,
+  WRITE_AND_READ,
+  "Index of parent within the mesh object it is registered on." );
 
-EXTRINSIC_MESH_DATA_TRAIT( ParentIndex,
-                           "parentIndex",
-                           array1d< localIndex >,
-                           -1,
-                           LEVEL_2,
-                           WRITE_AND_READ,
-                           "Index of parent within the mesh object it is registered on." );
+EXTRINSIC_MESH_DATA_TRAIT(
+  ChildIndex,
+  "childIndex",
+  array1d< localIndex >,
+  -1,
+  LEVEL_2,
+  WRITE_AND_READ,
+  "Index of child within the mesh object it is registered on." );
 
-EXTRINSIC_MESH_DATA_TRAIT( ChildIndex,
-                           "childIndex",
-                           array1d< localIndex >,
-                           -1,
-                           LEVEL_2,
-                           WRITE_AND_READ,
-                           "Index of child within the mesh object it is registered on." );
+EXTRINSIC_MESH_DATA_TRAIT(
+  DegreeFromCrack,
+  "degreeFromCrack",
+  array1d< integer >,
+  -1,
+  LEVEL_1,
+  WRITE_AND_READ,
+  "Distance to the crack in terms of topological distance. "
+  "(i.e. how many nodes are along the path to the closest "
+  "node that is on the crack surface." );
 
-EXTRINSIC_MESH_DATA_TRAIT( DegreeFromCrack,
-                           "degreeFromCrack",
-                           array1d< integer >,
-                           -1,
-                           LEVEL_1,
-                           WRITE_AND_READ,
-                           "Distance to the crack in terms of topological distance. "
-                           "(i.e. how many nodes are along the path to the closest "
-                           "node that is on the crack surface." );
-
-EXTRINSIC_MESH_DATA_TRAIT( DegreeFromCrackTip,
-                           "degreeFromCrackTip",
-                           array1d< integer >,
-                           100000,
-                           LEVEL_1,
-                           WRITE_AND_READ,
-                           "Distance to the crack tip in terms of topological distance. "
-                           "(i.e. how many nodes are along the path to the closest "
-                           "node that is on the crack surface." );
+EXTRINSIC_MESH_DATA_TRAIT(
+  DegreeFromCrackTip,
+  "degreeFromCrackTip",
+  array1d< integer >,
+  100000,
+  LEVEL_1,
+  WRITE_AND_READ,
+  "Distance to the crack tip in terms of topological distance. "
+  "(i.e. how many nodes are along the path to the closest "
+  "node that is on the crack surface." );
 
 EXTRINSIC_MESH_DATA_TRAIT( SIFNode,
                            "SIFNode",
@@ -141,37 +147,41 @@ EXTRINSIC_MESH_DATA_TRAIT( RuptureTime,
                            WRITE_AND_READ,
                            "Time that the object was ruptured/split." );
 
-EXTRINSIC_MESH_DATA_TRAIT( RuptureRate,
-                           "ruptureRate",
-                           array1d< real64 >,
-                           1.0e99,
-                           LEVEL_0,
-                           WRITE_AND_READ,
-                           "Rate of rupture in terms of number of objects split per time." );
+EXTRINSIC_MESH_DATA_TRAIT(
+  RuptureRate,
+  "ruptureRate",
+  array1d< real64 >,
+  1.0e99,
+  LEVEL_0,
+  WRITE_AND_READ,
+  "Rate of rupture in terms of number of objects split per time." );
 
-EXTRINSIC_MESH_DATA_TRAIT( SIF_I,
-                           "SIF_I",
-                           array1d< real64 >,
-                           -1,
-                           LEVEL_1,
-                           WRITE_AND_READ,
-                           "Calculated mode 1 Stress Intensity Factor on the node." );
+EXTRINSIC_MESH_DATA_TRAIT(
+  SIF_I,
+  "SIF_I",
+  array1d< real64 >,
+  -1,
+  LEVEL_1,
+  WRITE_AND_READ,
+  "Calculated mode 1 Stress Intensity Factor on the node." );
 
-EXTRINSIC_MESH_DATA_TRAIT( SIF_II,
-                           "SIF_II",
-                           array1d< real64 >,
-                           -1,
-                           LEVEL_1,
-                           WRITE_AND_READ,
-                           "Calculated mode 2 Stress Intensity Factor on the node." );
+EXTRINSIC_MESH_DATA_TRAIT(
+  SIF_II,
+  "SIF_II",
+  array1d< real64 >,
+  -1,
+  LEVEL_1,
+  WRITE_AND_READ,
+  "Calculated mode 2 Stress Intensity Factor on the node." );
 
-EXTRINSIC_MESH_DATA_TRAIT( SIF_III,
-                           "SIF_III",
-                           array1d< real64 >,
-                           -1,
-                           LEVEL_1,
-                           WRITE_AND_READ,
-                           "Calculated mode 3 Stress Intensity Factor on the node." );
+EXTRINSIC_MESH_DATA_TRAIT(
+  SIF_III,
+  "SIF_III",
+  array1d< real64 >,
+  -1,
+  LEVEL_1,
+  WRITE_AND_READ,
+  "Calculated mode 3 Stress Intensity Factor on the node." );
 
 EXTRINSIC_MESH_DATA_TRAIT( RuptureState,
                            "ruptureState",
@@ -179,7 +189,8 @@ EXTRINSIC_MESH_DATA_TRAIT( RuptureState,
                            0,
                            LEVEL_0,
                            WRITE_AND_READ,
-                           "Rupture state of the face: \n 0=not ready for rupture \n 1=ready for rupture \n 2=ruptured." );
+                           "Rupture state of the face: \n 0=not ready for "
+                           "rupture \n 1=ready for rupture \n 2=ruptured." );
 
 EXTRINSIC_MESH_DATA_TRAIT( SIFonFace,
                            "SIFonFace",
@@ -189,9 +200,7 @@ EXTRINSIC_MESH_DATA_TRAIT( SIFonFace,
                            WRITE_AND_READ,
                            "Calculated Stress Intensity Factor on the face." );
 
-
 /// The template type T for registration of a container<T>.
-
 
 /** @struct K_IC
  * @brief Trait struct for K_IC data
@@ -214,13 +223,13 @@ struct K_IC
   static constexpr auto plotLevel = dataRepository::PlotLevel::LEVEL_0;
 
   /// The default dataRepository::RestartFlags for K_IC.
-  static constexpr auto restartFlag = dataRepository::RestartFlags::WRITE_AND_READ;
+  static constexpr auto restartFlag =
+    dataRepository::RestartFlags::WRITE_AND_READ;
 
   /// Description of the K_IC data for use in sphinx documentation
-  static constexpr auto
-    description = "Critical Stress Intensity Factor :math:`K_{IC}` in the plane of the face.";
+  static constexpr auto description =
+    "Critical Stress Intensity Factor :math:`K_{IC}` in the plane of the face.";
 };
-
 
 EXTRINSIC_MESH_DATA_TRAIT( K_IC_00,
                            "K_IC_00",
@@ -245,7 +254,6 @@ EXTRINSIC_MESH_DATA_TRAIT( K_IC_02,
                            NOPLOT,
                            WRITE_AND_READ,
                            ":math:`K_{IC}` on 0-plane, in 2-direction." );
-
 
 EXTRINSIC_MESH_DATA_TRAIT( K_IC_10,
                            "K_IC_10",
@@ -311,7 +319,7 @@ EXTRINSIC_MESH_DATA_TRAIT( IsFaceSeparable,
                            WRITE_AND_READ,
                            "A flag to mark if the face is separable." );
 
-} // namespace extrinsicMeshData
-} // namespace geosx
+}  // namespace extrinsicMeshData
+}  // namespace geosx
 
 #endif /* GEOSX_MESH_MESHFIELDS_HPP_ */

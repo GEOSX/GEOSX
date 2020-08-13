@@ -23,13 +23,11 @@
 
 namespace geosx
 {
-
-
 using serialPolicy = RAJA::loop_exec;
 using serialReduce = RAJA::seq_reduce;
 using serialAtomic = RAJA::seq_atomic;
 
-#if defined(GEOSX_USE_OPENMP)
+#if defined( GEOSX_USE_OPENMP )
 
 using parallelHostPolicy = RAJA::omp_parallel_for_exec;
 using parallelHostReduce = RAJA::omp_reduce;
@@ -43,7 +41,7 @@ using parallelHostAtomic = serialAtomic;
 
 #endif
 
-#if defined(GEOSX_USE_CUDA)
+#if defined( GEOSX_USE_CUDA )
 
 template< unsigned long BLOCK_SIZE = 256 >
 using parallelDevicePolicy = RAJA::cuda_exec< BLOCK_SIZE >;
@@ -71,7 +69,7 @@ struct PolicyMap< serialPolicy >
   using reduce = serialReduce;
 };
 
-#if defined(GEOSX_USE_OPENMP)
+#if defined( GEOSX_USE_OPENMP )
 template<>
 struct PolicyMap< RAJA::omp_parallel_for_exec >
 {
@@ -80,7 +78,7 @@ struct PolicyMap< RAJA::omp_parallel_for_exec >
 };
 #endif
 
-#if defined(GEOSX_USE_CUDA)
+#if defined( GEOSX_USE_CUDA )
 template< unsigned long BLOCK_SIZE >
 struct PolicyMap< RAJA::cuda_exec< BLOCK_SIZE > >
 {
@@ -88,8 +86,7 @@ struct PolicyMap< RAJA::cuda_exec< BLOCK_SIZE > >
   using reduce = RAJA::cuda_reduce;
 };
 #endif
-}
-
+}  // namespace internalRajaInterface
 
 template< typename POLICY >
 using ReducePolicy = typename internalRajaInterface::PolicyMap< POLICY >::reduce;
@@ -97,14 +94,14 @@ using ReducePolicy = typename internalRajaInterface::PolicyMap< POLICY >::reduce
 template< typename POLICY >
 using AtomicPolicy = typename internalRajaInterface::PolicyMap< POLICY >::atomic;
 
-
-
 template< typename POLICY, typename LAMBDA >
-RAJA_INLINE void forAll( const localIndex end, LAMBDA && body )
+RAJA_INLINE void
+forAll( const localIndex end, LAMBDA && body )
 {
-  RAJA::forall< POLICY >( RAJA::TypedRangeSegment< localIndex >( 0, end ), std::forward< LAMBDA >( body ) );
+  RAJA::forall< POLICY >( RAJA::TypedRangeSegment< localIndex >( 0, end ),
+                          std::forward< LAMBDA >( body ) );
 }
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif // GEOSX_RAJAINTERFACE_RAJAINTERFACE_HPP
+#endif  // GEOSX_RAJAINTERFACE_RAJAINTERFACE_HPP

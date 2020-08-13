@@ -12,7 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-
 #include "BufferOps.hpp"
 #include "dataRepository/BufferOps.hpp"
 #include "ToElementRelation.hpp"
@@ -23,35 +22,41 @@ namespace geosx
 {
 namespace bufferOps
 {
-
-
 template< bool DO_PACKING >
-localIndex Pack( buffer_unit_type * & buffer,
-                 OrderedVariableToManyElementRelation const & var,
-                 arrayView1d< localIndex const > const & packList,
-                 ElementRegionManager const * const elementRegionManager )
+localIndex
+Pack( buffer_unit_type *& buffer,
+      OrderedVariableToManyElementRelation const & var,
+      arrayView1d< localIndex const > const & packList,
+      ElementRegionManager const * const elementRegionManager )
 {
   localIndex sizeOfPackedChars = 0;
 
   sizeOfPackedChars += bufferOps::Pack< DO_PACKING >( buffer, packList.size() );
-  for( localIndex a=0; a<packList.size(); ++a )
+  for( localIndex a = 0; a < packList.size(); ++a )
   {
     localIndex index = packList[a];
-    sizeOfPackedChars += bufferOps::Pack< DO_PACKING >( buffer, var.m_toElementRegion.sizeOfArray( index ) );
-    for( localIndex b=0; b<var.m_toElementRegion.sizeOfArray( index ); ++b )
+    sizeOfPackedChars +=
+      bufferOps::Pack< DO_PACKING >( buffer,
+                                     var.m_toElementRegion.sizeOfArray( index ) );
+    for( localIndex b = 0; b < var.m_toElementRegion.sizeOfArray( index ); ++b )
     {
-      localIndex elemRegionIndex    = var.m_toElementRegion[index][b];
+      localIndex elemRegionIndex = var.m_toElementRegion[index][b];
       localIndex elemSubRegionIndex = var.m_toElementSubRegion[index][b];
-      localIndex elemIndex          = var.m_toElementIndex[index][b];
+      localIndex elemIndex = var.m_toElementIndex[index][b];
 
       sizeOfPackedChars += bufferOps::Pack< DO_PACKING >( buffer, elemRegionIndex );
-      sizeOfPackedChars += bufferOps::Pack< DO_PACKING >( buffer, elemSubRegionIndex );
+      sizeOfPackedChars +=
+        bufferOps::Pack< DO_PACKING >( buffer, elemSubRegionIndex );
 
-      if( elemRegionIndex!=-1 && elemSubRegionIndex!=-1 && elemIndex!=-1 )
+      if( elemRegionIndex != -1 && elemSubRegionIndex != -1 && elemIndex != -1 )
       {
-        ElementRegionBase const * const elemRegion = elementRegionManager->GetRegion( elemRegionIndex );
-        ElementSubRegionBase const * const elemSubRegion = elemRegion->GetSubRegion( elemSubRegionIndex );
-        sizeOfPackedChars += bufferOps::Pack< DO_PACKING >( buffer, elemSubRegion->localToGlobalMap()[elemIndex] );
+        ElementRegionBase const * const elemRegion =
+          elementRegionManager->GetRegion( elemRegionIndex );
+        ElementSubRegionBase const * const elemSubRegion =
+          elemRegion->GetSubRegion( elemSubRegionIndex );
+        sizeOfPackedChars += bufferOps::Pack< DO_PACKING >(
+          buffer,
+          elemSubRegion->localToGlobalMap()[elemIndex] );
       }
       else
       {
@@ -62,21 +67,23 @@ localIndex Pack( buffer_unit_type * & buffer,
 
   return sizeOfPackedChars;
 }
-template localIndex Pack< true >( buffer_unit_type * &,
-                                  OrderedVariableToManyElementRelation const &,
-                                  arrayView1d< localIndex const > const &,
-                                  ElementRegionManager const * const );
-template localIndex Pack< false >( buffer_unit_type * &,
-                                   OrderedVariableToManyElementRelation const &,
-                                   arrayView1d< localIndex const > const &,
-                                   ElementRegionManager const * const );
+template localIndex
+Pack< true >( buffer_unit_type *&,
+              OrderedVariableToManyElementRelation const &,
+              arrayView1d< localIndex const > const &,
+              ElementRegionManager const * const );
+template localIndex
+Pack< false >( buffer_unit_type *&,
+               OrderedVariableToManyElementRelation const &,
+               arrayView1d< localIndex const > const &,
+               ElementRegionManager const * const );
 
-
-localIndex Unpack( buffer_unit_type const * & buffer,
-                   OrderedVariableToManyElementRelation & var,
-                   arrayView1d< localIndex const > const & packList,
-                   ElementRegionManager const * const elementRegionManager,
-                   bool const clearFlag )
+localIndex
+Unpack( buffer_unit_type const *& buffer,
+        OrderedVariableToManyElementRelation & var,
+        arrayView1d< localIndex const > const & packList,
+        ElementRegionManager const * const elementRegionManager,
+        bool const clearFlag )
 {
   GEOSX_MARK_SCOPE( "Unpack OrderedVariableToManyElementRelation" );
 
@@ -87,7 +94,7 @@ localIndex Unpack( buffer_unit_type const * & buffer,
   GEOSX_ERROR_IF( numIndicesUnpacked != packList.size(), "" );
 
   std::vector< std::array< localIndex, 3 > > values;
-  for( localIndex a=0; a<packList.size(); ++a )
+  for( localIndex a = 0; a < packList.size(); ++a )
   {
     values.clear();
 
@@ -96,7 +103,7 @@ localIndex Unpack( buffer_unit_type const * & buffer,
 
     if( !clearFlag )
     {
-      for( localIndex b=0; b<var.m_toElementRegion.sizeOfArray( index ); ++b )
+      for( localIndex b = 0; b < var.m_toElementRegion.sizeOfArray( index ); ++b )
       {
         values.push_back( { var.m_toElementRegion[index][b],
                             var.m_toElementSubRegion[index][b],
@@ -104,9 +111,8 @@ localIndex Unpack( buffer_unit_type const * & buffer,
       }
     }
 
-    for( localIndex b=0; b<numIndicesUnpacked; ++b )
+    for( localIndex b = 0; b < numIndicesUnpacked; ++b )
     {
-
       localIndex elemRegionIndex;
       sizeOfUnpackedChars += bufferOps::Unpack( buffer, elemRegionIndex );
 
@@ -116,19 +122,21 @@ localIndex Unpack( buffer_unit_type const * & buffer,
       globalIndex globalElementIndex;
       sizeOfUnpackedChars += bufferOps::Unpack( buffer, globalElementIndex );
 
-      if( elemRegionIndex!=-1 && elemSubRegionIndex!=-1 )
+      if( elemRegionIndex != -1 && elemSubRegionIndex != -1 )
       {
-        ElementRegionBase const * const elemRegion = elementRegionManager->GetRegion( elemRegionIndex );
-        ElementSubRegionBase const * const elemSubRegion = elemRegion->GetSubRegion( elemSubRegionIndex );
+        ElementRegionBase const * const elemRegion =
+          elementRegionManager->GetRegion( elemRegionIndex );
+        ElementSubRegionBase const * const elemSubRegion =
+          elemRegion->GetSubRegion( elemSubRegionIndex );
 
-        localIndex localElementIndex = softMapLookup( elemSubRegion->globalToLocalMap(),
-                                                      globalElementIndex,
-                                                      localIndex( -1 ) );
-        if( localElementIndex!=-1 )
+        localIndex localElementIndex =
+          softMapLookup( elemSubRegion->globalToLocalMap(),
+                         globalElementIndex,
+                         localIndex( -1 ) );
+        if( localElementIndex != -1 )
         {
-          values.push_back( { elemRegionIndex,
-                              elemSubRegionIndex,
-                              localElementIndex } );
+          values.push_back(
+            { elemRegionIndex, elemSubRegionIndex, localElementIndex } );
         }
       }
       else
@@ -137,51 +145,59 @@ localIndex Unpack( buffer_unit_type const * & buffer,
       }
     }
 
-    localIndex const numUniqueValues = LvArray::sortedArrayManipulation::makeSortedUnique( values.begin(), values.end() );
+    localIndex const numUniqueValues =
+      LvArray::sortedArrayManipulation::makeSortedUnique( values.begin(),
+                                                          values.end() );
 
     var.m_toElementRegion.resizeArray( index, numUniqueValues );
     var.m_toElementSubRegion.resizeArray( index, numUniqueValues );
     var.m_toElementIndex.resizeArray( index, numUniqueValues );
 
-    for( localIndex b=0; b < numUniqueValues; ++b )
+    for( localIndex b = 0; b < numUniqueValues; ++b )
     {
-      var.m_toElementRegion( index, b ) = values[ b ][ 0 ];
-      var.m_toElementSubRegion( index, b ) = values[ b ][ 1 ];
-      var.m_toElementIndex( index, b ) = values[ b ][ 2 ];
+      var.m_toElementRegion( index, b ) = values[b][0];
+      var.m_toElementSubRegion( index, b ) = values[b][1];
+      var.m_toElementIndex( index, b ) = values[b][2];
     }
   }
 
   return sizeOfUnpackedChars;
 }
 
-
 template< bool DO_PACKING >
-localIndex Pack( buffer_unit_type * & buffer,
-                 FixedToManyElementRelation const & var,
-                 arrayView1d< localIndex const > const & packList,
-                 ElementRegionManager const * const elementRegionManager )
+localIndex
+Pack( buffer_unit_type *& buffer,
+      FixedToManyElementRelation const & var,
+      arrayView1d< localIndex const > const & packList,
+      ElementRegionManager const * const elementRegionManager )
 {
   localIndex sizeOfPackedChars = 0;
 
   sizeOfPackedChars += bufferOps::Pack< DO_PACKING >( buffer, packList.size() );
-  for( localIndex a=0; a<packList.size(); ++a )
+  for( localIndex a = 0; a < packList.size(); ++a )
   {
     localIndex index = packList[a];
-    sizeOfPackedChars += bufferOps::Pack< DO_PACKING >( buffer, var.m_toElementRegion.size( 1 ) );
-    for( localIndex b=0; b<var.m_toElementRegion.size( 1 ); ++b )
+    sizeOfPackedChars +=
+      bufferOps::Pack< DO_PACKING >( buffer, var.m_toElementRegion.size( 1 ) );
+    for( localIndex b = 0; b < var.m_toElementRegion.size( 1 ); ++b )
     {
-      localIndex elemRegionIndex    = var.m_toElementRegion[index][b];
+      localIndex elemRegionIndex = var.m_toElementRegion[index][b];
       localIndex elemSubRegionIndex = var.m_toElementSubRegion[index][b];
-      localIndex elemIndex          = var.m_toElementIndex[index][b];
+      localIndex elemIndex = var.m_toElementIndex[index][b];
 
       sizeOfPackedChars += bufferOps::Pack< DO_PACKING >( buffer, elemRegionIndex );
-      sizeOfPackedChars += bufferOps::Pack< DO_PACKING >( buffer, elemSubRegionIndex );
+      sizeOfPackedChars +=
+        bufferOps::Pack< DO_PACKING >( buffer, elemSubRegionIndex );
 
-      if( elemRegionIndex!=-1 && elemSubRegionIndex!=-1 && elemIndex!=-1 )
+      if( elemRegionIndex != -1 && elemSubRegionIndex != -1 && elemIndex != -1 )
       {
-        ElementRegionBase const * const elemRegion = elementRegionManager->GetRegion( elemRegionIndex );
-        ElementSubRegionBase const * const elemSubRegion = elemRegion->GetSubRegion( elemSubRegionIndex );
-        sizeOfPackedChars += bufferOps::Pack< DO_PACKING >( buffer, elemSubRegion->localToGlobalMap()[elemIndex] );
+        ElementRegionBase const * const elemRegion =
+          elementRegionManager->GetRegion( elemRegionIndex );
+        ElementSubRegionBase const * const elemSubRegion =
+          elemRegion->GetSubRegion( elemSubRegionIndex );
+        sizeOfPackedChars += bufferOps::Pack< DO_PACKING >(
+          buffer,
+          elemSubRegion->localToGlobalMap()[elemIndex] );
       }
       else
       {
@@ -192,21 +208,23 @@ localIndex Pack( buffer_unit_type * & buffer,
 
   return sizeOfPackedChars;
 }
-template localIndex Pack< true >( buffer_unit_type * &,
-                                  FixedToManyElementRelation const &,
-                                  arrayView1d< localIndex const > const &,
-                                  ElementRegionManager const * const );
-template localIndex Pack< false >( buffer_unit_type * &,
-                                   FixedToManyElementRelation const &,
-                                   arrayView1d< localIndex const > const &,
-                                   ElementRegionManager const * const );
+template localIndex
+Pack< true >( buffer_unit_type *&,
+              FixedToManyElementRelation const &,
+              arrayView1d< localIndex const > const &,
+              ElementRegionManager const * const );
+template localIndex
+Pack< false >( buffer_unit_type *&,
+               FixedToManyElementRelation const &,
+               arrayView1d< localIndex const > const &,
+               ElementRegionManager const * const );
 
-
-localIndex Unpack( buffer_unit_type const * & buffer,
-                   FixedToManyElementRelation & var,
-                   arrayView1d< localIndex const > const & packList,
-                   ElementRegionManager const * const elementRegionManager,
-                   bool const clearFlag )
+localIndex
+Unpack( buffer_unit_type const *& buffer,
+        FixedToManyElementRelation & var,
+        arrayView1d< localIndex const > const & packList,
+        ElementRegionManager const * const elementRegionManager,
+        bool const clearFlag )
 {
   GEOSX_MARK_SCOPE( "Unpack FixedToManyElementRelation" );
 
@@ -216,14 +234,14 @@ localIndex Unpack( buffer_unit_type const * & buffer,
   sizeOfUnpackedChars += bufferOps::Unpack( buffer, numIndicesUnpacked );
   GEOSX_ERROR_IF( numIndicesUnpacked != packList.size(), "" );
 
-  for( localIndex a=0; a<packList.size(); ++a )
+  for( localIndex a = 0; a < packList.size(); ++a )
   {
     localIndex index = packList[a];
     localIndex numSubIndicesUnpacked;
     sizeOfUnpackedChars += bufferOps::Unpack( buffer, numSubIndicesUnpacked );
     GEOSX_ERROR_IF( numSubIndicesUnpacked != var.m_toElementRegion.size( 1 ), "" );
 
-    for( localIndex b=0; b<numSubIndicesUnpacked; ++b )
+    for( localIndex b = 0; b < numSubIndicesUnpacked; ++b )
     {
       localIndex recvElemRegionIndex;
       localIndex recvElemSubRegionIndex;
@@ -233,30 +251,33 @@ localIndex Unpack( buffer_unit_type const * & buffer,
       sizeOfUnpackedChars += bufferOps::Unpack( buffer, recvElemSubRegionIndex );
       sizeOfUnpackedChars += bufferOps::Unpack( buffer, globalElementIndex );
 
-      if( recvElemRegionIndex!=-1 && recvElemSubRegionIndex!=-1 && globalElementIndex!=-1 )
+      if( recvElemRegionIndex != -1 && recvElemSubRegionIndex != -1 &&
+          globalElementIndex != -1 )
       {
-        ElementRegionBase const * const
-        elemRegion = elementRegionManager->GetRegion( recvElemRegionIndex );
+        ElementRegionBase const * const elemRegion =
+          elementRegionManager->GetRegion( recvElemRegionIndex );
 
-        ElementSubRegionBase const * const
-        elemSubRegion = elemRegion->GetSubRegion( recvElemSubRegionIndex );
+        ElementSubRegionBase const * const elemSubRegion =
+          elemRegion->GetSubRegion( recvElemSubRegionIndex );
 
-        localIndex const recvElemIndex = softMapLookup( elemSubRegion->globalToLocalMap(),
-                                                        globalElementIndex,
-                                                        localIndex( -1 ) );
+        localIndex const recvElemIndex =
+          softMapLookup( elemSubRegion->globalToLocalMap(),
+                         globalElementIndex,
+                         localIndex( -1 ) );
 
-        for( localIndex c=0; c<var.m_toElementRegion.size( 1 ); ++c )
+        for( localIndex c = 0; c < var.m_toElementRegion.size( 1 ); ++c )
         {
           localIndex & elemRegionIndex = var.m_toElementRegion[index][c];
           localIndex & elemSubRegionIndex = var.m_toElementSubRegion[index][c];
           localIndex & elemIndex = var.m_toElementIndex[index][c];
-          if( ( elemRegionIndex==recvElemRegionIndex &&
-                elemSubRegionIndex==recvElemSubRegionIndex &&
-                elemIndex==recvElemIndex ) )
+          if( ( elemRegionIndex == recvElemRegionIndex &&
+                elemSubRegionIndex == recvElemSubRegionIndex &&
+                elemIndex == recvElemIndex ) )
           {
             break;
           }
-          else if( ( elemRegionIndex==-1 || elemSubRegionIndex==-1 || elemIndex==-1 ) )
+          else if( ( elemRegionIndex == -1 || elemSubRegionIndex == -1 ||
+                     elemIndex == -1 ) )
           {
             elemRegionIndex = recvElemRegionIndex;
             elemSubRegionIndex = recvElemSubRegionIndex;
@@ -281,5 +302,5 @@ localIndex Unpack( buffer_unit_type const * & buffer,
   return sizeOfUnpackedChars;
 }
 
-}
-}
+}  // namespace bufferOps
+}  // namespace geosx

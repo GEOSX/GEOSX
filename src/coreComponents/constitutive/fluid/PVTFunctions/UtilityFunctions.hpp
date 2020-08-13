@@ -24,17 +24,14 @@
 
 namespace geosx
 {
-
 namespace PVTProps
 {
-
 constexpr localIndex MAX_VAR_DIM = 10;
 
 template< typename T, int Dim >
 class EvalArgs
 {
 public:
-
   EvalArgs()
   {
     m_var = 0.0;
@@ -64,7 +61,8 @@ public:
     }
   }
 
-  EvalArgs & operator+=( const EvalArgs & arg )
+  EvalArgs &
+  operator+=( const EvalArgs & arg )
   {
     this->m_var += arg.m_var;
     for( localIndex i = 0; i < Dim; ++i )
@@ -75,8 +73,8 @@ public:
     return *this;
   }
 
-
-  EvalArgs & operator-=( const EvalArgs & arg )
+  EvalArgs &
+  operator-=( const EvalArgs & arg )
   {
     this->m_var -= arg.m_var;
     for( localIndex i = 0; i < Dim; ++i )
@@ -87,7 +85,8 @@ public:
     return *this;
   }
 
-  EvalArgs & operator*=( const EvalArgs & arg )
+  EvalArgs &
+  operator*=( const EvalArgs & arg )
   {
     const T & u = this->m_var;
     const T & v = arg.m_var;
@@ -96,15 +95,15 @@ public:
       const T & uDer = this->m_der[i];
       const T & vDer = arg.m_der[i];
 
-      this->m_der[i] = (v * uDer + u * vDer);
+      this->m_der[i] = ( v * uDer + u * vDer );
     }
 
     this->m_var *= v;
     return *this;
   }
 
-
-  EvalArgs & operator/=( const EvalArgs & arg )
+  EvalArgs &
+  operator/=( const EvalArgs & arg )
   {
     const T & u = this->m_var;
     const T & v = arg.m_var;
@@ -113,14 +112,15 @@ public:
       const T & uDer = this->m_der[i];
       const T & vDer = arg.m_der[i];
 
-      this->m_der[i] = (v * uDer - u * vDer) /(v * v);
+      this->m_der[i] = ( v * uDer - u * vDer ) / ( v * v );
     }
 
     this->m_var /= v;
     return *this;
   }
 
-  EvalArgs & Exponent( const EvalArgs & arg )
+  EvalArgs &
+  Exponent( const EvalArgs & arg )
   {
     const T & v = arg.m_var;
     this->m_var = exp( v );
@@ -133,21 +133,24 @@ public:
     return *this;
   }
 
-  EvalArgs operator+( const EvalArgs & arg ) const
+  EvalArgs
+  operator+( const EvalArgs & arg ) const
   {
     EvalArgs result( *this );
     result += arg;
     return result;
   }
 
-  EvalArgs operator-( const EvalArgs & arg ) const
+  EvalArgs
+  operator-( const EvalArgs & arg ) const
   {
     EvalArgs result( *this );
     result -= arg;
     return result;
   }
 
-  EvalArgs operator-() const
+  EvalArgs
+  operator-() const
   {
     EvalArgs result;
     result.m_var = -this->m_var;
@@ -159,21 +162,24 @@ public:
     return result;
   }
 
-  EvalArgs operator*( const EvalArgs & arg ) const
+  EvalArgs
+  operator*( const EvalArgs & arg ) const
   {
     EvalArgs result( *this );
     result *= arg;
     return result;
   }
 
-  EvalArgs operator/( const EvalArgs & arg ) const
+  EvalArgs
+  operator/( const EvalArgs & arg ) const
   {
     EvalArgs result( *this );
     result /= arg;
     return result;
   }
 
-  EvalArgs & operator=( const EvalArgs & arg )
+  EvalArgs &
+  operator=( const EvalArgs & arg )
   {
     this->m_var = arg.m_var;
     for( int i = 0; i < Dim; ++i )
@@ -184,7 +190,8 @@ public:
     return *this;
   }
 
-  bool operator==( const EvalArgs & arg ) const
+  bool
+  operator==( const EvalArgs & arg ) const
   {
     if( this->m_var != arg._m_var ) return false;
 
@@ -196,44 +203,52 @@ public:
     return true;
   }
 
-  bool operator!=( const EvalArgs & arg ) const
+  bool
+  operator!=( const EvalArgs & arg ) const
   {
-    return !(*this == arg);
+    return !( *this == arg );
   }
 
-  bool operator>( const EvalArgs & arg ) const
+  bool
+  operator>( const EvalArgs & arg ) const
   {
     return this->m_var > arg.m_var;
   }
 
-  bool operator<( const EvalArgs & arg ) const
+  bool
+  operator<( const EvalArgs & arg ) const
   {
     return this->m_var < arg.m_var;
   }
 
-  bool operator>=( const EvalArgs & arg ) const
+  bool
+  operator>=( const EvalArgs & arg ) const
   {
     return this->m_var >= arg.m_var;
   }
 
-  bool operator<=( const EvalArgs & arg ) const
+  bool
+  operator<=( const EvalArgs & arg ) const
   {
     return this->m_var <= arg.m_var;
   }
 
-  EvalArgs & operator+=( const T & arg )
+  EvalArgs &
+  operator+=( const T & arg )
   {
     this->m_var += arg;
     return *this;
   }
 
-  EvalArgs & operator-=( const T & arg )
+  EvalArgs &
+  operator-=( const T & arg )
   {
     this->m_var -= arg;
     return *this;
   }
 
-  EvalArgs & operator*=( const T & arg )
+  EvalArgs &
+  operator*=( const T & arg )
   {
     for( localIndex i = 0; i < Dim; ++i )
     {
@@ -244,7 +259,8 @@ public:
     return *this;
   }
 
-  EvalArgs & operator/=( const T & arg )
+  EvalArgs &
+  operator/=( const T & arg )
   {
     for( localIndex i = 0; i < Dim; ++i )
     {
@@ -255,35 +271,40 @@ public:
     return *this;
   }
 
-  EvalArgs operator+( const T & arg ) const
+  EvalArgs
+  operator+( const T & arg ) const
   {
     EvalArgs result( *this );
     result += arg;
     return result;
   }
 
-  EvalArgs operator-( const T & arg ) const
+  EvalArgs
+  operator-( const T & arg ) const
   {
     EvalArgs result( *this );
     result -= arg;
     return result;
   }
 
-  EvalArgs operator*( const T & arg ) const
+  EvalArgs
+  operator*( const T & arg ) const
   {
     EvalArgs result( *this );
     result *= arg;
     return result;
   }
 
-  EvalArgs operator/( const T & arg ) const
+  EvalArgs
+  operator/( const T & arg ) const
   {
     EvalArgs result( *this );
     result /= arg;
     return result;
   }
 
-  EvalArgs & operator=( const T & arg )
+  EvalArgs &
+  operator=( const T & arg )
   {
     m_var = arg;
     for( int i = 0; i < Dim; ++i )
@@ -293,31 +314,37 @@ public:
     return *this;
   }
 
-  bool operator==( const T & arg ) const
+  bool
+  operator==( const T & arg ) const
   {
     return this->m_var == arg;
   }
 
-  bool operator!=( const T & arg ) const
+  bool
+  operator!=( const T & arg ) const
   {
-    return !(*this == arg);
+    return !( *this == arg );
   }
 
-  bool operator>( const T & arg ) const
+  bool
+  operator>( const T & arg ) const
   {
     return this->m_var > arg;
   }
 
-  bool operator<( const T & arg ) const
+  bool
+  operator<( const T & arg ) const
   {
     return this->m_var < arg;
   }
 
-  bool operator>=( const T & arg ) const
+  bool
+  operator>=( const T & arg ) const
   {
     return this->m_var >= arg;
   }
-  bool operator<=( const T & arg ) const
+  bool
+  operator<=( const T & arg ) const
   {
     return this->m_var <= arg;
   }
@@ -327,7 +354,8 @@ public:
 };
 
 template< class T, int Dim >
-inline EvalArgs< T, Dim > operator+( const T & arg1, const EvalArgs< T, Dim > & arg2 )
+inline EvalArgs< T, Dim >
+operator+( const T & arg1, const EvalArgs< T, Dim > & arg2 )
 {
   EvalArgs< T, Dim > result( arg2 );
   result += arg1;
@@ -335,7 +363,8 @@ inline EvalArgs< T, Dim > operator+( const T & arg1, const EvalArgs< T, Dim > & 
 }
 
 template< class T, int Dim >
-inline EvalArgs< T, Dim > operator-( const T & arg1, const EvalArgs< T, Dim > & arg2 )
+inline EvalArgs< T, Dim >
+operator-( const T & arg1, const EvalArgs< T, Dim > & arg2 )
 {
   EvalArgs< T, Dim > result( arg2 );
   result.m_var = arg1 - result.m_var;
@@ -349,7 +378,8 @@ inline EvalArgs< T, Dim > operator-( const T & arg1, const EvalArgs< T, Dim > & 
 }
 
 template< class T, int Dim >
-inline EvalArgs< T, Dim > operator*( const T & arg1, const EvalArgs< T, Dim > & arg2 )
+inline EvalArgs< T, Dim >
+operator*( const T & arg1, const EvalArgs< T, Dim > & arg2 )
 {
   EvalArgs< T, Dim > result( arg2 );
   result *= arg1;
@@ -357,11 +387,12 @@ inline EvalArgs< T, Dim > operator*( const T & arg1, const EvalArgs< T, Dim > & 
 }
 
 template< class T, int Dim >
-inline EvalArgs< T, Dim > operator/( const T & arg1, const EvalArgs< T, Dim > & arg2 )
+inline EvalArgs< T, Dim >
+operator/( const T & arg1, const EvalArgs< T, Dim > & arg2 )
 {
   EvalArgs< T, Dim > result( arg2 );
 
-  T coef = -(arg1 / result.m_var / result.m_var);
+  T coef = -( arg1 / result.m_var / result.m_var );
   result.m_var = arg1 / result.m_var;
 
   for( localIndex i = 0; i < Dim; ++i )
@@ -372,40 +403,44 @@ inline EvalArgs< T, Dim > operator/( const T & arg1, const EvalArgs< T, Dim > & 
   return result;
 }
 
-
 template< class T, int Dim >
-inline bool operator==( const T & arg1, const EvalArgs< T, Dim > & arg2 )
+inline bool
+operator==( const T & arg1, const EvalArgs< T, Dim > & arg2 )
 {
-  return (arg2 == arg1);
+  return ( arg2 == arg1 );
 }
 
 template< class T, int Dim >
-inline bool operator!=( const T & arg1, const EvalArgs< T, Dim > & arg2 )
+inline bool
+operator!=( const T & arg1, const EvalArgs< T, Dim > & arg2 )
 {
-  return (arg2 != arg1);
+  return ( arg2 != arg1 );
 }
 
 template< class T, int Dim >
-inline bool operator>( const T & arg1, const EvalArgs< T, Dim > & arg2 )
+inline bool
+operator>( const T & arg1, const EvalArgs< T, Dim > & arg2 )
 {
   return arg1 > arg2.m_var;
 }
 
 template< class T, int Dim >
-inline bool operator<( const T & arg1, const EvalArgs< T, Dim > & arg2 )
+inline bool
+operator<( const T & arg1, const EvalArgs< T, Dim > & arg2 )
 {
   return arg1 < arg2.m_var;
 }
 
 template< class T, int Dim >
-inline bool operator>=( const T & arg1, const EvalArgs< T, Dim > & arg2 )
+inline bool
+operator>=( const T & arg1, const EvalArgs< T, Dim > & arg2 )
 {
   return arg1 >= arg2.m_var;
 }
 
-
 template< class T, int Dim >
-inline bool operator<=( const T & arg1, const EvalArgs< T, Dim > & arg2 )
+inline bool
+operator<=( const T & arg1, const EvalArgs< T, Dim > & arg2 )
 {
   return arg1 <= arg2.m_var;
 }
@@ -418,132 +453,154 @@ typedef EvalArgs< real64, MAX_VAR_DIM > EvalVarArgs;
 class TableFunctionBase
 {
 public:
-  virtual const string & TableName() const = 0;
-  virtual ~TableFunctionBase(){}
+  virtual const string &
+  TableName() const = 0;
+  virtual ~TableFunctionBase()
+  {}
 
-  virtual EvalArgs1D Value( const EvalArgs1D & x ) const = 0;
+  virtual EvalArgs1D
+  Value( const EvalArgs1D & x ) const = 0;
 
-  virtual EvalArgs2D Value( const EvalArgs2D & x ) const = 0;
+  virtual EvalArgs2D
+  Value( const EvalArgs2D & x ) const = 0;
 
-  virtual EvalArgs2D Value( const EvalArgs2D & x, const EvalArgs2D & y ) const = 0;
+  virtual EvalArgs2D
+  Value( const EvalArgs2D & x, const EvalArgs2D & y ) const = 0;
 
-  virtual void Print() const = 0;
+  virtual void
+  Print() const = 0;
 };
-
 
 typedef std::shared_ptr< TableFunctionBase > TableFunctionPtr;
 
 class XYTable : public TableFunctionBase
 {
 public:
+  XYTable( std::string const & tableName,
+           real64_array const & x,
+           real64_array const & y,
+           real64_array2d const & value ) :
+    m_tableName( tableName ),
+    m_x( x ),
+    m_y( y ),
+    m_value( value )
+  {}
 
-  XYTable( std::string const & tableName, real64_array const & x, real64_array const & y, real64_array2d const & value ): m_tableName( tableName ), m_x( x ),
-    m_y( y ), m_value( value ) {}
+  ~XYTable()
+  {}
 
-  ~XYTable(){}
-
-  real64_array & XArray()
+  real64_array &
+  XArray()
   {
     return m_x;
   }
 
-  real64_array & YArray()
+  real64_array &
+  YArray()
   {
     return m_y;
   }
 
-  real64_array2d & ValueArray()
+  real64_array2d &
+  ValueArray()
   {
     return m_value;
   }
 
-
-  virtual string const & TableName() const
+  virtual string const &
+  TableName() const
   {
     return m_tableName;
   }
 
-
-  virtual EvalArgs1D Value( EvalArgs1D const & ) const
+  virtual EvalArgs1D
+  Value( EvalArgs1D const & ) const
   {
     return 0;
   }
 
-  virtual EvalArgs2D Value( EvalArgs2D const & ) const
+  virtual EvalArgs2D
+  Value( EvalArgs2D const & ) const
   {
     return 0;
   }
 
-  virtual EvalArgs2D Value( EvalArgs2D const & x, EvalArgs2D const & y ) const;
+  virtual EvalArgs2D
+  Value( EvalArgs2D const & x, EvalArgs2D const & y ) const;
 
-  virtual void Print() const
+  virtual void
+  Print() const
   {}
 
 private:
-
   std::string m_tableName;
   real64_array m_x;
   real64_array m_y;
   real64_array2d m_value;
-
 };
 
 class XTable : public TableFunctionBase
 {
 public:
+  XTable( string const & tableName, real64_array const & x, real64_array const & value ) :
+    m_tableName( tableName ),
+    m_x( x ),
+    m_value( value )
+  {}
+  ~XTable()
+  {}
 
-  XTable( string const & tableName, real64_array const & x, real64_array const & value ): m_tableName( tableName ), m_x( x ), m_value( value ) {}
-  ~XTable(){}
-
-  real64_array & XArray()
+  real64_array &
+  XArray()
   {
     return m_x;
   }
 
-  real64_array & ValueArray()
+  real64_array &
+  ValueArray()
   {
     return m_value;
   }
 
-  virtual string const & TableName() const
+  virtual string const &
+  TableName() const
   {
     return m_tableName;
   }
 
-  virtual EvalArgs1D Value( EvalArgs1D const & x ) const
+  virtual EvalArgs1D
+  Value( EvalArgs1D const & x ) const
   {
-
     return GetValue< EvalArgs1D >( x );
-
   }
 
-  virtual EvalArgs2D Value( EvalArgs2D const & x ) const
+  virtual EvalArgs2D
+  Value( EvalArgs2D const & x ) const
   {
-
     return GetValue< EvalArgs2D >( x );
-
   }
 
-  virtual EvalArgs2D Value( EvalArgs2D const &, EvalArgs2D const & ) const
+  virtual EvalArgs2D
+  Value( EvalArgs2D const &, EvalArgs2D const & ) const
   {
     return 0;
   }
 
 private:
-
   template< class T >
-  T GetValue( T const & x ) const;
+  T
+  GetValue( T const & x ) const;
 
-  virtual void Print() const
+  virtual void
+  Print() const
   {}
 
   string m_tableName;
   real64_array m_x;
   real64_array m_value;
-
 };
 
-} // namespace PVTProps
-} // namespace geosx
+}  // namespace PVTProps
+}  // namespace geosx
 
-#endif //GEOSX_CONSTITUTIVE_FLUID_PVTFUNCTIONS_UTILITYFUNCTION_HPP_
+#endif  //GEOSX_CONSTITUTIVE_FLUID_PVTFUNCTIONS_UTILITYFUNCTION_HPP_

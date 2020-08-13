@@ -18,18 +18,17 @@ namespace geosx
 {
 namespace constitutive
 {
-
-NullModel::NullModel( string const & name,
-                      Group * const parent ):
+NullModel::NullModel( string const & name, Group * const parent ) :
   ConstitutiveBase( name, parent )
 {}
 
 NullModel::~NullModel()
 {}
 
-void NullModel::DeliverClone( string const & name,
-                              Group * const parent,
-                              std::unique_ptr< ConstitutiveBase > & clone ) const
+void
+NullModel::DeliverClone( string const & name,
+                         Group * const parent,
+                         std::unique_ptr< ConstitutiveBase > & clone ) const
 {
   if( !clone )
   {
@@ -37,7 +36,10 @@ void NullModel::DeliverClone( string const & name,
   }
 }
 
-REGISTER_CATALOG_ENTRY( ConstitutiveBase, NullModel, std::string const &, dataRepository::Group * const )
+REGISTER_CATALOG_ENTRY( ConstitutiveBase,
+                        NullModel,
+                        std::string const &,
+                        dataRepository::Group * const )
 
-} // constitutive
+}  // namespace constitutive
 } /* namespace geosx */

@@ -24,8 +24,6 @@
 
 namespace geosx
 {
-
-
 /**
  * @class SinglePhaseHybridFVM
  *
@@ -35,15 +33,12 @@ namespace geosx
 class SinglePhaseHybridFVM : public SinglePhaseBase
 {
 public:
-
   /**
    * @brief main constructor for Group Objects
    * @param name the name of this instantiation of Group in the repository
    * @param parent the parent group of this instantiation of Group
    */
-  SinglePhaseHybridFVM( const std::string & name,
-                        Group * const parent );
-
+  SinglePhaseHybridFVM( const std::string & name, Group * const parent );
 
   /// deleted default constructor
   SinglePhaseHybridFVM() = delete;
@@ -55,10 +50,12 @@ public:
   SinglePhaseHybridFVM( SinglePhaseHybridFVM && ) = default;
 
   /// deleted assignment operator
-  SinglePhaseHybridFVM & operator=( SinglePhaseHybridFVM const & ) = delete;
+  SinglePhaseHybridFVM &
+  operator=( SinglePhaseHybridFVM const & ) = delete;
 
   /// deleted move operator
-  SinglePhaseHybridFVM & operator=( SinglePhaseHybridFVM && ) = delete;
+  SinglePhaseHybridFVM &
+  operator=( SinglePhaseHybridFVM && ) = delete;
 
   /**
    * @brief default destructor
@@ -69,10 +66,14 @@ public:
    * @brief name of the node manager in the object catalog
    * @return string that contains the catalog name to generate a new NodeManager object through the object catalog.
    */
-  static string CatalogName()
-  { return "SinglePhaseHybridFVM"; }
+  static string
+  CatalogName()
+  {
+    return "SinglePhaseHybridFVM";
+  }
 
-  virtual void RegisterDataOnMesh( Group * const MeshBodies ) override;
+  virtual void
+  RegisterDataOnMesh( Group * const MeshBodies ) override;
 
   /**
    * @defgroup Solver Interface Functions
@@ -91,17 +92,19 @@ public:
              DofManager & dofManager ) const override;
 
   virtual void
-  ApplyBoundaryConditions( real64 const time_n,
-                           real64 const dt,
-                           DomainPartition & domain,
-                           DofManager const & dofManager,
-                           CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                           arrayView1d< real64 > const & localRhs ) override;
+  ApplyBoundaryConditions(
+    real64 const time_n,
+    real64 const dt,
+    DomainPartition & domain,
+    DofManager const & dofManager,
+    CRSMatrixView< real64, globalIndex const > const & localMatrix,
+    arrayView1d< real64 > const & localRhs ) override;
 
   virtual real64
-  CalculateResidualNorm( DomainPartition const & domain,
-                         DofManager const & dofManager,
-                         arrayView1d< real64 const > const & localRhs ) override;
+  CalculateResidualNorm(
+    DomainPartition const & domain,
+    DofManager const & dofManager,
+    arrayView1d< real64 const > const & localRhs ) override;
 
   virtual bool
   CheckSystemSolution( DomainPartition const & domain,
@@ -133,16 +136,15 @@ public:
    * @param rhs the system right-hand side vector
    */
   virtual void
-  AssembleFluxTerms( real64 const time_n,
-                     real64 const dt,
-                     DomainPartition const & domain,
-                     DofManager const & dofManager,
-                     CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                     arrayView1d< real64 > const & localRhs ) override;
-
+  AssembleFluxTerms(
+    real64 const time_n,
+    real64 const dt,
+    DomainPartition const & domain,
+    DofManager const & dofManager,
+    CRSMatrixView< real64, globalIndex const > const & localMatrix,
+    arrayView1d< real64 > const & localRhs ) override;
 
   /**@}*/
-
 
   struct viewKeyStruct : SinglePhaseBase::viewKeyStruct
   {
@@ -151,25 +153,39 @@ public:
 
   } viewKeysSinglePhaseHybridFVM;
 
-  viewKeyStruct & viewKeys()
-  { return viewKeysSinglePhaseHybridFVM; }
+  viewKeyStruct &
+  viewKeys()
+  {
+    return viewKeysSinglePhaseHybridFVM;
+  }
 
-  viewKeyStruct const & viewKeys() const
-  { return viewKeysSinglePhaseHybridFVM; }
+  viewKeyStruct const &
+  viewKeys() const
+  {
+    return viewKeysSinglePhaseHybridFVM;
+  }
 
   struct groupKeyStruct : SolverBase::groupKeyStruct
-  {} groupKeysSinglePhaseHybridFVM;
+  {
+  } groupKeysSinglePhaseHybridFVM;
 
-  groupKeyStruct & groupKeys()
-  { return groupKeysSinglePhaseHybridFVM; }
+  groupKeyStruct &
+  groupKeys()
+  {
+    return groupKeysSinglePhaseHybridFVM;
+  }
 
-  groupKeyStruct const & groupKeys() const
-  { return groupKeysSinglePhaseHybridFVM; }
+  groupKeyStruct const &
+  groupKeys() const
+  {
+    return groupKeysSinglePhaseHybridFVM;
+  }
 
-  virtual void InitializePostInitialConditions_PreSubGroups( dataRepository::Group * const rootGroup ) override;
+  virtual void
+  InitializePostInitialConditions_PreSubGroups(
+    dataRepository::Group * const rootGroup ) override;
 
 private:
-
   /// Dof key for the member functions that do not have access to the coupled Dof manager
   string m_faceDofKey;
 
@@ -178,9 +194,8 @@ private:
 
   /// region filter used in flux assembly
   SortedArray< localIndex > m_regionFilter;
-
 };
 
 } /* namespace geosx */
 
-#endif //GEOSX_PHYSICSSOLVERS_FLUIDFLOW_SINGLEPHASEHYBRIDFVM_HPP_
+#endif  //GEOSX_PHYSICSSOLVERS_FLUIDFLOW_SINGLEPHASEHYBRIDFVM_HPP_

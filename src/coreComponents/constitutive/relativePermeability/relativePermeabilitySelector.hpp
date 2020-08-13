@@ -26,41 +26,44 @@
 
 namespace geosx
 {
-
 namespace constitutive
 {
-
 #ifndef PASSTHROUGH_HANDLE_CASE
-#define PASSTHROUGH_HANDLE_CASE( MODEL ) \
-  if( dynamicCast< MODEL * >( &relPerm ) ) \
-  { \
-    lambda( static_cast< MODEL & >( relPerm ) ); \
-    return true; \
-  }
+  #define PASSTHROUGH_HANDLE_CASE( MODEL )         \
+    if( dynamicCast< MODEL * >( &relPerm ) )       \
+    {                                              \
+      lambda( static_cast< MODEL & >( relPerm ) ); \
+      return true;                                 \
+    }
 
 template< typename LAMBDA >
-void constitutiveUpdatePassThru( RelativePermeabilityBase const & relPerm,
-                                 LAMBDA && lambda )
+void
+constitutiveUpdatePassThru( RelativePermeabilityBase const & relPerm,
+                            LAMBDA && lambda )
 {
-  ConstitutivePassThruHandler< BrooksCoreyRelativePermeability,
-                               BrooksCoreyBakerRelativePermeability,
-                               VanGenuchtenBakerRelativePermeability >::Execute( relPerm, std::forward< LAMBDA >( lambda ) );
+  ConstitutivePassThruHandler<
+    BrooksCoreyRelativePermeability,
+    BrooksCoreyBakerRelativePermeability,
+    VanGenuchtenBakerRelativePermeability >::Execute( relPerm,
+                                                      std::forward< LAMBDA >( lambda ) );
 }
 
 template< typename LAMBDA >
-void constitutiveUpdatePassThru( RelativePermeabilityBase & relPerm,
-                                 LAMBDA && lambda )
+void
+constitutiveUpdatePassThru( RelativePermeabilityBase & relPerm, LAMBDA && lambda )
 {
-  ConstitutivePassThruHandler< BrooksCoreyRelativePermeability,
-                               BrooksCoreyBakerRelativePermeability,
-                               VanGenuchtenBakerRelativePermeability >::Execute( relPerm, std::forward< LAMBDA >( lambda ) );
+  ConstitutivePassThruHandler<
+    BrooksCoreyRelativePermeability,
+    BrooksCoreyBakerRelativePermeability,
+    VanGenuchtenBakerRelativePermeability >::Execute( relPerm,
+                                                      std::forward< LAMBDA >( lambda ) );
 }
 
-#undef PASSTHROUGH_HANDLE_CASE
+  #undef PASSTHROUGH_HANDLE_CASE
 #endif
 
-} // namespace constitutive
+}  // namespace constitutive
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif //GEOSX_CONSTITUTIVE_RELATIVEPERMEABILITY_RELATIVEPERMEABILITYSELECTOR_HPP
+#endif  //GEOSX_CONSTITUTIVE_RELATIVEPERMEABILITY_RELATIVEPERMEABILITYSELECTOR_HPP

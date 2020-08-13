@@ -12,7 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-
 /**
  * @file ConstitutivePassThru.hpp
  */
@@ -30,7 +29,6 @@ namespace geosx
 {
 namespace constitutive
 {
-
 /**
  * @struct ConstitutivePassThru
  * @brief Struct to facilitate launching of lambda functions with a compile
@@ -49,40 +47,39 @@ struct ConstitutivePassThru;
 template<>
 struct ConstitutivePassThru< SolidBase >
 {
-
   template< typename LAMBDA >
-  static
-  void Execute( ConstitutiveBase * const constitutiveRelation,
-                LAMBDA && lambda )
+  static void
+  Execute( ConstitutiveBase * const constitutiveRelation,
+           LAMBDA && lambda )
   {
-    GEOSX_ERROR_IF( constitutiveRelation == nullptr, "ConstitutiveBase* == nullptr" );
+    GEOSX_ERROR_IF( constitutiveRelation == nullptr,
+                    "ConstitutiveBase* == nullptr" );
 
     if( dynamic_cast< LinearElasticIsotropic * >( constitutiveRelation ) )
     {
-      lambda( static_cast< LinearElasticIsotropic * >( constitutiveRelation) );
+      lambda( static_cast< LinearElasticIsotropic * >( constitutiveRelation ) );
     }
     else if( dynamic_cast< LinearElasticTransverseIsotropic * >( constitutiveRelation ) )
     {
-      lambda( static_cast< LinearElasticTransverseIsotropic * >( constitutiveRelation) );
+      lambda( static_cast< LinearElasticTransverseIsotropic * >( constitutiveRelation ) );
     }
     else if( dynamic_cast< LinearElasticAnisotropic * >( constitutiveRelation ) )
     {
-      lambda( static_cast< LinearElasticAnisotropic * >( constitutiveRelation) );
+      lambda( static_cast< LinearElasticAnisotropic * >( constitutiveRelation ) );
     }
     else
     {
       string name;
-      if( constitutiveRelation !=nullptr )
+      if( constitutiveRelation != nullptr )
       {
         name = constitutiveRelation->getName();
       }
-      GEOSX_ERROR( "ConstitutivePassThru<SolidBase>::Execute( "<<
-                   constitutiveRelation<<" ) failed. ( "<<
-                   constitutiveRelation<<" ) is named "<<name );
+      GEOSX_ERROR( "ConstitutivePassThru<SolidBase>::Execute( "
+                   << constitutiveRelation << " ) failed. ( "
+                   << constitutiveRelation << " ) is named " << name );
     }
   }
 };
-
 
 /**
  * Specialization for the NullModel.
@@ -91,11 +88,12 @@ template<>
 struct ConstitutivePassThru< NullModel >
 {
   template< typename LAMBDA >
-  static
-  void Execute( ConstitutiveBase * const constitutiveRelation,
-                LAMBDA && lambda )
+  static void
+  Execute( ConstitutiveBase * const constitutiveRelation,
+           LAMBDA && lambda )
   {
-    GEOSX_ERROR_IF( constitutiveRelation == nullptr, "ConstitutiveBase* == nullptr" );
+    GEOSX_ERROR_IF( constitutiveRelation == nullptr,
+                    "ConstitutiveBase* == nullptr" );
 
     if( dynamic_cast< NullModel * >( constitutiveRelation ) )
     {
@@ -104,18 +102,16 @@ struct ConstitutivePassThru< NullModel >
     else
     {
       string name;
-      if( constitutiveRelation !=nullptr )
+      if( constitutiveRelation != nullptr )
       {
         name = constitutiveRelation->getName();
       }
-      GEOSX_ERROR( "ConstitutivePassThru<NullModel>::Execute( "<<
-                   constitutiveRelation<<" ) failed. ( "<<
-                   constitutiveRelation<<" ) is named "<<name );
-
+      GEOSX_ERROR( "ConstitutivePassThru<NullModel>::Execute( "
+                   << constitutiveRelation << " ) failed. ( "
+                   << constitutiveRelation << " ) is named " << name );
     }
   }
 };
-
 
 /**
  * Specialization for the PoroElastic models.
@@ -124,40 +120,45 @@ template<>
 struct ConstitutivePassThru< PoroElasticBase >
 {
   template< typename LAMBDA >
-  static
-  void Execute( ConstitutiveBase * const constitutiveRelation,
-                LAMBDA && lambda )
+  static void
+  Execute( ConstitutiveBase * const constitutiveRelation,
+           LAMBDA && lambda )
   {
-    GEOSX_ERROR_IF( constitutiveRelation == nullptr, "ConstitutiveBase* == nullptr" );
+    GEOSX_ERROR_IF( constitutiveRelation == nullptr,
+                    "ConstitutiveBase* == nullptr" );
 
     if( dynamic_cast< PoroElastic< LinearElasticIsotropic > * >( constitutiveRelation ) )
     {
-      lambda( static_cast< PoroElastic< LinearElasticIsotropic > * >( constitutiveRelation) );
+      lambda(
+        static_cast< PoroElastic< LinearElasticIsotropic > * >( constitutiveRelation ) );
     }
-    else if( dynamic_cast< PoroElastic< LinearElasticTransverseIsotropic > * >( constitutiveRelation ) )
+    else if( dynamic_cast< PoroElastic< LinearElasticTransverseIsotropic > * >(
+               constitutiveRelation ) )
     {
-      lambda( static_cast< PoroElastic< LinearElasticTransverseIsotropic > * >( constitutiveRelation) );
+      lambda( static_cast< PoroElastic< LinearElasticTransverseIsotropic > * >(
+        constitutiveRelation ) );
     }
-    else if( dynamic_cast< PoroElastic< LinearElasticAnisotropic > * >( constitutiveRelation ) )
+    else if( dynamic_cast< PoroElastic< LinearElasticAnisotropic > * >(
+               constitutiveRelation ) )
     {
-      lambda( static_cast< PoroElastic< LinearElasticAnisotropic > * >( constitutiveRelation) );
+      lambda( static_cast< PoroElastic< LinearElasticAnisotropic > * >(
+        constitutiveRelation ) );
     }
     else
     {
       string name;
-      if( constitutiveRelation !=nullptr )
+      if( constitutiveRelation != nullptr )
       {
         name = constitutiveRelation->getName();
       }
-      GEOSX_ERROR( "ConstitutivePassThru<SolidBase>::Execute( "<<
-                   constitutiveRelation<<" ) failed. ( "<<
-                   constitutiveRelation<<" ) is named "<<name );
+      GEOSX_ERROR( "ConstitutivePassThru<SolidBase>::Execute( "
+                   << constitutiveRelation << " ) failed. ( "
+                   << constitutiveRelation << " ) is named " << name );
     }
   }
 };
 
-
-}
-}
+}  // namespace constitutive
+}  // namespace geosx
 
 #endif /* GEOSX_CONSTITUTIVE_CONSTITUTIVEPASSTHRU_HPP_ */

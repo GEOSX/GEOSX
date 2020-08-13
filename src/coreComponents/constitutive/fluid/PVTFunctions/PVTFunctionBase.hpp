@@ -24,61 +24,71 @@
 
 namespace geosx
 {
-
 namespace PVTProps
 {
-
-enum class PVTFuncType {UNKNOWN, DENSITY, VISCOSITY};
+enum class PVTFuncType
+{
+  UNKNOWN,
+  DENSITY,
+  VISCOSITY
+};
 
 class PVTFunction
 {
 public:
-
-  PVTFunction( string const & name, string_array const & componentNames, real64_array const & componentMolarWeight ):
+  PVTFunction( string const & name,
+               string_array const & componentNames,
+               real64_array const & componentMolarWeight ) :
     m_functionName( name ),
     m_componentNames( componentNames ),
     m_componentMolarWeight( componentMolarWeight )
   {}
 
-  virtual ~PVTFunction(){}
+  virtual ~PVTFunction()
+  {}
 
-
-  using CatalogInterface = dataRepository::CatalogInterface< PVTFunction, string_array const &,
-                                                             string_array const &,
-                                                             real64_array const & >;
-  static typename CatalogInterface::CatalogType & GetCatalog()
+  using CatalogInterface =
+    dataRepository::CatalogInterface< PVTFunction,
+                                      string_array const &,
+                                      string_array const &,
+                                      real64_array const & >;
+  static typename CatalogInterface::CatalogType &
+  GetCatalog()
   {
     static CatalogInterface::CatalogType catalog;
     return catalog;
   }
-  virtual string GetCatalogName() = 0;
+  virtual string
+  GetCatalogName() = 0;
 
-
-  string const & FunctionName() const
+  string const &
+  FunctionName() const
   {
     return m_functionName;
   }
 
-  virtual PVTFuncType FunctionType() const = 0;
+  virtual PVTFuncType
+  FunctionType() const = 0;
 
   //phase density/viscosity
   //input: P, T, phaseCompFraction
   //output: phase density/viscoty
 
-  virtual void Evaluation( EvalVarArgs const & pressure, EvalVarArgs const & temperature, arraySlice1d< EvalVarArgs const > const & phaseComposition,
-                           EvalVarArgs & value, bool useMass = 0 ) const = 0;
+  virtual void
+  Evaluation( EvalVarArgs const & pressure,
+              EvalVarArgs const & temperature,
+              arraySlice1d< EvalVarArgs const > const & phaseComposition,
+              EvalVarArgs & value,
+              bool useMass = 0 ) const = 0;
 
 protected:
-
   string m_functionName;
   string_array m_componentNames;
   real64_array m_componentMolarWeight;
-
-
 };
 
-}
+}  // namespace PVTProps
 
-}
+}  // namespace geosx
 
-#endif //GEOSX_CONSTITUTIVE_FLUID_PVTFUNCTIONS_PVTFUNCTIONBASE_HPP_
+#endif  //GEOSX_CONSTITUTIVE_FLUID_PVTFUNCTIONS_PVTFUNCTIONBASE_HPP_

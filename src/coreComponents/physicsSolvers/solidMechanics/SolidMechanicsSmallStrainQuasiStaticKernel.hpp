@@ -23,10 +23,8 @@
 
 namespace geosx
 {
-
 namespace SolidMechanicsLagrangianFEMKernels
 {
-
 /**
  * @brief Implements kernels for solving quasi-static equilibrium.
  * @copydoc geosx::finiteElement::ImplicitKernelBase
@@ -51,36 +49,27 @@ namespace SolidMechanicsLagrangianFEMKernels
  * the test and trial spaces are specified as `3` when specifying the base
  * class.
  */
-template< typename SUBREGION_TYPE,
-          typename CONSTITUTIVE_TYPE,
-          typename FE_TYPE >
-class QuasiStatic :
-  public finiteElement::ImplicitKernelBase< SUBREGION_TYPE,
-                                            CONSTITUTIVE_TYPE,
-                                            FE_TYPE,
-                                            3,
-                                            3 >
+template< typename SUBREGION_TYPE, typename CONSTITUTIVE_TYPE, typename FE_TYPE >
+class QuasiStatic
+  : public finiteElement::
+      ImplicitKernelBase< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE, 3, 3 >
 {
 public:
   /// Alias for the base class;
-  using Base = finiteElement::ImplicitKernelBase< SUBREGION_TYPE,
-                                                  CONSTITUTIVE_TYPE,
-                                                  FE_TYPE,
-                                                  3,
-                                                  3 >;
+  using Base =
+    finiteElement::ImplicitKernelBase< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE, 3, 3 >;
 
   /// Number of nodes per element...which is equal to the
   /// numTestSupportPointPerElem and numTrialSupportPointPerElem by definition.
   static constexpr int numNodesPerElem = Base::numTestSupportPointsPerElem;
-  using Base::numDofPerTestSupportPoint;
-  using Base::numDofPerTrialSupportPoint;
+  using Base::m_constitutiveUpdate;
   using Base::m_dofNumber;
   using Base::m_dofRankOffset;
+  using Base::m_elemsToNodes;
   using Base::m_matrix;
   using Base::m_rhs;
-  using Base::m_elemsToNodes;
-  using Base::m_constitutiveUpdate;
-
+  using Base::numDofPerTestSupportPoint;
+  using Base::numDofPerTrialSupportPoint;
 
   /**
    * @brief Constructor
@@ -97,7 +86,7 @@ public:
                globalIndex const rankOffset,
                CRSMatrixView< real64, globalIndex const > const & inputMatrix,
                arrayView1d< real64 > const & inputRhs,
-               real64 const (&inputGravityVector)[3] ):
+               real64 const ( &inputGravityVector )[3] ) :
     Base( nodeManager,
           edgeManager,
           faceManager,
@@ -108,14 +97,15 @@ public:
           rankOffset,
           inputMatrix,
           inputRhs ),
-    m_disp( nodeManager.totalDisplacement()),
-    m_uhat( nodeManager.incrementalDisplacement()),
+    m_disp( nodeManager.totalDisplacement() ),
+    m_uhat( nodeManager.incrementalDisplacement() ),
     m_dNdX( elementSubRegion.dNdX() ),
     m_detJ( elementSubRegion.detJ() ),
-    m_gravityVector{ inputGravityVector[0], inputGravityVector[1], inputGravityVector[2] },
-    m_density( inputConstitutiveType->getDensity())
+    m_gravityVector { inputGravityVector[0],
+                      inputGravityVector[1],
+                      inputGravityVector[2] },
+    m_density( inputConstitutiveType->getDensity() )
   {}
-
 
   //*****************************************************************************
   /**
@@ -127,15 +117,14 @@ public:
    */
   struct StackVariables : public Base::StackVariables
   {
-public:
-
+  public:
     /// Constructor.
     GEOSX_HOST_DEVICE
-    StackVariables():
+    StackVariables() :
       Base::StackVariables(),
-                                       u_local(),
-                                       uhat_local(),
-                                       constitutiveStiffness{ {0.0} }
+      u_local(),
+      uhat_local(),
+      constitutiveStiffness { { 0.0 } }
     {}
 
     /// Stack storage for the element local nodal displacement
@@ -145,7 +134,7 @@ public:
     real64 uhat_local[numNodesPerElem][numDofPerTrialSupportPoint];
 
     /// Stack storage for the constitutive stiffness at a quadrature point.
-    real64 constitutiveStiffness[ 6 ][ 6 ];
+    real64 constitutiveStiffness[6][6];
   };
   //*****************************************************************************
 
@@ -159,22 +148,21 @@ public:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  void setup( localIndex const k,
-              StackVariables & stack ) const
+  void
+  setup( localIndex const k, StackVariables & stack ) const
   {
-    for( localIndex a=0; a<numNodesPerElem; ++a )
+    for( localIndex a = 0; a < numNodesPerElem; ++a )
     {
       localIndex const localNodeIndex = m_elemsToNodes( k, a );
 
-      for( int i=0; i<3; ++i )
+      for( int i = 0; i < 3; ++i )
       {
-        stack.u_local[ a ][i] = m_disp[ localNodeIndex ][i];
-        stack.uhat_local[ a ][i] = m_uhat[ localNodeIndex ][i];
-        stack.localRowDofIndex[a*3+i] = m_dofNumber[localNodeIndex]+i;
-        stack.localColDofIndex[a*3+i] = m_dofNumber[localNodeIndex]+i;
+        stack.u_local[a][i] = m_disp[localNodeIndex][i];
+        stack.uhat_local[a][i] = m_uhat[localNodeIndex][i];
+        stack.localRowDofIndex[a * 3 + i] = m_dofNumber[localNodeIndex] + i;
+        stack.localColDofIndex[a * 3 + i] = m_dofNumber[localNodeIndex] + i;
       }
     }
-
   }
 
   /**
@@ -186,24 +174,25 @@ public:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  void quadraturePointStateUpdate( localIndex const k,
-                                   localIndex const q,
-                                   StackVariables & stack ) const
+  void
+  quadraturePointStateUpdate( localIndex const k,
+                              localIndex const q,
+                              StackVariables & stack ) const
   {
-    real64 strainInc[6] = {0};
+    real64 strainInc[6] = { 0 };
     for( localIndex a = 0; a < numNodesPerElem; ++a )
     {
       strainInc[0] = strainInc[0] + m_dNdX( k, q, a, 0 ) * stack.uhat_local[a][0];
       strainInc[1] = strainInc[1] + m_dNdX( k, q, a, 1 ) * stack.uhat_local[a][1];
       strainInc[2] = strainInc[2] + m_dNdX( k, q, a, 2 ) * stack.uhat_local[a][2];
       strainInc[3] = strainInc[3] + m_dNdX( k, q, a, 2 ) * stack.uhat_local[a][1] +
-                     m_dNdX( k, q, a, 1 ) * stack.uhat_local[a][2];
+        m_dNdX( k, q, a, 1 ) * stack.uhat_local[a][2];
 
       strainInc[4] = strainInc[4] + m_dNdX( k, q, a, 2 ) * stack.uhat_local[a][0] +
-                     m_dNdX( k, q, a, 0 ) * stack.uhat_local[a][2];
+        m_dNdX( k, q, a, 0 ) * stack.uhat_local[a][2];
 
       strainInc[5] = strainInc[5] + m_dNdX( k, q, a, 1 ) * stack.uhat_local[a][0] +
-                     m_dNdX( k, q, a, 0 ) * stack.uhat_local[a][1];
+        m_dNdX( k, q, a, 0 ) * stack.uhat_local[a][1];
     }
 
     m_constitutiveUpdate.SmallStrain( k, q, strainInc );
@@ -211,7 +200,6 @@ public:
     GEOSX_UNUSED_VAR( q )
     m_constitutiveUpdate.GetStiffness( k, stack.constitutiveStiffness );
   }
-
 
   /**
    * @brief Internal struct to provide no-op defaults used in the inclusion
@@ -226,8 +214,10 @@ public:
      * @param a Node index for the row.
      * @param b Node index for the col.
      */
-    GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE constexpr
-    void operator() ( localIndex const a, localIndex const b )
+    GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE constexpr void
+    operator()(
+      localIndex const a,
+      localIndex const b )
     {
       GEOSX_UNUSED_VAR( a );
       GEOSX_UNUSED_VAR( b );
@@ -238,8 +228,8 @@ public:
      *   integrating the divergence to produce nodal forces.
      * @param stress The stress array.
      */
-    GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE constexpr
-    void operator() ( real64 (& stress)[6] )
+    GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE constexpr void operator()(
+      real64 ( &stress )[6] )
     {
       GEOSX_UNUSED_VAR( stress );
     }
@@ -254,47 +244,65 @@ public:
    * the incremental displacement is filled into the local element jacobian.
    */
   template< typename DYNAMICS_LAMBDA = NoOpFunctors >
-  GEOSX_HOST_DEVICE
-  GEOSX_FORCE_INLINE
-  void quadraturePointJacobianContribution( localIndex const k,
-                                            localIndex const q,
-                                            StackVariables & stack,
-                                            DYNAMICS_LAMBDA && dynamicsTerms = NoOpFunctors{} ) const
+  GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE void
+  quadraturePointJacobianContribution(
+    localIndex const k,
+    localIndex const q,
+    StackVariables & stack,
+    DYNAMICS_LAMBDA && dynamicsTerms = NoOpFunctors {} ) const
   {
-    for( localIndex a=0; a<numNodesPerElem; ++a )
+    for( localIndex a = 0; a < numNodesPerElem; ++a )
     {
-      for( localIndex b=0; b<numNodesPerElem; ++b )
+      for( localIndex b = 0; b < numNodesPerElem; ++b )
       {
-        real64 const (&c)[6][6] = stack.constitutiveStiffness;
-        stack.localJacobian[ a*3+0 ][ b*3+0 ] -= ( c[0][0]*m_dNdX( k, q, a, 0 )*m_dNdX( k, q, b, 0 ) +
-                                                   c[5][5]*m_dNdX( k, q, a, 1 )*m_dNdX( k, q, b, 1 ) +
-                                                   c[4][4]*m_dNdX( k, q, a, 2 )*m_dNdX( k, q, b, 2 ) ) * m_detJ( k, q );
+        real64 const( &c )[6][6] = stack.constitutiveStiffness;
+        stack.localJacobian[a * 3 + 0][b * 3 + 0] -=
+          ( c[0][0] * m_dNdX( k, q, a, 0 ) * m_dNdX( k, q, b, 0 ) +
+            c[5][5] * m_dNdX( k, q, a, 1 ) * m_dNdX( k, q, b, 1 ) +
+            c[4][4] * m_dNdX( k, q, a, 2 ) * m_dNdX( k, q, b, 2 ) ) *
+          m_detJ( k, q );
 
-        stack.localJacobian[ a*3+0 ][ b*3+1 ] -= ( c[5][5]*m_dNdX( k, q, a, 1 )*m_dNdX( k, q, b, 0 ) +
-                                                   c[0][1]*m_dNdX( k, q, a, 0 )*m_dNdX( k, q, b, 1 ) ) * m_detJ( k, q );
+        stack.localJacobian[a * 3 + 0][b * 3 + 1] -=
+          ( c[5][5] * m_dNdX( k, q, a, 1 ) * m_dNdX( k, q, b, 0 ) +
+            c[0][1] * m_dNdX( k, q, a, 0 ) * m_dNdX( k, q, b, 1 ) ) *
+          m_detJ( k, q );
 
-        stack.localJacobian[ a*3+0 ][ b*3+2 ] -= ( c[4][4]*m_dNdX( k, q, a, 2 )*m_dNdX( k, q, b, 0 ) +
-                                                   c[0][2]*m_dNdX( k, q, a, 0 )*m_dNdX( k, q, b, 2 ) ) * m_detJ( k, q );
+        stack.localJacobian[a * 3 + 0][b * 3 + 2] -=
+          ( c[4][4] * m_dNdX( k, q, a, 2 ) * m_dNdX( k, q, b, 0 ) +
+            c[0][2] * m_dNdX( k, q, a, 0 ) * m_dNdX( k, q, b, 2 ) ) *
+          m_detJ( k, q );
 
-        stack.localJacobian[ a*3+1 ][ b*3+1 ] -= ( c[5][5]*m_dNdX( k, q, a, 0 )*m_dNdX( k, q, b, 0 ) +
-                                                   c[1][1]*m_dNdX( k, q, a, 1 )*m_dNdX( k, q, b, 1 ) +
-                                                   c[3][3]*m_dNdX( k, q, a, 2 )*m_dNdX( k, q, b, 2 ) ) * m_detJ( k, q );
+        stack.localJacobian[a * 3 + 1][b * 3 + 1] -=
+          ( c[5][5] * m_dNdX( k, q, a, 0 ) * m_dNdX( k, q, b, 0 ) +
+            c[1][1] * m_dNdX( k, q, a, 1 ) * m_dNdX( k, q, b, 1 ) +
+            c[3][3] * m_dNdX( k, q, a, 2 ) * m_dNdX( k, q, b, 2 ) ) *
+          m_detJ( k, q );
 
-        stack.localJacobian[ a*3+1 ][ b*3+0 ] -= ( c[0][1]*m_dNdX( k, q, a, 1 )*m_dNdX( k, q, b, 0 ) +
-                                                   c[5][5]*m_dNdX( k, q, a, 0 )*m_dNdX( k, q, b, 1 ) ) * m_detJ( k, q );
+        stack.localJacobian[a * 3 + 1][b * 3 + 0] -=
+          ( c[0][1] * m_dNdX( k, q, a, 1 ) * m_dNdX( k, q, b, 0 ) +
+            c[5][5] * m_dNdX( k, q, a, 0 ) * m_dNdX( k, q, b, 1 ) ) *
+          m_detJ( k, q );
 
-        stack.localJacobian[ a*3+1 ][ b*3+2 ] -= ( c[3][3]*m_dNdX( k, q, a, 2 )*m_dNdX( k, q, b, 1 ) +
-                                                   c[1][2]*m_dNdX( k, q, a, 1 )*m_dNdX( k, q, b, 2 ) ) * m_detJ( k, q );
+        stack.localJacobian[a * 3 + 1][b * 3 + 2] -=
+          ( c[3][3] * m_dNdX( k, q, a, 2 ) * m_dNdX( k, q, b, 1 ) +
+            c[1][2] * m_dNdX( k, q, a, 1 ) * m_dNdX( k, q, b, 2 ) ) *
+          m_detJ( k, q );
 
-        stack.localJacobian[ a*3+2 ][ b*3+0 ] -= ( c[0][2]*m_dNdX( k, q, a, 2 )*m_dNdX( k, q, b, 0 ) +
-                                                   c[4][4]*m_dNdX( k, q, a, 0 )*m_dNdX( k, q, b, 2 ) ) * m_detJ( k, q );
+        stack.localJacobian[a * 3 + 2][b * 3 + 0] -=
+          ( c[0][2] * m_dNdX( k, q, a, 2 ) * m_dNdX( k, q, b, 0 ) +
+            c[4][4] * m_dNdX( k, q, a, 0 ) * m_dNdX( k, q, b, 2 ) ) *
+          m_detJ( k, q );
 
-        stack.localJacobian[ a*3+2 ][ b*3+1 ] -= ( c[1][2]*m_dNdX( k, q, a, 2 )*m_dNdX( k, q, b, 1 ) +
-                                                   c[3][3]*m_dNdX( k, q, a, 1 )*m_dNdX( k, q, b, 2 ) ) * m_detJ( k, q );
+        stack.localJacobian[a * 3 + 2][b * 3 + 1] -=
+          ( c[1][2] * m_dNdX( k, q, a, 2 ) * m_dNdX( k, q, b, 1 ) +
+            c[3][3] * m_dNdX( k, q, a, 1 ) * m_dNdX( k, q, b, 2 ) ) *
+          m_detJ( k, q );
 
-        stack.localJacobian[ a*3+2 ][ b*3+2 ] -= ( c[4][4]*m_dNdX( k, q, a, 0 )*m_dNdX( k, q, b, 0 ) +
-                                                   c[3][3]*m_dNdX( k, q, a, 1 )*m_dNdX( k, q, b, 1 ) +
-                                                   c[2][2]*m_dNdX( k, q, a, 2 )*m_dNdX( k, q, b, 2 ) ) * m_detJ( k, q );
+        stack.localJacobian[a * 3 + 2][b * 3 + 2] -=
+          ( c[4][4] * m_dNdX( k, q, a, 0 ) * m_dNdX( k, q, b, 0 ) +
+            c[3][3] * m_dNdX( k, q, a, 1 ) * m_dNdX( k, q, b, 1 ) +
+            c[2][2] * m_dNdX( k, q, a, 2 ) * m_dNdX( k, q, b, 2 ) ) *
+          m_detJ( k, q );
 
         dynamicsTerms( a, b );
       }
@@ -311,12 +319,12 @@ public:
    * yielding the nodal force (residual) contributions.
    */
   template< typename STRESS_MODIFIER = NoOpFunctors >
-  GEOSX_HOST_DEVICE
-  GEOSX_FORCE_INLINE
-  void quadraturePointResidualContribution( localIndex const k,
-                                            localIndex const q,
-                                            StackVariables & stack,
-                                            STRESS_MODIFIER && stressModifier = NoOpFunctors{} ) const
+  GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE void
+  quadraturePointResidualContribution(
+    localIndex const k,
+    localIndex const q,
+    StackVariables & stack,
+    STRESS_MODIFIER && stressModifier = NoOpFunctors {} ) const
   {
     real64 stress[6] = { m_constitutiveUpdate.m_stress( k, q, 0 ),
                          m_constitutiveUpdate.m_stress( k, q, 1 ),
@@ -335,18 +343,18 @@ public:
     FE_TYPE::shapeFunctionValues( q, N );
     for( localIndex a = 0; a < numNodesPerElem; ++a )
     {
-      stack.localResidual[ a * 3 + 0 ] -= ( stress[ 0 ] * m_dNdX( k, q, a, 0 ) +
-                                            stress[ 5 ] * m_dNdX( k, q, a, 1 ) +
-                                            stress[ 4 ] * m_dNdX( k, q, a, 2 ) -
-                                            gravityForce[0] * N[a] ) * m_detJ( k, q );
-      stack.localResidual[ a * 3 + 1 ] -= ( stress[ 5 ] * m_dNdX( k, q, a, 0 ) +
-                                            stress[ 1 ] * m_dNdX( k, q, a, 1 ) +
-                                            stress[ 3 ] * m_dNdX( k, q, a, 2 ) -
-                                            gravityForce[1] * N[a] ) * m_detJ( k, q );
-      stack.localResidual[ a * 3 + 2 ] -= ( stress[ 4 ] * m_dNdX( k, q, a, 0 ) +
-                                            stress[ 3 ] * m_dNdX( k, q, a, 1 ) +
-                                            stress[ 2 ] * m_dNdX( k, q, a, 2 ) -
-                                            gravityForce[2] * N[a] ) * m_detJ( k, q );
+      stack.localResidual[a * 3 + 0] -=
+        ( stress[0] * m_dNdX( k, q, a, 0 ) + stress[5] * m_dNdX( k, q, a, 1 ) +
+          stress[4] * m_dNdX( k, q, a, 2 ) - gravityForce[0] * N[a] ) *
+        m_detJ( k, q );
+      stack.localResidual[a * 3 + 1] -=
+        ( stress[5] * m_dNdX( k, q, a, 0 ) + stress[1] * m_dNdX( k, q, a, 1 ) +
+          stress[3] * m_dNdX( k, q, a, 2 ) - gravityForce[1] * N[a] ) *
+        m_detJ( k, q );
+      stack.localResidual[a * 3 + 2] -=
+        ( stress[4] * m_dNdX( k, q, a, 0 ) + stress[3] * m_dNdX( k, q, a, 1 ) +
+          stress[2] * m_dNdX( k, q, a, 2 ) - gravityForce[2] * N[a] ) *
+        m_detJ( k, q );
     }
   }
 
@@ -355,8 +363,8 @@ public:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  real64 complete( localIndex const k,
-                   StackVariables & stack ) const
+  real64
+  complete( localIndex const k, StackVariables & stack ) const
   {
     GEOSX_UNUSED_VAR( k );
     real64 maxForce = 0;
@@ -365,23 +373,27 @@ public:
     {
       for( int dim = 0; dim < numDofPerTestSupportPoint; ++dim )
       {
-        localIndex const dof = LvArray::integerConversion< localIndex >( stack.localRowDofIndex[ numDofPerTestSupportPoint * localNode + dim ] - m_dofRankOffset );
+        localIndex const dof = LvArray::integerConversion< localIndex >(
+          stack.localRowDofIndex[numDofPerTestSupportPoint * localNode + dim] -
+          m_dofRankOffset );
         if( dof < 0 || dof >= m_matrix.numRows() ) continue;
-        m_matrix.template addToRowBinarySearchUnsorted< parallelDeviceAtomic >( dof,
-                                                                                stack.localRowDofIndex,
-                                                                                stack.localJacobian[ numDofPerTestSupportPoint * localNode + dim ],
-                                                                                numNodesPerElem * numDofPerTrialSupportPoint );
+        m_matrix.template addToRowBinarySearchUnsorted< parallelDeviceAtomic >(
+          dof,
+          stack.localRowDofIndex,
+          stack.localJacobian[numDofPerTestSupportPoint * localNode + dim],
+          numNodesPerElem * numDofPerTrialSupportPoint );
 
-        RAJA::atomicAdd< parallelDeviceAtomic >( &m_rhs[ dof ], stack.localResidual[ numDofPerTestSupportPoint * localNode + dim ] );
-        maxForce = fmax( maxForce, fabs( stack.localResidual[ numDofPerTestSupportPoint * localNode + dim ] ) );
+        RAJA::atomicAdd< parallelDeviceAtomic >(
+          &m_rhs[dof],
+          stack.localResidual[numDofPerTestSupportPoint * localNode + dim] );
+        maxForce = fmax(
+          maxForce,
+          fabs( stack.localResidual[numDofPerTestSupportPoint * localNode + dim] ) );
       }
     }
 
-
     return maxForce;
   }
-
-
 
 protected:
   /// The rank-global displacement array.
@@ -401,14 +413,12 @@ protected:
 
   /// The rank global density
   arrayView2d< real64 const > const m_density;
-
 };
 
+}  // namespace SolidMechanicsLagrangianFEMKernels
 
-} // namespace SolidMechanicsLagrangianFEMKernels
-
-} // namespace geosx
+}  // namespace geosx
 
 #include "finiteElement/kernelInterface/SparsityKernelBase.hpp"
 
-#endif // GEOSX_PHYSICSSOLVERS_SOLIDMECHANICS_SOLIDMECHANICSSMALLSTRAINQUASISTATIC_HPP_
+#endif  // GEOSX_PHYSICSSOLVERS_SOLIDMECHANICS_SOLIDMECHANICSSMALLSTRAINQUASISTATIC_HPP_

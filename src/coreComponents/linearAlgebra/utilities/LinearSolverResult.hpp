@@ -25,7 +25,6 @@
 
 namespace geosx
 {
-
 /**
  * @brief Results/stats of a linear solve
  *
@@ -64,12 +63,13 @@ struct LinearSolverResult
    * @brief Check whether the last solve was successful.
    * @return @p true if last solve was successful, @p false otherwise
    */
-  bool success() const
+  bool
+  success() const
   {
     return status == Status::Success;
   }
 };
 
-}
+}  // namespace geosx
 
-#endif //GEOSX_LINEARALGEBRA_UTILITIES_LINEARSOLVERRESULT_HPP_
+#endif  //GEOSX_LINEARALGEBRA_UTILITIES_LINEARSOLVERRESULT_HPP_

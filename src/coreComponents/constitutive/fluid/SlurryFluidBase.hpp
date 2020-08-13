@@ -23,40 +23,48 @@
 
 namespace geosx
 {
-
 namespace constitutive
 {
-
 /**
  * @brief Base class for slurry fluid model kernel wrappers.
  */
 class SlurryFluidBaseUpdate
 {
 public:
-
   /**
    * @brief Get number of elements in this wrapper.
    * @return number of elements
    */
   GEOSX_HOST_DEVICE
-  localIndex numElems() const { return m_density.size( 0 ); }
+  localIndex
+  numElems() const
+  {
+    return m_density.size( 0 );
+  }
 
   /**
    * @brief Get number of gauss points per element.
    * @return number of gauss points per element
    */
   GEOSX_HOST_DEVICE
-  localIndex numGauss() const { return m_density.size( 1 ); };
+  localIndex
+  numGauss() const
+  {
+    return m_density.size( 1 );
+  };
 
   /**
    * @brief Get number of fluid components.
    * @return number of fluid components
    */
   GEOSX_HOST_DEVICE
-  localIndex numFluidComponents() const { return m_defaultDensity.size(); }
+  localIndex
+  numFluidComponents() const
+  {
+    return m_defaultDensity.size();
+  }
 
 protected:
-
   /**
    * @brief
    * @param defaultDensity
@@ -105,8 +113,8 @@ protected:
                          arrayView2d< real64 > const & viscosity,
                          arrayView2d< real64 > const & dVisc_dPres,
                          arrayView2d< real64 > const & dVisc_dProppantConc,
-                         arrayView3d< real64 > const & dVisc_dCompConc )
-    : m_defaultDensity( defaultDensity ),
+                         arrayView3d< real64 > const & dVisc_dCompConc ) :
+    m_defaultDensity( defaultDensity ),
     m_defaultCompressibility( defaultCompressibility ),
     m_defaultViscosity( defaultViscosity ),
     m_nIndices( nIndices ),
@@ -145,13 +153,15 @@ protected:
    * @brief Deleted copy assignment operator
    * @return reference to this object
    */
-  SlurryFluidBaseUpdate & operator=( SlurryFluidBaseUpdate const & ) = delete;
+  SlurryFluidBaseUpdate &
+  operator=( SlurryFluidBaseUpdate const & ) = delete;
 
   /**
    * @brief Deleted move assignment operator
    * @return reference to this object
    */
-  SlurryFluidBaseUpdate & operator=( SlurryFluidBaseUpdate && ) = delete;
+  SlurryFluidBaseUpdate &
+  operator=( SlurryFluidBaseUpdate && ) = delete;
 
   arrayView1d< real64 const > m_defaultDensity;
   arrayView1d< real64 const > m_defaultCompressibility;
@@ -185,7 +195,6 @@ protected:
   arrayView3d< real64 > m_dVisc_dCompConc;
 
 private:
-
   /**
    * @brief Perform a single point constitutive update.
    * @param[in] k first constitutive index (e.g. elem index)
@@ -197,13 +206,14 @@ private:
    * @param[in] isProppantBoundary proppant boundary flag
    */
   GEOSX_HOST_DEVICE
-  virtual void Update( localIndex const k,
-                       localIndex const q,
-                       real64 const pressure,
-                       real64 const proppantConcentration,
-                       arraySlice1d< real64 const > const & componentConcentration,
-                       real64 const shearRate,
-                       integer const isProppantBoundary ) const = 0;
+  virtual void
+  Update( localIndex const k,
+          localIndex const q,
+          real64 const pressure,
+          real64 const proppantConcentration,
+          arraySlice1d< real64 const > const & componentConcentration,
+          real64 const shearRate,
+          integer const isProppantBoundary ) const = 0;
 
   /**
    * @brief Perform a single point fluid property update.
@@ -214,11 +224,13 @@ private:
    * @param[in] shearRate shear rate for power-law fluid calculation
    */
   GEOSX_HOST_DEVICE
-  virtual void UpdateFluidProperty( localIndex const k,
-                                    localIndex const q,
-                                    real64 const pressure,
-                                    arraySlice1d< real64 const > const & componentConcentration,
-                                    real64 const shearRate ) const = 0;
+  virtual void
+  UpdateFluidProperty(
+    localIndex const k,
+    localIndex const q,
+    real64 const pressure,
+    arraySlice1d< real64 const > const & componentConcentration,
+    real64 const shearRate ) const = 0;
 
   /**
    * @brief Perform a single point fluid component property update.
@@ -228,11 +240,12 @@ private:
    * @param[in] componentconcentration fluid composition array
    */
   GEOSX_HOST_DEVICE
-  virtual void UpdateComponentDensity( localIndex const k,
-                                       localIndex const q,
-                                       real64 const pressure,
-                                       arraySlice1d< real64 const > const & componentConcentration ) const = 0;
-
+  virtual void
+  UpdateComponentDensity(
+    localIndex const k,
+    localIndex const q,
+    real64 const pressure,
+    arraySlice1d< real64 const > const & componentConcentration ) const = 0;
 };
 
 /**
@@ -241,119 +254,271 @@ private:
 class SlurryFluidBase : public ConstitutiveBase
 {
 public:
-
   SlurryFluidBase( std::string const & name, Group * const parent );
 
   virtual ~SlurryFluidBase() override;
 
   // *** ConstitutiveBase interface
 
-  virtual void DeliverClone( string const & name,
-                             Group * const parent,
-                             std::unique_ptr< ConstitutiveBase > & clone ) const override = 0;
+  virtual void
+  DeliverClone(
+    string const & name,
+    Group * const parent,
+    std::unique_ptr< ConstitutiveBase > & clone ) const override = 0;
 
-  virtual void AllocateConstitutiveData( dataRepository::Group * const parent,
-                                         localIndex const numConstitutivePointsPerParentIndex ) override;
+  virtual void
+  AllocateConstitutiveData(
+    dataRepository::Group * const parent,
+    localIndex const numConstitutivePointsPerParentIndex ) override;
 
   static constexpr localIndex MAX_NUM_COMPONENTS = 3;
 
-  localIndex numFluidComponents() const;
+  localIndex
+  numFluidComponents() const;
 
-  arrayView1d< real64 const > const & nIndex() const { return m_nIndices; }
-  arrayView1d< real64 > const & KIndex() const { return m_Ks; }
+  arrayView1d< real64 const > const &
+  nIndex() const
+  {
+    return m_nIndices;
+  }
+  arrayView1d< real64 > const &
+  KIndex() const
+  {
+    return m_Ks;
+  }
 
-  arrayView2d< real64 const > const & density() const { return m_density; }
-  arrayView2d< real64 > const & density() { return m_density; }
+  arrayView2d< real64 const > const &
+  density() const
+  {
+    return m_density;
+  }
+  arrayView2d< real64 > const &
+  density()
+  {
+    return m_density;
+  }
 
-  arrayView2d< real64 const > const & dDensity_dPressure() const { return m_dDens_dPres; }
-  arrayView2d< real64 > const & dDensity_dPressure() { return m_dDens_dPres; }
+  arrayView2d< real64 const > const &
+  dDensity_dPressure() const
+  {
+    return m_dDens_dPres;
+  }
+  arrayView2d< real64 > const &
+  dDensity_dPressure()
+  {
+    return m_dDens_dPres;
+  }
 
-  arrayView2d< real64 const > const & dDensity_dProppantConcentration() const { return m_dDens_dProppantConc; }
-  arrayView2d< real64 > const & dDensity_dProppantConcentration() { return m_dDens_dProppantConc; }
+  arrayView2d< real64 const > const &
+  dDensity_dProppantConcentration() const
+  {
+    return m_dDens_dProppantConc;
+  }
+  arrayView2d< real64 > const &
+  dDensity_dProppantConcentration()
+  {
+    return m_dDens_dProppantConc;
+  }
 
-  arrayView3d< real64 const > const & dDensity_dComponentConcentration() const { return m_dDens_dCompConc; }
-  arrayView3d< real64 > const & dDensity_dComponentConcentration() { return m_dDens_dCompConc; }
+  arrayView3d< real64 const > const &
+  dDensity_dComponentConcentration() const
+  {
+    return m_dDens_dCompConc;
+  }
+  arrayView3d< real64 > const &
+  dDensity_dComponentConcentration()
+  {
+    return m_dDens_dCompConc;
+  }
 
-  arrayView2d< real64 const > const & fluidDensity() const { return m_fluidDensity; }
-  arrayView2d< real64 > const & fluidDensity() { return m_fluidDensity; }
+  arrayView2d< real64 const > const &
+  fluidDensity() const
+  {
+    return m_fluidDensity;
+  }
+  arrayView2d< real64 > const &
+  fluidDensity()
+  {
+    return m_fluidDensity;
+  }
 
-  arrayView2d< real64 const > const & dFluidDensity_dPressure() const { return m_dFluidDens_dPres; }
-  arrayView2d< real64 > const & dFluidDensity_dPressure() { return m_dFluidDens_dPres; }
+  arrayView2d< real64 const > const &
+  dFluidDensity_dPressure() const
+  {
+    return m_dFluidDens_dPres;
+  }
+  arrayView2d< real64 > const &
+  dFluidDensity_dPressure()
+  {
+    return m_dFluidDens_dPres;
+  }
 
-  arrayView3d< real64 const > const & dFluidDensity_dComponentConcentration() const { return m_dFluidDens_dCompConc; }
-  arrayView3d< real64 > const & dFluidDensity_dComponentConcentration() { return m_dFluidDens_dCompConc; }
+  arrayView3d< real64 const > const &
+  dFluidDensity_dComponentConcentration() const
+  {
+    return m_dFluidDens_dCompConc;
+  }
+  arrayView3d< real64 > const &
+  dFluidDensity_dComponentConcentration()
+  {
+    return m_dFluidDens_dCompConc;
+  }
 
-  arrayView3d< real64 const > const & componentDensity() const { return m_componentDensity; }
-  arrayView3d< real64 > const & componentDensity()       { return m_componentDensity; }
+  arrayView3d< real64 const > const &
+  componentDensity() const
+  {
+    return m_componentDensity;
+  }
+  arrayView3d< real64 > const &
+  componentDensity()
+  {
+    return m_componentDensity;
+  }
 
-  arrayView3d< real64 const > const & dComponentDensity_dPressure() const { return m_dCompDens_dPres; }
-  arrayView3d< real64 > const & dComponentDensity_dPressure()       { return m_dCompDens_dPres; }
+  arrayView3d< real64 const > const &
+  dComponentDensity_dPressure() const
+  {
+    return m_dCompDens_dPres;
+  }
+  arrayView3d< real64 > const &
+  dComponentDensity_dPressure()
+  {
+    return m_dCompDens_dPres;
+  }
 
-  arrayView4d< real64 const > const & dComponentDensity_dComponentConcentration() const { return m_dCompDens_dCompConc; }
-  arrayView4d< real64 > const & dComponentDensity_dComponentConcentration()       { return m_dCompDens_dCompConc; }
+  arrayView4d< real64 const > const &
+  dComponentDensity_dComponentConcentration() const
+  {
+    return m_dCompDens_dCompConc;
+  }
+  arrayView4d< real64 > const &
+  dComponentDensity_dComponentConcentration()
+  {
+    return m_dCompDens_dCompConc;
+  }
 
-  arrayView2d< real64 const > const & fluidViscosity() const { return m_fluidViscosity; }
-  arrayView2d< real64 > const & fluidViscosity()       { return m_fluidViscosity; }
+  arrayView2d< real64 const > const &
+  fluidViscosity() const
+  {
+    return m_fluidViscosity;
+  }
+  arrayView2d< real64 > const &
+  fluidViscosity()
+  {
+    return m_fluidViscosity;
+  }
 
-  arrayView2d< real64 const > const & dFluidViscosity_dPressure() const { return m_dFluidVisc_dPres; }
-  arrayView2d< real64 > const & dFluidViscosity_dPressure()       { return m_dFluidVisc_dPres; }
+  arrayView2d< real64 const > const &
+  dFluidViscosity_dPressure() const
+  {
+    return m_dFluidVisc_dPres;
+  }
+  arrayView2d< real64 > const &
+  dFluidViscosity_dPressure()
+  {
+    return m_dFluidVisc_dPres;
+  }
 
-  arrayView3d< real64 const > const & dFluidViscosity_dComponentConcentration() const { return m_dFluidVisc_dCompConc; }
-  arrayView3d< real64 > const & dFluidViscosity_dComponentConcentration()       { return m_dFluidVisc_dCompConc; }
+  arrayView3d< real64 const > const &
+  dFluidViscosity_dComponentConcentration() const
+  {
+    return m_dFluidVisc_dCompConc;
+  }
+  arrayView3d< real64 > const &
+  dFluidViscosity_dComponentConcentration()
+  {
+    return m_dFluidVisc_dCompConc;
+  }
 
-  arrayView2d< real64 const > const & viscosity() const { return m_viscosity; }
-  arrayView2d< real64 > const & viscosity()       { return m_viscosity; }
+  arrayView2d< real64 const > const &
+  viscosity() const
+  {
+    return m_viscosity;
+  }
+  arrayView2d< real64 > const &
+  viscosity()
+  {
+    return m_viscosity;
+  }
 
-  arrayView2d< real64 const > const & dViscosity_dPressure() const { return m_dVisc_dPres; }
-  arrayView2d< real64 > const & dViscosity_dPressure()       { return m_dVisc_dPres; }
+  arrayView2d< real64 const > const &
+  dViscosity_dPressure() const
+  {
+    return m_dVisc_dPres;
+  }
+  arrayView2d< real64 > const &
+  dViscosity_dPressure()
+  {
+    return m_dVisc_dPres;
+  }
 
-  arrayView2d< real64 const > const & dViscosity_dProppantConcentration() const { return m_dVisc_dProppantConc; }
-  arrayView2d< real64 > const & dViscosity_dProppantConcentration()       { return m_dVisc_dProppantConc; }
+  arrayView2d< real64 const > const &
+  dViscosity_dProppantConcentration() const
+  {
+    return m_dVisc_dProppantConc;
+  }
+  arrayView2d< real64 > const &
+  dViscosity_dProppantConcentration()
+  {
+    return m_dVisc_dProppantConc;
+  }
 
-  arrayView3d< real64 const > const & dViscosity_dComponentConcentration() const { return m_dVisc_dCompConc; }
-  arrayView3d< real64 > const & dViscosity_dComponentConcentration()       { return m_dVisc_dCompConc; }
+  arrayView3d< real64 const > const &
+  dViscosity_dComponentConcentration() const
+  {
+    return m_dVisc_dCompConc;
+  }
+  arrayView3d< real64 > const &
+  dViscosity_dComponentConcentration()
+  {
+    return m_dVisc_dCompConc;
+  }
 
-  bool isNewtonianFluid() const { return m_isNewtonianFluid; }
+  bool
+  isNewtonianFluid() const
+  {
+    return m_isNewtonianFluid;
+  }
 
   // *** Data repository keys
 
   struct viewKeyStruct
   {
+    static constexpr auto componentNamesString = "componentNames";
+    static constexpr auto defaultDensityString = "defaultDensity";
+    static constexpr auto defaultCompressibilityString =
+      "defaultCompressibility";
+    static constexpr auto defaultViscosityString = "defaultViscosity";
 
-    static constexpr auto componentNamesString       = "componentNames";
-    static constexpr auto defaultDensityString      = "defaultDensity";
-    static constexpr auto defaultCompressibilityString      = "defaultCompressibility";
-    static constexpr auto defaultViscosityString      = "defaultViscosity";
+    static constexpr auto densityString = "density";
+    static constexpr auto dDens_dPresString = "dDens_dPres";
+    static constexpr auto dDens_dProppantConcString = "dDens_dProppantConc";
+    static constexpr auto dDens_dCompConcString = "dDens_dCompConc";
 
-    static constexpr auto densityString      = "density";
-    static constexpr auto dDens_dPresString  = "dDens_dPres";
-    static constexpr auto dDens_dProppantConcString  = "dDens_dProppantConc";
-    static constexpr auto dDens_dCompConcString  = "dDens_dCompConc";
+    static constexpr auto componentDensityString = "componentDensity";
+    static constexpr auto dCompDens_dPresString = "dCompDens_dPres";
+    static constexpr auto dCompDens_dCompConcString = "dCompDens_dCompConc";
 
-    static constexpr auto componentDensityString      = "componentDensity";
-    static constexpr auto dCompDens_dPresString  = "dCompDens_dPres";
-    static constexpr auto dCompDens_dCompConcString  = "dCompDens_dCompConc";
+    static constexpr auto fluidDensityString = "FluidDensity";
+    static constexpr auto dFluidDens_dPresString = "dFluidDens_dPres";
+    static constexpr auto dFluidDens_dCompConcString = "dFluidDens_dCompConc";
 
-    static constexpr auto fluidDensityString      = "FluidDensity";
-    static constexpr auto dFluidDens_dPresString  = "dFluidDens_dPres";
-    static constexpr auto dFluidDens_dCompConcString  = "dFluidDens_dCompConc";
+    static constexpr auto fluidViscosityString = "FluidViscosity";
+    static constexpr auto dFluidVisc_dPresString = "dFluidVisc_dPres";
+    static constexpr auto dFluidVisc_dCompConcString = "dFluidVisc_dCompConc";
 
-    static constexpr auto fluidViscosityString      = "FluidViscosity";
-    static constexpr auto dFluidVisc_dPresString  = "dFluidVisc_dPres";
-    static constexpr auto dFluidVisc_dCompConcString  = "dFluidVisc_dCompConc";
+    static constexpr auto viscosityString = "viscosity";
+    static constexpr auto dVisc_dPresString = "dVisc_dPres";
+    static constexpr auto dVisc_dProppantConcString = "dVisc_dProppantConc";
+    static constexpr auto dVisc_dCompConcString = "dVisc_dCompConc";
+    static constexpr auto flowBehaviorIndexString = "flowBehaviorIndex";
 
-    static constexpr auto viscosityString    = "viscosity";
-    static constexpr auto dVisc_dPresString  = "dVisc_dPres";
-    static constexpr auto dVisc_dProppantConcString  = "dVisc_dProppantConc";
-    static constexpr auto dVisc_dCompConcString  = "dVisc_dCompConc";
-    static constexpr auto flowBehaviorIndexString   = "flowBehaviorIndex";
-
-    static constexpr auto flowConsistencyIndexString   = "flowConsistencyIndex";
+    static constexpr auto flowConsistencyIndexString = "flowConsistencyIndex";
   } viewKeysSlurryFluidBase;
 
 protected:
-
-  virtual void PostProcessInput() override;
+  virtual void
+  PostProcessInput() override;
 
   string_array m_componentNames;
 
@@ -387,11 +552,10 @@ protected:
   array3d< real64 > m_dVisc_dCompConc;
 
   bool m_isNewtonianFluid;
-
 };
 
-} //namespace constitutive
+}  //namespace constitutive
 
-} //namespace geosx
+}  //namespace geosx
 
-#endif //GEOSX_CONSTITUTIVE_FLUID_SLURRYFLUIDBASE_HPP_
+#endif  //GEOSX_CONSTITUTIVE_FLUID_SLURRYFLUIDBASE_HPP_

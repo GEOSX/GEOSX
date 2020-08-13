@@ -24,58 +24,58 @@
 
 #include "common/DataTypes.hpp"
 
-#if defined(GEOSX_USE_MPI)
+#if defined( GEOSX_USE_MPI )
   #include <mpi.h>
-#define MPI_PARAM( x ) x
+  #define MPI_PARAM( x ) x
 #else
-#define MPI_PARAM( x )
+  #define MPI_PARAM( x )
 typedef int MPI_Comm;
 
-#define MPI_COMM_NULL      ((MPI_Comm)0x04000000)
-#define MPI_COMM_WORLD ((MPI_Comm)0x44000000)
+  #define MPI_COMM_NULL ( (MPI_Comm)0x04000000 )
+  #define MPI_COMM_WORLD ( (MPI_Comm)0x44000000 )
 
 typedef int MPI_Datatype;
-#define MPI_CHAR           ((MPI_Datatype)0x4c000101)
-#define MPI_SIGNED_CHAR    ((MPI_Datatype)0x4c000118)
-#define MPI_UNSIGNED_CHAR  ((MPI_Datatype)0x4c000102)
-#define MPI_BYTE           ((MPI_Datatype)0x4c00010d)
-#define MPI_WCHAR          ((MPI_Datatype)0x4c00040e)
-#define MPI_SHORT          ((MPI_Datatype)0x4c000203)
-#define MPI_UNSIGNED_SHORT ((MPI_Datatype)0x4c000204)
-#define MPI_INT            ((MPI_Datatype)0x4c000405)
-#define MPI_UNSIGNED       ((MPI_Datatype)0x4c000406)
-#define MPI_LONG           ((MPI_Datatype)0x4c000807)
-#define MPI_UNSIGNED_LONG  ((MPI_Datatype)0x4c000808)
-#define MPI_FLOAT          ((MPI_Datatype)0x4c00040a)
-#define MPI_DOUBLE         ((MPI_Datatype)0x4c00080b)
-#define MPI_LONG_DOUBLE    ((MPI_Datatype)0x4c00100c)
-#define MPI_LONG_LONG_INT  ((MPI_Datatype)0x4c000809)
-#define MPI_UNSIGNED_LONG_LONG ((MPI_Datatype)0x4c000819)
-#define MPI_LONG_LONG      MPI_LONG_LONG_INT
-#define MPI_CXX_BOOL       ((MPI_Datatype)0x0c000000)
+  #define MPI_CHAR ( (MPI_Datatype)0x4c000101 )
+  #define MPI_SIGNED_CHAR ( (MPI_Datatype)0x4c000118 )
+  #define MPI_UNSIGNED_CHAR ( (MPI_Datatype)0x4c000102 )
+  #define MPI_BYTE ( (MPI_Datatype)0x4c00010d )
+  #define MPI_WCHAR ( (MPI_Datatype)0x4c00040e )
+  #define MPI_SHORT ( (MPI_Datatype)0x4c000203 )
+  #define MPI_UNSIGNED_SHORT ( (MPI_Datatype)0x4c000204 )
+  #define MPI_INT ( (MPI_Datatype)0x4c000405 )
+  #define MPI_UNSIGNED ( (MPI_Datatype)0x4c000406 )
+  #define MPI_LONG ( (MPI_Datatype)0x4c000807 )
+  #define MPI_UNSIGNED_LONG ( (MPI_Datatype)0x4c000808 )
+  #define MPI_FLOAT ( (MPI_Datatype)0x4c00040a )
+  #define MPI_DOUBLE ( (MPI_Datatype)0x4c00080b )
+  #define MPI_LONG_DOUBLE ( (MPI_Datatype)0x4c00100c )
+  #define MPI_LONG_LONG_INT ( (MPI_Datatype)0x4c000809 )
+  #define MPI_UNSIGNED_LONG_LONG ( (MPI_Datatype)0x4c000819 )
+  #define MPI_LONG_LONG MPI_LONG_LONG_INT
+  #define MPI_CXX_BOOL ( (MPI_Datatype)0x0c000000 )
 
 typedef int MPI_Op;
 
-#define MPI_MAX     (MPI_Op)(0x58000001)
-#define MPI_MIN     (MPI_Op)(0x58000002)
-#define MPI_SUM     (MPI_Op)(0x58000003)
-#define MPI_PROD    (MPI_Op)(0x58000004)
-#define MPI_LAND    (MPI_Op)(0x58000005)
-#define MPI_BAND    (MPI_Op)(0x58000006)
-#define MPI_LOR     (MPI_Op)(0x58000007)
-#define MPI_BOR     (MPI_Op)(0x58000008)
-#define MPI_LXOR    (MPI_Op)(0x58000009)
-#define MPI_BXOR    (MPI_Op)(0x5800000a)
-#define MPI_MINLOC  (MPI_Op)(0x5800000b)
-#define MPI_MAXLOC  (MPI_Op)(0x5800000c)
-#define MPI_REPLACE (MPI_Op)(0x5800000d)
-#define MPI_NO_OP   (MPI_Op)(0x5800000e)
+  #define MPI_MAX ( MPI_Op )( 0x58000001 )
+  #define MPI_MIN ( MPI_Op )( 0x58000002 )
+  #define MPI_SUM ( MPI_Op )( 0x58000003 )
+  #define MPI_PROD ( MPI_Op )( 0x58000004 )
+  #define MPI_LAND ( MPI_Op )( 0x58000005 )
+  #define MPI_BAND ( MPI_Op )( 0x58000006 )
+  #define MPI_LOR ( MPI_Op )( 0x58000007 )
+  #define MPI_BOR ( MPI_Op )( 0x58000008 )
+  #define MPI_LXOR ( MPI_Op )( 0x58000009 )
+  #define MPI_BXOR ( MPI_Op )( 0x5800000a )
+  #define MPI_MINLOC ( MPI_Op )( 0x5800000b )
+  #define MPI_MAXLOC ( MPI_Op )( 0x5800000c )
+  #define MPI_REPLACE ( MPI_Op )( 0x5800000d )
+  #define MPI_NO_OP ( MPI_Op )( 0x5800000e )
 
-#define MPI_SUCCESS          0        /* Successful return code */
-#define MPI_UNDEFINED (-32766)
-#define MPI_STATUS_IGNORE (MPI_Status *)1
-#define MPI_STATUSES_IGNORE (MPI_Status *)1
-#define MPI_REQUEST_NULL  ((MPI_Request)0x2c000000)
+  #define MPI_SUCCESS 0 /* Successful return code */
+  #define MPI_UNDEFINED ( -32766 )
+  #define MPI_STATUS_IGNORE (MPI_Status *)1
+  #define MPI_STATUSES_IGNORE (MPI_Status *)1
+  #define MPI_REQUEST_NULL ( (MPI_Request)0x2c000000 )
 typedef int MPI_Request;
 
 struct MPI_Status
@@ -83,20 +83,16 @@ struct MPI_Status
   int junk;
 };
 
-
-
 #endif
 
-#if defined(NDEBUG)
-#define MPI_CHECK_ERROR( error ) ((void) error)
+#if defined( NDEBUG )
+  #define MPI_CHECK_ERROR( error ) ( (void)error )
 #else
-#define MPI_CHECK_ERROR( error ) GEOSX_ERROR_IF_NE( error, MPI_SUCCESS );
+  #define MPI_CHECK_ERROR( error ) GEOSX_ERROR_IF_NE( error, MPI_SUCCESS );
 #endif
-
 
 namespace geosx
 {
-
 /**
  * @struct MpiWrapper
  * This struct is a wrapper for all mpi.h functions that are used in GEOSX, and provides a collection of
@@ -109,7 +105,6 @@ namespace geosx
 struct MpiWrapper
 {
 public:
-
   /**
    * @enum Reduction
    * Strongly typed enum class for calling collective functions using MPI_Op
@@ -119,7 +114,7 @@ public:
     Max,  //!< Max
     Min,  //!< Min
     Sum,  //!< Sum
-    Prod //!< Prod
+    Prod  //!< Prod
   };
 
   MpiWrapper() = delete;
@@ -139,34 +134,45 @@ public:
    */
   ///@{
 
-  static void Barrier( MPI_Comm const & MPI_PARAM( comm )=MPI_COMM_GEOSX )
+  static void
+  Barrier( MPI_Comm const & MPI_PARAM( comm ) = MPI_COMM_GEOSX )
   {
-  #ifdef GEOSX_USE_MPI
+#ifdef GEOSX_USE_MPI
     MPI_Barrier( comm );
-  #endif
+#endif
   }
 
-//  static int Bcast( void * buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm );
+  //  static int Bcast( void * buffer, int count, MPI_Datatype datatype, int root, MPI_Comm comm );
 
-  static int Cart_coords( MPI_Comm comm, int rank, int maxdims, int coords[] );
+  static int
+  Cart_coords( MPI_Comm comm, int rank, int maxdims, int coords[] );
 
-  static int Cart_create( MPI_Comm comm_old, int ndims, const int dims[], const int periods[],
-                          int reorder, MPI_Comm * comm_cart );
+  static int
+  Cart_create( MPI_Comm comm_old,
+               int ndims,
+               const int dims[],
+               const int periods[],
+               int reorder,
+               MPI_Comm * comm_cart );
 
-  static int Cart_rank( MPI_Comm comm, const int coords[] );
+  static int
+  Cart_rank( MPI_Comm comm, const int coords[] );
 
-  static void Comm_free( MPI_Comm & comm );
+  static void
+  Comm_free( MPI_Comm & comm );
 
-  inline static int Comm_rank( MPI_Comm const & MPI_PARAM( comm )=MPI_COMM_GEOSX )
+  inline static int
+  Comm_rank( MPI_Comm const & MPI_PARAM( comm ) = MPI_COMM_GEOSX )
   {
     int rank = 0;
-  #ifdef GEOSX_USE_MPI
+#ifdef GEOSX_USE_MPI
     MPI_Comm_rank( comm, &rank );
-  #endif
+#endif
     return rank;
   }
 
-  inline static int Comm_size( MPI_Comm const & MPI_PARAM( comm )=MPI_COMM_GEOSX )
+  inline static int
+  Comm_size( MPI_Comm const & MPI_PARAM( comm ) = MPI_COMM_GEOSX )
   {
     int size = 1;
 #ifdef GEOSX_USE_MPI
@@ -175,25 +181,41 @@ public:
     return size;
   }
 
-  static int Init( int * argc, char * * * argv );
+  static int
+  Init( int * argc, char *** argv );
 
-  static void Finalize();
+  static void
+  Finalize();
 
-  static MPI_Comm Comm_dup( MPI_Comm const comm );
+  static MPI_Comm
+  Comm_dup( MPI_Comm const comm );
 
+  static int
+  Test( MPI_Request * request, int * flag, MPI_Status * status );
 
-  static int Test( MPI_Request * request, int * flag, MPI_Status * status );
+  static int
+  Wait( MPI_Request * request, MPI_Status * status );
 
-  static int Wait( MPI_Request * request, MPI_Status * status );
+  static int
+  Waitany( int count,
+           MPI_Request array_of_requests[],
+           int * indx,
+           MPI_Status * status );
 
-  static int Waitany( int count, MPI_Request array_of_requests[], int * indx, MPI_Status * status );
+  static int
+  Waitsome( int count,
+            MPI_Request array_of_requests[],
+            int * outcount,
+            int array_of_indices[],
+            MPI_Status array_of_statuses[] );
 
-  static int Waitsome( int count, MPI_Request array_of_requests[], int * outcount, int array_of_indices[], MPI_Status array_of_statuses[] );
+  static int
+  Waitall( int count,
+           MPI_Request array_of_requests[],
+           MPI_Status array_of_statuses[] );
 
-  static int Waitall( int count, MPI_Request array_of_requests[], MPI_Status array_of_statuses[] );
-
-  static double Wtime( void );
-
+  static double
+  Wtime( void );
 
   /**
    * Wait on MPI_Requests to complete on at a time and trigger a callback to
@@ -204,7 +226,10 @@ public:
    *              which has completed.
    * @return MPI_SUCCESS or an MPI_ERROR returned by internal calls to MPI_WaitAny.
    */
-  static int ActiveWaitAny( const int count, MPI_Request array_of_requests[], std::function< void ( int ) > func );
+  static int
+  ActiveWaitAny( const int count,
+                 MPI_Request array_of_requests[],
+                 std::function< void( int ) > func );
 
   /**
    * Wait on MPI_Requests to complete on or more at a time and trigger a callback to
@@ -215,7 +240,10 @@ public:
    *              which has completed.
    * @return MPI_SUCCESS or an MPI_ERROR returned by internal calls to MPI_WaitSome.
    */
-  static int ActiveWaitSome( const int count, MPI_Request array_of_requests[], std::function< void ( int ) > func );
+  static int
+  ActiveWaitSome( const int count,
+                  MPI_Request array_of_requests[],
+                  std::function< void( int ) > func );
 
   /**
    * Active non-blocking phased communication with multiple participants,
@@ -229,8 +257,10 @@ public:
    * @note One can add a final recv phase by having that phase return MPI_REQUEST_NULL.
    * @return MPI_SUCCESS or and MPI_ERROR from internal calls to MPI_WaitAny.
    */
-  static int ActiveWaitSomePartialPhase( const int participants,
-                                         std::vector< std::function< MPI_Request ( int ) > > const & phases );
+  static int
+  ActiveWaitSomePartialPhase(
+    const int participants,
+    std::vector< std::function< MPI_Request( int ) > > const & phases );
 
   /**
    * Active non-blocking phased communication with multiple participants,
@@ -244,8 +274,10 @@ public:
    * @note One can add a final recv phase by having that phase return MPI_REQUEST_NULL.
    * @return MPI_SUCCESS or and MPI_ERROR from internal calls to MPI_WaitAny.
    */
-  static int ActiveWaitSomeCompletePhase( const int participants,
-                                          std::vector< std::function< MPI_Request ( int ) > > const & phases );
+  static int
+  ActiveWaitSomeCompletePhase(
+    const int participants,
+    std::vector< std::function< MPI_Request( int ) > > const & phases );
 
   /**
    * Active blocking phased communication with multiple participants,
@@ -260,12 +292,15 @@ public:
    * @note One can add a final recv phase by having that phase return MPI_REQUEST_NULL.
    * @return MPI_SUCCESS or and MPI_ERROR from internal calls to MPI_WaitAny.
    */
-  static int ActiveWaitOrderedCompletePhase( const int participants,
-                                             std::vector< std::function< MPI_Request ( int ) > > const & phases );
+  static int
+  ActiveWaitOrderedCompletePhase(
+    const int participants,
+    std::vector< std::function< MPI_Request( int ) > > const & phases );
   ///@}
 
-#if !defined(GEOSX_USE_MPI)
-  static std::map< int, std::pair< int, void * > > & getTagToPointersMap()
+#if !defined( GEOSX_USE_MPI )
+  static std::map< int, std::pair< int, void * > > &
+  getTagToPointersMap()
   {
     static std::map< int, std::pair< int, void * > > tagToPointers;
     return tagToPointers;
@@ -284,11 +319,12 @@ public:
    * @return The return value of the underlying call to MPI_Allgather().
    */
   template< typename T_SEND, typename T_RECV >
-  static int Allgather( T_SEND const * sendbuf,
-                        int sendcount,
-                        T_RECV * recvbuf,
-                        int recvcount,
-                        MPI_Comm comm );
+  static int
+  Allgather( T_SEND const * sendbuf,
+             int sendcount,
+             T_RECV * recvbuf,
+             int recvcount,
+             MPI_Comm comm );
 
   /**
    * @brief Convenience function for MPI_Allgather.
@@ -297,12 +333,16 @@ public:
    * @param[out] allValues The values recived from each rank.
    */
   template< typename T >
-  static void allGather( T const myValue, array1d< T > & allValues, MPI_Comm comm = MPI_COMM_GEOSX );
+  static void
+  allGather( T const myValue,
+             array1d< T > & allValues,
+             MPI_Comm comm = MPI_COMM_GEOSX );
 
   template< typename T >
-  static int allGather( arrayView1d< T const > const & sendbuf,
-                        array1d< T > & recvbuf,
-                        MPI_Comm comm = MPI_COMM_GEOSX );
+  static int
+  allGather( arrayView1d< T const > const & sendbuf,
+             array1d< T > & recvbuf,
+             MPI_Comm comm = MPI_COMM_GEOSX );
 
   /**
    * @brief Strongly typed wrapper around MPI_Allreduce.
@@ -314,7 +354,12 @@ public:
    * @return The return value of the underlying call to MPI_Allreduce().
    */
   template< typename T >
-  static int allReduce( T const * sendbuf, T * recvbuf, int count, MPI_Op op, MPI_Comm comm );
+  static int
+  allReduce( T const * sendbuf,
+             T * recvbuf,
+             int count,
+             MPI_Op op,
+             MPI_Comm comm );
 
   /**
    * @brief Strongly typed wrapper around MPI_Bcast.
@@ -325,8 +370,8 @@ public:
    * @return The return value of the underlying call to MPI_Bcast().
    */
   template< typename T >
-  static int bcast( T * buffer, int count, int root, MPI_Comm comm );
-
+  static int
+  bcast( T * buffer, int count, int root, MPI_Comm comm );
 
   /**
    * @brief Convenience function for MPI_Broadcast.
@@ -335,7 +380,8 @@ public:
    * @param srcRank The rank that is sending the \p value.
    */
   template< typename T >
-  static void Broadcast( T & value, int srcRank = 0, MPI_Comm comm = MPI_COMM_GEOSX );
+  static void
+  Broadcast( T & value, int srcRank = 0, MPI_Comm comm = MPI_COMM_GEOSX );
 
   /**
    * @brief Strongly typed wrapper around MPI_Gather().
@@ -350,12 +396,13 @@ public:
    * @return
    */
   template< typename TS, typename TR >
-  static int gather( TS const * const sendbuf,
-                     int sendcount,
-                     TR * const recvbuf,
-                     int recvcount,
-                     int root,
-                     MPI_Comm comm );
+  static int
+  gather( TS const * const sendbuf,
+          int sendcount,
+          TR * const recvbuf,
+          int recvcount,
+          int root,
+          MPI_Comm comm );
 
   /**
    * @brief Strongly typed wrapper around MPI_Gatherv.
@@ -372,14 +419,14 @@ public:
    * @return
    */
   template< typename TS, typename TR >
-  static int gatherv( TS const * const sendbuf,
-                      int sendcount,
-                      TR * const recvbuf,
-                      const int * recvcounts,
-                      const int * displs,
-                      int root,
-                      MPI_Comm comm );
-
+  static int
+  gatherv( TS const * const sendbuf,
+           int sendcount,
+           TR * const recvbuf,
+           const int * recvcounts,
+           const int * displs,
+           int root,
+           MPI_Comm comm );
 
   /**
    * @brief Returns an MPI_Datatype from a c type.
@@ -387,30 +434,35 @@ public:
    * @return The MPI_Datatype associated wtih \param T
    */
   template< typename T >
-  static MPI_Datatype getMpiType();
+  static MPI_Datatype
+  getMpiType();
 
-  static std::size_t getSizeofMpiType( MPI_Datatype const type );
+  static std::size_t
+  getSizeofMpiType( MPI_Datatype const type );
 
   /**
    * @brief Returns an MPI_Op associated with our strongly typed Reduction enum.
    * @param[in] op The value of the Reduction enum to get an MPI_Op for.
    * @return The MPI_Op associated with \p op.
    */
-  static MPI_Op getMpiOp( Reduction const op );
+  static MPI_Op
+  getMpiOp( Reduction const op );
 
   template< typename T >
-  static int recv( array1d< T > & buf,
-                   int MPI_PARAM( source ),
-                   int tag,
-                   MPI_Comm MPI_PARAM( comm ),
-                   MPI_Status * MPI_PARAM( request ) );
+  static int
+  recv( array1d< T > & buf,
+        int MPI_PARAM( source ),
+        int tag,
+        MPI_Comm MPI_PARAM( comm ),
+        MPI_Status * MPI_PARAM( request ) );
 
   template< typename T >
-  static int iSend( arrayView1d< T const > const & buf,
-                    int MPI_PARAM( dest ),
-                    int tag,
-                    MPI_Comm MPI_PARAM( comm ),
-                    MPI_Request * MPI_PARAM( request ) );
+  static int
+  iSend( arrayView1d< T const > const & buf,
+         int MPI_PARAM( dest ),
+         int tag,
+         MPI_Comm MPI_PARAM( comm ),
+         MPI_Request * MPI_PARAM( request ) );
 
   /**
    * @brief Strongly typed wrapper around MPI_Irecv()
@@ -423,12 +475,13 @@ public:
    * @return
    */
   template< typename T >
-  static int iRecv( T * const buf,
-                    int count,
-                    int source,
-                    int tag,
-                    MPI_Comm comm,
-                    MPI_Request * request );
+  static int
+  iRecv( T * const buf,
+         int count,
+         int source,
+         int tag,
+         MPI_Comm comm,
+         MPI_Request * request );
 
   /**
    * @brief Strongly typed wrapper around MPI_Isend()
@@ -441,12 +494,13 @@ public:
    * @return
    */
   template< typename T >
-  static int iSend( T const * const buf,
-                    int count,
-                    int dest,
-                    int tag,
-                    MPI_Comm comm,
-                    MPI_Request * request );
+  static int
+  iSend( T const * const buf,
+         int count,
+         int dest,
+         int tag,
+         MPI_Comm comm,
+         MPI_Request * request );
 
   /**
    * @brief Convenience function for a MPI_Reduce using a MPI_MIN operation.
@@ -454,7 +508,8 @@ public:
    * @return The minimum of all \p value across the ranks.
    */
   template< typename T >
-  static T Min( T const & value, MPI_Comm comm = MPI_COMM_GEOSX );
+  static T
+  Min( T const & value, MPI_Comm comm = MPI_COMM_GEOSX );
 
   /**
    * @brief Convenience function for a MPI_Reduce using a MPI_MAX operation.
@@ -462,7 +517,8 @@ public:
    * @return The maximum of all \p value across the ranks.
    */
   template< typename T >
-  static T Max( T const & value, MPI_Comm comm = MPI_COMM_GEOSX );
+  static T
+  Max( T const & value, MPI_Comm comm = MPI_COMM_GEOSX );
 
   /**
    * @brief Compute exclusive prefix sum and full sum
@@ -472,7 +528,8 @@ public:
    * @return a pair where first is the prefix sum, second is the full sum
    */
   template< typename U, typename T >
-  static U PrefixSum( T const value );
+  static U
+  PrefixSum( T const value );
 
   /**
    * @brief Convenience function for the MPI_Reduce function.
@@ -482,7 +539,10 @@ public:
    * @return The value of reduction across all ranks
    */
   template< typename T >
-  static T Reduce( T const & value, Reduction const op, MPI_Comm comm = MPI_COMM_GEOSX );
+  static T
+  Reduce( T const & value,
+          Reduction const op,
+          MPI_Comm comm = MPI_COMM_GEOSX );
 
   /**
    * @brief Convenience function for a MPI_Reduce using a MPI_SUM operation.
@@ -490,27 +550,89 @@ public:
    * @return The sum of all \p value across the ranks.
    */
   template< typename T >
-  static T Sum( T const & value, MPI_Comm comm = MPI_COMM_GEOSX );
+  static T
+  Sum( T const & value, MPI_Comm comm = MPI_COMM_GEOSX );
 };
 
-template<> inline MPI_Datatype MpiWrapper::getMpiType< float >()                  { return MPI_FLOAT; }
-template<> inline MPI_Datatype MpiWrapper::getMpiType< double >()                 { return MPI_DOUBLE; }
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< float >()
+{
+  return MPI_FLOAT;
+}
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< double >()
+{
+  return MPI_DOUBLE;
+}
 
-template<> inline MPI_Datatype MpiWrapper::getMpiType< char >()                   { return MPI_CHAR; }
-template<> inline MPI_Datatype MpiWrapper::getMpiType< signed char >()            { return MPI_SIGNED_CHAR; }
-template<> inline MPI_Datatype MpiWrapper::getMpiType< unsigned char >()          { return MPI_UNSIGNED_CHAR; }
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< char >()
+{
+  return MPI_CHAR;
+}
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< signed char >()
+{
+  return MPI_SIGNED_CHAR;
+}
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< unsigned char >()
+{
+  return MPI_UNSIGNED_CHAR;
+}
 
-template<> inline MPI_Datatype MpiWrapper::getMpiType< int >()                    { return MPI_INT; }
-template<> inline MPI_Datatype MpiWrapper::getMpiType< long int >()               { return MPI_LONG; }
-template<> inline MPI_Datatype MpiWrapper::getMpiType< long long int >()          { return MPI_LONG_LONG; }
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< int >()
+{
+  return MPI_INT;
+}
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< long int >()
+{
+  return MPI_LONG;
+}
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< long long int >()
+{
+  return MPI_LONG_LONG;
+}
 
-template<> inline MPI_Datatype MpiWrapper::getMpiType< unsigned int >()           { return MPI_UNSIGNED; }
-template<> inline MPI_Datatype MpiWrapper::getMpiType< unsigned long int >()      { return MPI_UNSIGNED_LONG; }
-template<> inline MPI_Datatype MpiWrapper::getMpiType< unsigned long long int >() { return MPI_UNSIGNED_LONG_LONG; }
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< unsigned int >()
+{
+  return MPI_UNSIGNED;
+}
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< unsigned long int >()
+{
+  return MPI_UNSIGNED_LONG;
+}
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< unsigned long long int >()
+{
+  return MPI_UNSIGNED_LONG_LONG;
+}
 
-template<> inline MPI_Datatype MpiWrapper::getMpiType< bool >()                   { return MPI_CXX_BOOL; }
+template<>
+inline MPI_Datatype
+MpiWrapper::getMpiType< bool >()
+{
+  return MPI_CXX_BOOL;
+}
 
-inline MPI_Op MpiWrapper::getMpiOp( Reduction const op )
+inline MPI_Op
+MpiWrapper::getMpiOp( Reduction const op )
 {
   switch( op )
   {
@@ -537,26 +659,38 @@ inline MPI_Op MpiWrapper::getMpiOp( Reduction const op )
 }
 
 template< typename T_SEND, typename T_RECV >
-int MpiWrapper::Allgather( T_SEND const * const sendbuf,
-                           int sendcount,
-                           T_RECV * const recvbuf,
-                           int recvcount,
-                           MPI_Comm MPI_PARAM( comm ) )
+int
+MpiWrapper::Allgather( T_SEND const * const sendbuf,
+                       int sendcount,
+                       T_RECV * const recvbuf,
+                       int recvcount,
+                       MPI_Comm MPI_PARAM( comm ) )
 {
 #ifdef GEOSX_USE_MPI
-  return MPI_Allgather( sendbuf, sendcount, getMpiType< T_SEND >(), recvbuf, recvcount, getMpiType< T_RECV >(), comm );
+  return MPI_Allgather( sendbuf,
+                        sendcount,
+                        getMpiType< T_SEND >(),
+                        recvbuf,
+                        recvcount,
+                        getMpiType< T_RECV >(),
+                        comm );
 #else
   static_assert( std::is_same< T_SEND, T_RECV >::value,
-                 "MpiWrapper::Allgather() for serial run requires send and receive buffers are of the same type" );
-  GEOSX_ERROR_IF_NE_MSG( sendcount, recvcount, "sendcount is not equal to recvcount." );
+                 "MpiWrapper::Allgather() for serial run requires send and "
+                 "receive buffers are of the same type" );
+  GEOSX_ERROR_IF_NE_MSG( sendcount,
+                         recvcount,
+                         "sendcount is not equal to recvcount." );
   *recvbuf = *sendbuf;
   return 0;
 #endif
 }
 
-
 template< typename T >
-void MpiWrapper::allGather( T const myValue, array1d< T > & allValues, MPI_Comm MPI_PARAM( comm ) )
+void
+MpiWrapper::allGather( T const myValue,
+                       array1d< T > & allValues,
+                       MPI_Comm MPI_PARAM( comm ) )
 {
 #ifdef GEOSX_USE_MPI
   int const mpiSize = Comm_size( comm );
@@ -573,9 +707,10 @@ void MpiWrapper::allGather( T const myValue, array1d< T > & allValues, MPI_Comm 
 }
 
 template< typename T >
-int MpiWrapper::allGather( arrayView1d< T const > const & sendValues,
-                           array1d< T > & allValues,
-                           MPI_Comm MPI_PARAM( comm ) )
+int
+MpiWrapper::allGather( arrayView1d< T const > const & sendValues,
+                       array1d< T > & allValues,
+                       MPI_Comm MPI_PARAM( comm ) )
 {
   int const sendSize = LvArray::integerConversion< int >( sendValues.size() );
 #ifdef GEOSX_USE_MPI
@@ -591,7 +726,7 @@ int MpiWrapper::allGather( arrayView1d< T const > const & sendValues,
 
 #else
   allValues.resize( sendSize );
-  for( localIndex a=0; a<sendSize; ++a )
+  for( localIndex a = 0; a < sendSize; ++a )
   {
     allValues[a] = sendValues[a];
   }
@@ -600,37 +735,41 @@ int MpiWrapper::allGather( arrayView1d< T const > const & sendValues,
 }
 
 template< typename T >
-int MpiWrapper::allReduce( T const * const sendbuf,
-                           T * const recvbuf,
-                           int count,
-                           MPI_Op MPI_PARAM( op ),
-                           MPI_Comm MPI_PARAM( comm ) )
+int
+MpiWrapper::allReduce( T const * const sendbuf,
+                       T * const recvbuf,
+                       int count,
+                       MPI_Op MPI_PARAM( op ),
+                       MPI_Comm MPI_PARAM( comm ) )
 {
 #ifdef GEOSX_USE_MPI
   MPI_Datatype const MPI_TYPE = getMpiType< T >();
   return MPI_Allreduce( sendbuf, recvbuf, count, MPI_TYPE, op, comm );
 #else
-  memcpy( recvbuf, sendbuf, count*sizeof(T) );
+  memcpy( recvbuf, sendbuf, count * sizeof( T ) );
   return 0;
 #endif
 }
 
 template< typename T >
-int MpiWrapper::bcast( T * const MPI_PARAM( buffer ),
-                       int MPI_PARAM( count ),
-                       int MPI_PARAM( root ),
-                       MPI_Comm MPI_PARAM( comm ) )
+int
+MpiWrapper::bcast( T * const MPI_PARAM( buffer ),
+                   int MPI_PARAM( count ),
+                   int MPI_PARAM( root ),
+                   MPI_Comm MPI_PARAM( comm ) )
 {
 #ifdef GEOSX_USE_MPI
   return MPI_Bcast( buffer, count, getMpiType< T >(), root, comm );
 #else
   return 0;
 #endif
-
 }
 
 template< typename T >
-void MpiWrapper::Broadcast( T & MPI_PARAM( value ), int MPI_PARAM( srcRank ), MPI_Comm MPI_PARAM( comm ) )
+void
+MpiWrapper::Broadcast( T & MPI_PARAM( value ),
+                       int MPI_PARAM( srcRank ),
+                       MPI_Comm MPI_PARAM( comm ) )
 {
 #ifdef GEOSX_USE_MPI
   MPI_Datatype const mpiType = getMpiType< T >();
@@ -639,10 +778,10 @@ void MpiWrapper::Broadcast( T & MPI_PARAM( value ), int MPI_PARAM( srcRank ), MP
 }
 
 template<>
-inline
-void MpiWrapper::Broadcast< std::string >( std::string & MPI_PARAM( value ),
-                                           int MPI_PARAM( srcRank ),
-                                           MPI_Comm MPI_PARAM( comm ) )
+inline void
+MpiWrapper::Broadcast< std::string >( std::string & MPI_PARAM( value ),
+                                      int MPI_PARAM( srcRank ),
+                                      MPI_Comm MPI_PARAM( comm ) )
 {
 #ifdef GEOSX_USE_MPI
   int size = value.size();
@@ -650,60 +789,88 @@ void MpiWrapper::Broadcast< std::string >( std::string & MPI_PARAM( value ),
 
   value.resize( size );
 
-  MPI_Bcast( const_cast< char * >( value.data() ), size, getMpiType< char >(), srcRank, comm );
+  MPI_Bcast( const_cast< char * >( value.data() ),
+             size,
+             getMpiType< char >(),
+             srcRank,
+             comm );
 #endif
 }
 
 template< typename TS, typename TR >
-int MpiWrapper::gather( TS const * const sendbuf,
-                        int sendcount,
-                        TR * const recvbuf,
-                        int recvcount,
-                        int MPI_PARAM( root ),
-                        MPI_Comm MPI_PARAM( comm ) )
+int
+MpiWrapper::gather( TS const * const sendbuf,
+                    int sendcount,
+                    TR * const recvbuf,
+                    int recvcount,
+                    int MPI_PARAM( root ),
+                    MPI_Comm MPI_PARAM( comm ) )
 {
 #ifdef GEOSX_USE_MPI
-  return MPI_Gather( sendbuf, sendcount, getMpiType< TS >(), recvbuf, recvcount, getMpiType< TR >(), root, comm );
+  return MPI_Gather( sendbuf,
+                     sendcount,
+                     getMpiType< TS >(),
+                     recvbuf,
+                     recvcount,
+                     getMpiType< TR >(),
+                     root,
+                     comm );
 #else
   static_assert( std::is_same< TS, TR >::value,
-                 "MpiWrapper::gather() for serial run requires send and receive buffers are of the same type" );
-  std::size_t const sendBufferSize = sendcount * sizeof(TS);
-  std::size_t const recvBufferSize = recvcount * sizeof(TR);
-  GEOSX_ERROR_IF_NE_MSG( sendBufferSize, recvBufferSize, "size of send buffer and receive buffer are not equal" );
+                 "MpiWrapper::gather() for serial run requires send and receive "
+                 "buffers are of the same type" );
+  std::size_t const sendBufferSize = sendcount * sizeof( TS );
+  std::size_t const recvBufferSize = recvcount * sizeof( TR );
+  GEOSX_ERROR_IF_NE_MSG( sendBufferSize,
+                         recvBufferSize,
+                         "size of send buffer and receive buffer are not equal" );
   memcpy( recvbuf, sendbuf, sendBufferSize );
   return 0;
 #endif
 }
 
 template< typename TS, typename TR >
-int MpiWrapper::gatherv( TS const * const sendbuf,
-                         int sendcount,
-                         TR * const recvbuf,
-                         const int * recvcounts,
-                         const int * MPI_PARAM( displs ),
-                         int MPI_PARAM( root ),
-                         MPI_Comm MPI_PARAM( comm ) )
+int
+MpiWrapper::gatherv( TS const * const sendbuf,
+                     int sendcount,
+                     TR * const recvbuf,
+                     const int * recvcounts,
+                     const int * MPI_PARAM( displs ),
+                     int MPI_PARAM( root ),
+                     MPI_Comm MPI_PARAM( comm ) )
 {
 #ifdef GEOSX_USE_MPI
-  return MPI_Gatherv( sendbuf, sendcount, getMpiType< TS >(), recvbuf, recvcounts, displs, getMpiType< TR >(), root, comm );
+  return MPI_Gatherv( sendbuf,
+                      sendcount,
+                      getMpiType< TS >(),
+                      recvbuf,
+                      recvcounts,
+                      displs,
+                      getMpiType< TR >(),
+                      root,
+                      comm );
 #else
   static_assert( std::is_same< TS, TR >::value,
-                 "MpiWrapper::gather() for serial run requires send and receive buffers are of the same type" );
-  std::size_t const sendBufferSize = sendcount * sizeof(TS);
-  std::size_t const recvBufferSize = recvcounts[0] * sizeof(TR);
-  GEOSX_ERROR_IF_NE_MSG( sendBufferSize, recvBufferSize, "size of send buffer and receive buffer are not equal" );
+                 "MpiWrapper::gather() for serial run requires send and receive "
+                 "buffers are of the same type" );
+  std::size_t const sendBufferSize = sendcount * sizeof( TS );
+  std::size_t const recvBufferSize = recvcounts[0] * sizeof( TR );
+  GEOSX_ERROR_IF_NE_MSG( sendBufferSize,
+                         recvBufferSize,
+                         "size of send buffer and receive buffer are not equal" );
   memcpy( recvbuf, sendbuf, sendBufferSize );
   return 0;
 #endif
 }
 
 template< typename T >
-int MpiWrapper::iRecv( T * const buf,
-                       int count,
-                       int MPI_PARAM( source ),
-                       int tag,
-                       MPI_Comm MPI_PARAM( comm ),
-                       MPI_Request * MPI_PARAM( request ) )
+int
+MpiWrapper::iRecv( T * const buf,
+                   int count,
+                   int MPI_PARAM( source ),
+                   int tag,
+                   MPI_Comm MPI_PARAM( comm ),
+                   MPI_Request * MPI_PARAM( request ) )
 {
 #ifdef GEOSX_USE_MPI
   return MPI_Irecv( buf, count, getMpiType< T >(), source, tag, comm, request );
@@ -711,16 +878,15 @@ int MpiWrapper::iRecv( T * const buf,
   std::map< int, std::pair< int, void * > > & pointerMap = getTagToPointersMap();
   std::map< int, std::pair< int, void * > >::iterator iPointer = pointerMap.find( tag );
 
-  if( iPointer==pointerMap.end() )
+  if( iPointer == pointerMap.end() )
   {
-    pointerMap.insert( {tag, {1, buf}
-                       } );
+    pointerMap.insert( { tag, { 1, buf } } );
   }
   else
   {
     GEOSX_ERROR_IF( iPointer->second.first != 0,
                     "Tag does is assigned, but pointer was not set by iSend." );
-    memcpy( buf, iPointer->second.second, count*sizeof(T) );
+    memcpy( buf, iPointer->second.second, count * sizeof( T ) );
     pointerMap.erase( iPointer );
   }
   return 0;
@@ -728,11 +894,12 @@ int MpiWrapper::iRecv( T * const buf,
 }
 
 template< typename T >
-int MpiWrapper::recv( array1d< T > & buf,
-                      int MPI_PARAM( source ),
-                      int tag,
-                      MPI_Comm MPI_PARAM( comm ),
-                      MPI_Status * MPI_PARAM( request ) )
+int
+MpiWrapper::recv( array1d< T > & buf,
+                  int MPI_PARAM( source ),
+                  int tag,
+                  MPI_Comm MPI_PARAM( comm ),
+                  MPI_Status * MPI_PARAM( request ) )
 {
 #ifdef GEOSX_USE_MPI
   MPI_Status status;
@@ -757,11 +924,12 @@ int MpiWrapper::recv( array1d< T > & buf,
 }
 
 template< typename T >
-int MpiWrapper::iSend( arrayView1d< T const > const & buf,
-                       int MPI_PARAM( dest ),
-                       int tag,
-                       MPI_Comm MPI_PARAM( comm ),
-                       MPI_Request * MPI_PARAM( request ) )
+int
+MpiWrapper::iSend( arrayView1d< T const > const & buf,
+                   int MPI_PARAM( dest ),
+                   int tag,
+                   MPI_Comm MPI_PARAM( comm ),
+                   MPI_Request * MPI_PARAM( request ) )
 {
 #ifdef GEOSX_USE_MPI
   return MPI_Isend( reinterpret_cast< char const * >( buf.data() ),
@@ -778,12 +946,13 @@ int MpiWrapper::iSend( arrayView1d< T const > const & buf,
 }
 
 template< typename T >
-int MpiWrapper::iSend( T const * const buf,
-                       int count,
-                       int MPI_PARAM( dest ),
-                       int tag,
-                       MPI_Comm MPI_PARAM( comm ),
-                       MPI_Request * MPI_PARAM( request ) )
+int
+MpiWrapper::iSend( T const * const buf,
+                   int count,
+                   int MPI_PARAM( dest ),
+                   int tag,
+                   MPI_Comm MPI_PARAM( comm ),
+                   MPI_Request * MPI_PARAM( request ) )
 {
 #ifdef GEOSX_USE_MPI
   return MPI_Isend( buf, count, getMpiType< T >(), dest, tag, comm, request );
@@ -791,16 +960,15 @@ int MpiWrapper::iSend( T const * const buf,
   std::map< int, std::pair< int, void * > > & pointerMap = getTagToPointersMap();
   std::map< int, std::pair< int, void * > >::iterator iPointer = pointerMap.find( tag );
 
-  if( iPointer==pointerMap.end() )
+  if( iPointer == pointerMap.end() )
   {
-    pointerMap.insert( {tag, {0, const_cast< T * >(buf)}
-                       } );
+    pointerMap.insert( { tag, { 0, const_cast< T * >( buf ) } } );
   }
   else
   {
     GEOSX_ERROR_IF( iPointer->second.first != 1,
                     "Tag does is assigned, but pointer was not set by iRecv." );
-    memcpy( iPointer->second.second, buf, count*sizeof(T) );
+    memcpy( iPointer->second.second, buf, count * sizeof( T ) );
     pointerMap.erase( iPointer );
   }
   return 0;
@@ -808,13 +976,19 @@ int MpiWrapper::iSend( T const * const buf,
 }
 
 template< typename U, typename T >
-U MpiWrapper::PrefixSum( T const value )
+U
+MpiWrapper::PrefixSum( T const value )
 {
   U localResult;
 
 #ifdef GEOSX_USE_MPI
   U const convertedValue = value;
-  int const error = MPI_Exscan( &convertedValue, &localResult, 1, getMpiType< U >(), MPI_SUM, MPI_COMM_GEOSX );
+  int const error = MPI_Exscan( &convertedValue,
+                                &localResult,
+                                1,
+                                getMpiType< U >(),
+                                MPI_SUM,
+                                MPI_COMM_GEOSX );
   MPI_CHECK_ERROR( error );
 #endif
   if( Comm_rank() == 0 )
@@ -825,9 +999,9 @@ U MpiWrapper::PrefixSum( T const value )
   return localResult;
 }
 
-
 template< typename T >
-T MpiWrapper::Reduce( T const & value, Reduction const MPI_PARAM( op ), MPI_Comm comm )
+T
+MpiWrapper::Reduce( T const & value, Reduction const MPI_PARAM( op ), MPI_Comm comm )
 {
   T result = value;
 #ifdef GEOSX_USE_MPI
@@ -837,24 +1011,25 @@ T MpiWrapper::Reduce( T const & value, Reduction const MPI_PARAM( op ), MPI_Comm
 }
 
 template< typename T >
-T MpiWrapper::Sum( T const & value, MPI_Comm comm )
+T
+MpiWrapper::Sum( T const & value, MPI_Comm comm )
 {
   return MpiWrapper::Reduce( value, Reduction::Sum, comm );
 }
 
 template< typename T >
-T MpiWrapper::Min( T const & value, MPI_Comm comm )
+T
+MpiWrapper::Min( T const & value, MPI_Comm comm )
 {
   return MpiWrapper::Reduce( value, Reduction::Min, comm );
 }
 
 template< typename T >
-T MpiWrapper::Max( T const & value, MPI_Comm comm )
+T
+MpiWrapper::Max( T const & value, MPI_Comm comm )
 {
   return MpiWrapper::Reduce( value, Reduction::Max, comm );
 }
-
-
 
 } /* namespace geosx */
 

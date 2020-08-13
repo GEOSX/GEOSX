@@ -22,10 +22,8 @@
 
 namespace geosx
 {
-
 namespace constitutive
 {
-
 /**
  * @class LinearElasticIsotropic
  *
@@ -34,7 +32,6 @@ namespace constitutive
 class MohrCoulomb : public ContactRelationBase
 {
 public:
-
   /**
    * constructor
    * @param[in] name name of the instance in the catalog
@@ -52,9 +49,13 @@ public:
                 Group * const parent,
                 std::unique_ptr< ConstitutiveBase > & clone ) const override;
 
-  virtual real64 limitTangentialTractionNorm( real64 const normalTraction ) const override final;
+  virtual real64
+  limitTangentialTractionNorm(
+    real64 const normalTraction ) const override final;
 
-  virtual real64 dLimitTangentialTractionNorm_dNormalTraction( real64 const normalTraction ) const override final;
+  virtual real64
+  dLimitTangentialTractionNorm_dNormalTraction(
+    real64 const normalTraction ) const override final;
 
   /**
    * @name Static Factory Catalog members and functions
@@ -67,9 +68,17 @@ public:
   /**
    * @return A string that is used to register/lookup this class in the registry
    */
-  static std::string CatalogName() { return m_catalogNameString; }
+  static std::string
+  CatalogName()
+  {
+    return m_catalogNameString;
+  }
 
-  virtual string GetCatalogName() override { return CatalogName(); }
+  virtual string
+  GetCatalogName() override
+  {
+    return CatalogName();
+  }
 
   ///@}
 
@@ -101,34 +110,50 @@ public:
    * @return A const reference to arrayView1d<real64> containing the cohesions
    *         (at every element).
    */
-  real64 const & cohesion() { return m_cohesion; }
+  real64 const &
+  cohesion()
+  {
+    return m_cohesion;
+  }
 
   /**
    * @brief Const accessor for cohesion
    * @return A const reference to arrayView1d<real64 const> containing the
    *         cohesions (at every element).
    */
-  real64 const & cohesion() const { return m_cohesion; }
+  real64 const &
+  cohesion() const
+  {
+    return m_cohesion;
+  }
 
   /**
    * @brief Accessor for friction angle
    * @return A const reference to arrayView1d<real64> containing the friction
    *         coefficient (at every element).
    */
-  real64 const & frictionCoefficient() { return m_frictionCoefficient; }
+  real64 const &
+  frictionCoefficient()
+  {
+    return m_frictionCoefficient;
+  }
 
   /**
    * @brief Const accessor for friction angle
    * @return A const reference to arrayView1d<real64 const> containing the
    *         friction coefficient (at every element).
    */
-  real64 const & frictionCoefficient() const { return m_frictionCoefficient; }
+  real64 const &
+  frictionCoefficient() const
+  {
+    return m_frictionCoefficient;
+  }
 
 protected:
-  virtual void PostProcessInput() override;
+  virtual void
+  PostProcessInput() override;
 
 private:
-
   /// The cohesion for each upper level dimension (i.e. cell) of *this
   real64 m_cohesion;
 
@@ -139,7 +164,7 @@ private:
   real64 m_frictionCoefficient;
 };
 
-}
+}  // namespace constitutive
 
 } /* namespace geosx */
 

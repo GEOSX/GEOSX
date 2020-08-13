@@ -12,7 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-
 #include "VTKVTMWriter.hpp"
 
 #include "mpiCommunications/MpiWrapper.hpp"
@@ -21,7 +20,7 @@ namespace geosx
 {
 namespace vtk
 {
-VTKVTMWriter::VTKVTMWriter( string const & filePath ):
+VTKVTMWriter::VTKVTMWriter( string const & filePath ) :
   m_filePath( filePath )
 {
   // Declaration of XML version
@@ -36,7 +35,8 @@ VTKVTMWriter::VTKVTMWriter( string const & filePath ):
   vtkFileNode.append_child( "vtkMultiBlockDataSet" );
 }
 
-void VTKVTMWriter::Save() const
+void
+VTKVTMWriter::Save() const
 {
   int const mpiRank = MpiWrapper::Comm_rank( MPI_COMM_GEOSX );
   if( mpiRank == 0 )
@@ -45,28 +45,41 @@ void VTKVTMWriter::Save() const
   }
 }
 
-void VTKVTMWriter::AddBlock( string const & blockName ) const
+void
+VTKVTMWriter::AddBlock( string const & blockName ) const
 {
-  auto vtkMultiBlockNode = m_vtmFile.child( "VTKFile" ).child( "vtkMultiBlockDataSet" );
+  auto vtkMultiBlockNode =
+    m_vtmFile.child( "VTKFile" ).child( "vtkMultiBlockDataSet" );
   auto blockNode = vtkMultiBlockNode.append_child( "Block" );
   blockNode.append_attribute( "name" ) = blockName.c_str();
 }
 
-void VTKVTMWriter::AddSubBlock( string const & blockName, string const & subBlockName ) const
+void
+VTKVTMWriter::AddSubBlock( string const & blockName,
+                           string const & subBlockName ) const
 {
-  auto blockNode = m_vtmFile.child( "VTKFile" ).child( "vtkMultiBlockDataSet" ).find_child_by_attribute( "Block", "name", blockName.c_str() );
+  auto blockNode = m_vtmFile.child( "VTKFile" )
+                     .child( "vtkMultiBlockDataSet" )
+                     .find_child_by_attribute( "Block", "name", blockName.c_str() );
   auto subBlockNode = blockNode.append_child( "Block" );
   subBlockNode.append_attribute( "name" ) = subBlockName.c_str();
 }
 
-void VTKVTMWriter::AddDataToSubBlock( string const & blockName, string const & subBlockName, string const & filePath, int mpiRank ) const
+void
+VTKVTMWriter::AddDataToSubBlock( string const & blockName,
+                                 string const & subBlockName,
+                                 string const & filePath,
+                                 int mpiRank ) const
 {
-  auto blockNode = m_vtmFile.child( "VTKFile" ).child( "vtkMultiBlockDataSet" ).find_child_by_attribute( "Block", "name", blockName.c_str() );
-  auto subBlockNode = blockNode.find_child_by_attribute( "Block", "name", subBlockName.c_str() );
+  auto blockNode = m_vtmFile.child( "VTKFile" )
+                     .child( "vtkMultiBlockDataSet" )
+                     .find_child_by_attribute( "Block", "name", blockName.c_str() );
+  auto subBlockNode =
+    blockNode.find_child_by_attribute( "Block", "name", subBlockName.c_str() );
   auto dataNode = subBlockNode.append_child( "DataSet" );
   string name = "rank_" + std::to_string( mpiRank );
   dataNode.append_attribute( "name" ) = name.c_str();
   dataNode.append_attribute( "file" ) = filePath.c_str();
 }
-}
-}
+}  // namespace vtk
+}  // namespace geosx

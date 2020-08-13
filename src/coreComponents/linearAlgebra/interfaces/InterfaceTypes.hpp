@@ -22,26 +22,25 @@
 #include "common/GeosxConfig.hpp"
 
 #ifdef GEOSX_USE_TRILINOS
-#include "linearAlgebra/interfaces/trilinos/TrilinosInterface.hpp"
+  #include "linearAlgebra/interfaces/trilinos/TrilinosInterface.hpp"
 #endif
 
 #ifdef GEOSX_USE_HYPRE
-#include "linearAlgebra/interfaces/hypre/HypreInterface.hpp"
+  #include "linearAlgebra/interfaces/hypre/HypreInterface.hpp"
 #endif
 
 #ifdef GEOSX_USE_PETSC
-#include "linearAlgebra/interfaces/petsc/PetscInterface.hpp"
+  #include "linearAlgebra/interfaces/petsc/PetscInterface.hpp"
 #endif
 
 /// Macro to concatenate two strings (low level)
-#define CONCAT_( A, B ) A ## B
+#define CONCAT_( A, B ) A##B
 
 /// Macro to concatenate two strings (user level)
 #define CONCAT( A, B ) CONCAT_( A, B )
 
 namespace geosx
 {
-
 /// Alias for current interface
 using LAInterface = CONCAT( GEOSX_LA_INTERFACE, Interface );
 
@@ -50,7 +49,7 @@ using ParallelMatrix = LAInterface::ParallelMatrix;
 /// Alias for ParallelVector
 using ParallelVector = LAInterface::ParallelVector;
 /// Alias for LinearSolver
-using LinearSolver   = LAInterface::LinearSolver;
+using LinearSolver = LAInterface::LinearSolver;
 
 /**
  * @brief High level interface to call the proper LAI initialize function.
@@ -58,7 +57,8 @@ using LinearSolver   = LAInterface::LinearSolver;
  * @param[in] argc standard argc as in any C main
  * @param[in] argv standard argv as in any C main
  */
-inline void setupLAI( int & argc, char * * & argv )
+inline void
+setupLAI( int & argc, char **& argv )
 {
 #ifdef GEOSX_USE_TRILINOS
   TrilinosInterface::initialize( argc, argv );
@@ -74,7 +74,8 @@ inline void setupLAI( int & argc, char * * & argv )
 /**
  * @brief High level interface to call the proper LAI finalize function.
  */
-inline void finalizeLAI()
+inline void
+finalizeLAI()
 {
 #ifdef GEOSX_USE_TRILINOS
   TrilinosInterface::finalize();
@@ -87,8 +88,6 @@ inline void finalizeLAI()
 #endif
 }
 
-}
-
-
+}  // namespace geosx
 
 #endif /*GEOSX_LINEARALGEBRA_INTERFACES_INTERFACETYPES_HPP_*/

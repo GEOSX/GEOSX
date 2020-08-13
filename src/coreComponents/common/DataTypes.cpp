@@ -16,7 +16,6 @@
  * @file DataTypes.cpp
  */
 
-
 #include "DataTypes.hpp"
 #include "common/Logger.hpp"
 #include "LvArray/src/system.hpp"
@@ -29,12 +28,15 @@ MPI_Comm MPI_COMM_GEOSX;
 int MPI_COMM_GEOSX = 0;
 #endif
 
-void printTypeSummary()
+void
+printTypeSummary()
 {
-  GEOSX_LOG_RANK_0( "real64 is alias of " <<LvArray::system::demangle( typeid(real64).name() ) );
-  GEOSX_LOG_RANK_0( "localIndex is alias of " <<LvArray::system::demangle( typeid(localIndex).name() ) );
-  GEOSX_LOG_RANK_0( "globalIndex is alias of "<<LvArray::system::demangle( typeid(globalIndex).name()) );
+  GEOSX_LOG_RANK_0( "real64 is alias of "
+                    << LvArray::system::demangle( typeid( real64 ).name() ) );
+  GEOSX_LOG_RANK_0( "localIndex is alias of "
+                    << LvArray::system::demangle( typeid( localIndex ).name() ) );
+  GEOSX_LOG_RANK_0( "globalIndex is alias of "
+                    << LvArray::system::demangle( typeid( globalIndex ).name() ) );
 }
 
-
-}
+}  // namespace geosx

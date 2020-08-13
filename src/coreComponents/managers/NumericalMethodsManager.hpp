@@ -29,7 +29,7 @@ namespace dataRepository
 {
 namespace keys
 {}
-}
+}  // namespace dataRepository
 
 /**
  * @class NumericalMethodsManager
@@ -52,7 +52,9 @@ public:
 
   virtual ~NumericalMethodsManager() override;
 
-  virtual Group * CreateChild( string const & childKey, string const & childName ) override;
+  virtual Group *
+  CreateChild( string const & childKey,
+               string const & childName ) override;
 
   /// Contains the keys for the object names in the data repository.
   struct groupKeysStruct
@@ -68,37 +70,50 @@ public:
 
     /// Name for the finite volume manager.
     static constexpr auto finiteVolumeManager = "FiniteVolume";
-
   };
 
   /**
    * @brief @return Returns reference to const FiniteElementDiscretizationManager m_finiteElementDiscretizationManager.
    */
-  FiniteElementDiscretizationManager const & getFiniteElementDiscretizationManager() const { return m_finiteElementDiscretizationManager; }
+  FiniteElementDiscretizationManager const &
+  getFiniteElementDiscretizationManager() const
+  {
+    return m_finiteElementDiscretizationManager;
+  }
 
   /**
    * @brief @return Returns reference to FiniteElementDiscretizationManager m_finiteElementDiscretizationManager.
    */
-  FiniteElementDiscretizationManager & getFiniteElementDiscretizationManager()       { return m_finiteElementDiscretizationManager; }
+  FiniteElementDiscretizationManager &
+  getFiniteElementDiscretizationManager()
+  {
+    return m_finiteElementDiscretizationManager;
+  }
 
   /**
    * @brief @return Returns reference to FiniteVolumeManager m_finiteVolumeManager.
    */
-  FiniteVolumeManager & getFiniteVolumeManager()       { return m_finiteVolumeManager; }
+  FiniteVolumeManager &
+  getFiniteVolumeManager()
+  {
+    return m_finiteVolumeManager;
+  }
 
   /**
    * @brief @return Returns reference to const FiniteVolumeManager m_finiteVolumeManager.
    */
-  FiniteVolumeManager const & getFiniteVolumeManager() const { return m_finiteVolumeManager; }
+  FiniteVolumeManager const &
+  getFiniteVolumeManager() const
+  {
+    return m_finiteVolumeManager;
+  }
 
 private:
-
   /// Contains the finite element discretizations
   FiniteElementDiscretizationManager m_finiteElementDiscretizationManager;
 
   /// Contains the finite volume discretizations.
   FiniteVolumeManager m_finiteVolumeManager;
-
 };
 
 } /* namespace geosx */

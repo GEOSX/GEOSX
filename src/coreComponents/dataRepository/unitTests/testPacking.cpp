@@ -26,50 +26,53 @@
 using namespace geosx;
 
 #ifndef GTEST_SKIP
-#define GTEST_SKIP() return
+  #define GTEST_SKIP() return
 #endif
 
-#define SKIP_TEST_IF( COND, REASON ) \
-  do \
-  { \
-    if( COND ) \
-    { \
-      GEOSX_WARNING( "This test is currently known to fail when " #COND " because:\n" REASON "\n" \
-                                                                                             "Therefore, we skip it entirely for this run (may show as PASSED or SKIPPED)" ); \
-      GTEST_SKIP(); \
-    } \
+#define SKIP_TEST_IF( COND, REASON )                                          \
+  do                                                                          \
+  {                                                                           \
+    if( COND )                                                                \
+    {                                                                         \
+      GEOSX_WARNING( "This test is currently known to fail when " #COND       \
+                     " because:\n" REASON                                     \
+                     "\n"                                                     \
+                     "Therefore, we skip it entirely for this run (may show " \
+                     "as PASSED or SKIPPED)" );                               \
+      GTEST_SKIP();                                                           \
+    }                                                                         \
   } while( 0 )
 
-#define SKIP_TEST_IN_SERIAL( REASON ) \
-  do \
-  { \
+#define SKIP_TEST_IN_SERIAL( REASON )                            \
+  do                                                             \
+  {                                                              \
     int const mpiSize = MpiWrapper::Comm_size( MPI_COMM_GEOSX ); \
-    SKIP_TEST_IF( mpiSize == 1, REASON ); \
+    SKIP_TEST_IF( mpiSize == 1, REASON );                        \
   } while( 0 )
 
-#define SKIP_TEST_IN_PARALLEL( REASON ) \
-  do \
-  { \
+#define SKIP_TEST_IN_PARALLEL( REASON )                          \
+  do                                                             \
+  {                                                              \
     int const mpiSize = MpiWrapper::Comm_size( MPI_COMM_GEOSX ); \
-    SKIP_TEST_IF( mpiSize != 1, REASON ); \
+    SKIP_TEST_IF( mpiSize != 1, REASON );                        \
   } while( 0 )
 
-real64 drand( real64 min = 0.0, real64 max = 1.0 )
+real64
+drand( real64 min = 0.0, real64 max = 1.0 )
 {
   real64 f = (real64)rand() / RAND_MAX;
-  return min + f * (max - min);
+  return min + f * ( max - min );
 }
 
 TEST( testPacking, testPacking )
 {
-  std::srand( std::time( nullptr ));
+  std::srand( std::time( nullptr ) );
   constexpr localIndex size = 10000;
   array1d< R1Tensor > veloc( size );
   array1d< R1Tensor > unpacked( size );
 
   for( localIndex ii = 0; ii < size; ++ii )
-    for( localIndex jj = 0; jj < 3; ++jj )
-      veloc[ii][jj] = drand();
+    for( localIndex jj = 0; jj < 3; ++jj ) veloc[ii][jj] = drand();
 
   buffer_unit_type * null_buf = NULL;
   localIndex calc_size = bufferOps::Pack< false >( null_buf, veloc );
@@ -84,8 +87,7 @@ TEST( testPacking, testPacking )
 
 TEST( testPacking, testPackByIndex )
 {
-
-  std::srand( std::time( nullptr ));
+  std::srand( std::time( nullptr ) );
   constexpr localIndex size = 10000;
   localIndex pack_count = std::rand() % size;
   array1d< R1Tensor > veloc( size );
@@ -93,8 +95,7 @@ TEST( testPacking, testPackByIndex )
   array1d< R1Tensor > unpacked( size );
 
   for( localIndex ii = 0; ii < size; ++ii )
-    for( localIndex jj = 0; jj < 3; ++jj )
-      veloc[ii][jj] = drand();
+    for( localIndex jj = 0; jj < 3; ++jj ) veloc[ii][jj] = drand();
 
   for( localIndex ii = 0; ii < pack_count; ++ii )
     indices[ii] = std::rand() % size;
@@ -120,13 +121,13 @@ TEST( testPacking, testPackByIndex )
 
 TEST( testPacking, testTensorPacking )
 {
-  std::srand( std::time( nullptr ));
+  std::srand( std::time( nullptr ) );
   array1d< R1Tensor > tns( 1 );
-  for( localIndex ii = 0; ii < 3; ++ii )
-    tns[0][ii] = drand();
+  for( localIndex ii = 0; ii < 3; ++ii ) tns[0][ii] = drand();
 
   buffer_unit_type * null_buf = nullptr;
-  localIndex calc_size = bufferOps::PackDevice< false >( null_buf, tns.toViewConst() );
+  localIndex calc_size =
+    bufferOps::PackDevice< false >( null_buf, tns.toViewConst() );
   buffer_type buf( calc_size );
   buffer_unit_type * b = &buf[0];
   bufferOps::PackDevice< true >( b, tns.toViewConst() );
@@ -135,38 +136,36 @@ TEST( testPacking, testTensorPacking )
   buffer_unit_type const * bc = &buf[0];
   bufferOps::UnpackDevice( bc, unp.toView() );
   unp.move( LvArray::MemorySpace::CPU );
-  for( localIndex ii = 0; ii < 3; ++ii )
-    EXPECT_TRUE( tns[0][ii] = unp[0][ii] );
+  for( localIndex ii = 0; ii < 3; ++ii ) EXPECT_TRUE( tns[0][ii] = unp[0][ii] );
 }
 
 TEST( testPacking, testPackingDevice )
 {
-  std::srand( std::time( nullptr ));
+  std::srand( std::time( nullptr ) );
   constexpr localIndex size = 10000;
   array1d< R1Tensor > veloc( size );
   array1d< R1Tensor > unpacked( size );
 
   for( localIndex ii = 0; ii < size; ++ii )
-    for( localIndex jj = 0; jj < 3; ++jj )
-      veloc[ii][jj] = drand();
+    for( localIndex jj = 0; jj < 3; ++jj ) veloc[ii][jj] = drand();
 
   buffer_unit_type * null_buf = NULL;
-  localIndex calc_size = bufferOps::PackDevice< false >( null_buf, veloc.toViewConst() );
+  localIndex calc_size =
+    bufferOps::PackDevice< false >( null_buf, veloc.toViewConst() );
 
   buffer_type buf( calc_size );
   buffer_unit_type * buffer = &buf[0];
-  bufferOps::PackDevice< true >( buffer, veloc.toViewConst());
+  bufferOps::PackDevice< true >( buffer, veloc.toViewConst() );
 
   buffer_unit_type const * cbuffer = &buf[0];
-  bufferOps::UnpackDevice( cbuffer, unpacked.toView());
+  bufferOps::UnpackDevice( cbuffer, unpacked.toView() );
   unpacked.move( LvArray::MemorySpace::CPU );
-  for( localIndex ii = 0; ii < size; ++ii )
-    EXPECT_EQ( veloc[ii], unpacked[ii] );
+  for( localIndex ii = 0; ii < size; ++ii ) EXPECT_EQ( veloc[ii], unpacked[ii] );
 }
 
 TEST( testPacking, testPackByIndexDevice )
 {
-  std::srand( std::time( nullptr ));
+  std::srand( std::time( nullptr ) );
   constexpr localIndex size = 10000;
   localIndex pack_count = std::rand() % size;
   array1d< R1Tensor > veloc( size );
@@ -174,8 +173,7 @@ TEST( testPacking, testPackByIndexDevice )
   array1d< R1Tensor > unpacked( size );
 
   for( localIndex ii = 0; ii < size; ++ii )
-    for( localIndex jj = 0; jj < 3; ++jj )
-      veloc[ii][jj] = drand();
+    for( localIndex jj = 0; jj < 3; ++jj ) veloc[ii][jj] = drand();
 
   for( localIndex ii = 0; ii < pack_count; ++ii )
     indices[ii] = std::rand() % size;
@@ -185,14 +183,21 @@ TEST( testPacking, testPackByIndexDevice )
   buffer_unit_type * null_buf = NULL;
   // [ num_dim, stride_i.. , tensor_0, tensor_1, ..., tensor_n ]
   arrayView1d< R1Tensor const > const & veloc_view = veloc.toViewConst();
-  localIndex calc_size = bufferOps::PackByIndexDevice< false >( null_buf, veloc_view, indices.toViewConst());
+  localIndex calc_size =
+    bufferOps::PackByIndexDevice< false >( null_buf,
+                                           veloc_view,
+                                           indices.toViewConst() );
   buffer_type buf( calc_size );
   buffer_unit_type * buffer = &buf[0];
-  localIndex packed_size = bufferOps::PackByIndexDevice< true >( buffer, veloc_view, indices.toViewConst());
-  EXPECT_EQ ( calc_size, packed_size );
+  localIndex packed_size =
+    bufferOps::PackByIndexDevice< true >( buffer, veloc_view, indices.toViewConst() );
+  EXPECT_EQ( calc_size, packed_size );
   buffer_unit_type const * cbuffer = &buf[0];
-  localIndex unpacked_size = bufferOps::UnpackByIndexDevice( cbuffer, unpacked.toView(), indices.toViewConst());
-  EXPECT_EQ ( unpacked_size, packed_size );
+  localIndex unpacked_size =
+    bufferOps::UnpackByIndexDevice( cbuffer,
+                                    unpacked.toView(),
+                                    indices.toViewConst() );
+  EXPECT_EQ( unpacked_size, packed_size );
   unpacked.move( LvArray::MemorySpace::CPU );
   for( localIndex ii = 0; ii < size; ++ii )
   {
@@ -203,8 +208,8 @@ TEST( testPacking, testPackByIndexDevice )
   }
 }
 
-
-int main( int ac, char * av[] )
+int
+main( int ac, char * av[] )
 {
   ::testing::InitGoogleTest( &ac, av );
   geosx::basicSetup( ac, av );

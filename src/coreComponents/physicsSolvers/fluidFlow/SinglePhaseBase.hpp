@@ -24,10 +24,8 @@
 
 namespace geosx
 {
-
 namespace constitutive
 {
-
 class ConstitutiveBase;
 
 }
@@ -45,9 +43,7 @@ public:
    * @param name the name of this instantiation of Group in the repository
    * @param parent the parent group of this instantiation of Group
    */
-  SinglePhaseBase( const std::string & name,
-                   Group * const parent );
-
+  SinglePhaseBase( const std::string & name, Group * const parent );
 
   /// deleted default constructor
   SinglePhaseBase() = delete;
@@ -59,24 +55,28 @@ public:
   SinglePhaseBase( SinglePhaseBase && ) = default;
 
   /// deleted assignment operator
-  SinglePhaseBase & operator=( SinglePhaseBase const & ) = delete;
+  SinglePhaseBase &
+  operator=( SinglePhaseBase const & ) = delete;
 
   /// deleted move operator
-  SinglePhaseBase & operator=( SinglePhaseBase && ) = delete;
+  SinglePhaseBase &
+  operator=( SinglePhaseBase && ) = delete;
 
   /**
    * @brief default destructor
    */
   virtual ~SinglePhaseBase() override = default;
 
-  virtual void RegisterDataOnMesh( Group * const MeshBodies ) override;
+  virtual void
+  RegisterDataOnMesh( Group * const MeshBodies ) override;
 
-  virtual void SetupSystem( DomainPartition & domain,
-                            DofManager & dofManager,
-                            CRSMatrix< real64, globalIndex > & localMatrix,
-                            array1d< real64 > & localRhs,
-                            array1d< real64 > & localSolution,
-                            bool const setSparsity = true ) override;
+  virtual void
+  SetupSystem( DomainPartition & domain,
+               DofManager & dofManager,
+               CRSMatrix< real64, globalIndex > & localMatrix,
+               array1d< real64 > & localRhs,
+               array1d< real64 > & localSolution,
+               bool const setSparsity = true ) override;
 
   virtual real64
   SolverStep( real64 const & time_n,
@@ -97,20 +97,22 @@ public:
                      DomainPartition & domain ) override;
 
   virtual void
-  AssembleSystem( real64 const time_n,
-                  real64 const dt,
-                  DomainPartition & domain,
-                  DofManager const & dofManager,
-                  CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                  arrayView1d< real64 > const & localRhs ) override;
+  AssembleSystem(
+    real64 const time_n,
+    real64 const dt,
+    DomainPartition & domain,
+    DofManager const & dofManager,
+    CRSMatrixView< real64, globalIndex const > const & localMatrix,
+    arrayView1d< real64 > const & localRhs ) override;
 
   virtual void
-  ApplyBoundaryConditions( real64 const time_n,
-                           real64 const dt,
-                           DomainPartition & domain,
-                           DofManager const & dofManager,
-                           CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                           arrayView1d< real64 > const & localRhs ) override;
+  ApplyBoundaryConditions(
+    real64 const time_n,
+    real64 const dt,
+    DomainPartition & domain,
+    DofManager const & dofManager,
+    CRSMatrixView< real64, globalIndex const > const & localMatrix,
+    arrayView1d< real64 > const & localRhs ) override;
 
   virtual void
   SolveSystem( DofManager const & dofManager,
@@ -127,18 +129,20 @@ public:
                         DomainPartition & domain ) override;
 
   template< bool ISPORO, typename POLICY >
-  void AccumulationLaunch( localIndex const targetIndex,
-                           CellElementSubRegion & subRegion,
-                           DofManager const & dofManager,
-                           CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                           arrayView1d< real64 > const & localRhs );
+  void
+  AccumulationLaunch( localIndex const targetIndex,
+                      CellElementSubRegion & subRegion,
+                      DofManager const & dofManager,
+                      CRSMatrixView< real64, globalIndex const > const & localMatrix,
+                      arrayView1d< real64 > const & localRhs );
 
   template< bool ISPORO, typename POLICY >
-  void AccumulationLaunch( localIndex const targetIndex,
-                           FaceElementSubRegion const & subRegion,
-                           DofManager const & dofManager,
-                           CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                           arrayView1d< real64 > const & localRhs );
+  void
+  AccumulationLaunch( localIndex const targetIndex,
+                      FaceElementSubRegion const & subRegion,
+                      DofManager const & dofManager,
+                      CRSMatrixView< real64, globalIndex const > const & localMatrix,
+                      arrayView1d< real64 > const & localRhs );
 
   ///@}
 
@@ -152,10 +156,12 @@ public:
    * @param localRhs the system right-hand side vector
    */
   template< bool ISPORO, typename POLICY >
-  void AssembleAccumulationTerms( DomainPartition & domain,
-                                  DofManager const & dofManager,
-                                  CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                                  arrayView1d< real64 > const & localRhs );
+  void
+  AssembleAccumulationTerms(
+    DomainPartition & domain,
+    DofManager const & dofManager,
+    CRSMatrixView< real64, globalIndex const > const & localMatrix,
+    arrayView1d< real64 > const & localRhs );
 
   /**
    * @brief assembles the flux terms for all cells
@@ -167,12 +173,13 @@ public:
    * @param localRhs the system right-hand side vector
    */
   virtual void
-  AssembleFluxTerms( real64 const time_n,
-                     real64 const dt,
-                     DomainPartition const & domain,
-                     DofManager const & dofManager,
-                     CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                     arrayView1d< real64 > const & localRhs ) = 0;
+  AssembleFluxTerms(
+    real64 const time_n,
+    real64 const dt,
+    DomainPartition const & domain,
+    DofManager const & dofManager,
+    CRSMatrixView< real64, globalIndex const > const & localMatrix,
+    arrayView1d< real64 > const & localRhs ) = 0;
 
   void
   ApplyDiricletBC( real64 const time_n,
@@ -194,7 +201,8 @@ public:
    * @brief Function to update all constitutive state and dependent variables
    * @param dataGroup group that contains the fields
    */
-  virtual void UpdateState( Group & dataGroup, localIndex const targetIndex ) const;
+  virtual void
+  UpdateState( Group & dataGroup, localIndex const targetIndex ) const;
 
   struct viewKeyStruct : FlowSolverBase::viewKeyStruct
   {
@@ -214,51 +222,69 @@ public:
 
   } viewKeysSinglePhaseBase;
 
-  viewKeyStruct & viewKeys()
-  { return viewKeysSinglePhaseBase; }
+  viewKeyStruct &
+  viewKeys()
+  {
+    return viewKeysSinglePhaseBase;
+  }
 
-  viewKeyStruct const & viewKeys() const
-  { return viewKeysSinglePhaseBase; }
+  viewKeyStruct const &
+  viewKeys() const
+  {
+    return viewKeysSinglePhaseBase;
+  }
 
   struct groupKeyStruct : SolverBase::groupKeyStruct
-  {} groupKeysSinglePhaseBase;
+  {
+  } groupKeysSinglePhaseBase;
 
-  groupKeyStruct & groupKeys()
-  { return groupKeysSinglePhaseBase; }
+  groupKeyStruct &
+  groupKeys()
+  {
+    return groupKeysSinglePhaseBase;
+  }
 
-  groupKeyStruct const & groupKeys() const
-  { return groupKeysSinglePhaseBase; }
+  groupKeyStruct const &
+  groupKeys() const
+  {
+    return groupKeysSinglePhaseBase;
+  }
 
   /**
    * @brief Setup stored views into domain data for the current step
    */
-  virtual void ResetViews( MeshLevel & mesh ) override;
+  virtual void
+  ResetViews( MeshLevel & mesh ) override;
 
-  virtual void InitializePreSubGroups( Group * const rootGroup ) override;
+  virtual void
+  InitializePreSubGroups( Group * const rootGroup ) override;
 
-  virtual void InitializePostInitialConditions_PreSubGroups( dataRepository::Group * const rootGroup ) override;
+  virtual void
+  InitializePostInitialConditions_PreSubGroups(
+    dataRepository::Group * const rootGroup ) override;
 
   /**
    * @brief Backup current values of all constitutive fields that participate in the accumulation term
    * @param mesh the mesh to operate on
    */
-  void BackupFields( MeshLevel & mesh ) const;
+  void
+  BackupFields( MeshLevel & mesh ) const;
 
 protected:
-
-  virtual void ValidateFluidModels( DomainPartition const & domain ) const;
+  virtual void
+  ValidateFluidModels( DomainPartition const & domain ) const;
 
   /**
    * @brief Structure holding views into fluid properties used by the base solver.
    */
   struct FluidPropViews
   {
-    arrayView2d< real64 const > const & dens;        ///< density
-    arrayView2d< real64 const > const & dDens_dPres; ///< derivative of density w.r.t. pressure
-    arrayView2d< real64 const > const & visc;        ///< viscosity
-    arrayView2d< real64 const > const & dVisc_dPres; ///< derivative of viscosity w.r.t. pressure
-    real64 const defaultDensity;                     ///< default density to use for new elements
-    real64 const defaulViscosity;                    ///< default vi to use for new elements
+    arrayView2d< real64 const > const & dens;         ///< density
+    arrayView2d< real64 const > const & dDens_dPres;  ///< derivative of density w.r.t. pressure
+    arrayView2d< real64 const > const & visc;         ///< viscosity
+    arrayView2d< real64 const > const & dVisc_dPres;  ///< derivative of viscosity w.r.t. pressure
+    real64 const defaultDensity;                      ///< default density to use for new elements
+    real64 const defaulViscosity;                     ///< default vi to use for new elements
   };
 
   /**
@@ -271,7 +297,9 @@ protected:
    * SinglePhaseProppantBase to allow using SlurryFluidBase, which does not inherit from
    * SingleFluidBase currently (but this design may need to be revised).
    */
-  virtual FluidPropViews getFluidProperties( constitutive::ConstitutiveBase const & fluid ) const;
+  virtual FluidPropViews
+  getFluidProperties(
+    constitutive::ConstitutiveBase const & fluid ) const;
 
   /**
    * @brief Extract pore volume multiplier array from a subregion.
@@ -283,25 +311,31 @@ protected:
    * multiplier produced by ProppantTransport solver, which we otherwise don't know about.
    * This design should DEFINITELY be revisited.
    */
-  virtual arrayView1d< real64 const > const & getPoreVolumeMult( ElementSubRegionBase const & subRegion ) const;
+  virtual arrayView1d< real64 const > const &
+  getPoreVolumeMult(
+    ElementSubRegionBase const & subRegion ) const;
 
   /**
    * @brief Function to update all constitutive models
    * @param dataGroup group that contains the fields
    */
-  virtual void UpdateFluidModel( Group & dataGroup, localIndex const targetIndex ) const;
+  virtual void
+  UpdateFluidModel( Group & dataGroup,
+                    localIndex const targetIndex ) const;
 
   /**
    * @brief Function to update all constitutive models
    * @param dataGroup group that contains the fields
    */
-  void UpdateSolidModel( Group & dataGroup, localIndex const targetIndex ) const;
+  void
+  UpdateSolidModel( Group & dataGroup, localIndex const targetIndex ) const;
 
   /**
    * @brief Function to update fluid mobility
    * @param dataGroup group that contains the fields
    */
-  void UpdateMobility( Group & dataGroup, localIndex const targetIndex ) const;
+  void
+  UpdateMobility( Group & dataGroup, localIndex const targetIndex ) const;
 
   ElementRegionManager::ElementViewAccessor< arrayView1d< real64 const > > m_pressure;
   ElementRegionManager::ElementViewAccessor< arrayView1d< real64 const > > m_deltaPressure;
@@ -319,11 +353,10 @@ protected:
   ElementRegionManager::ElementViewAccessor< arrayView1d< R1Tensor const > > m_transTMultiplier;
 
 private:
-
-  virtual void ResetViewsPrivate( ElementRegionManager const & elemManager );
-
+  virtual void
+  ResetViewsPrivate( ElementRegionManager const & elemManager );
 };
 
 } /* namespace geosx */
 
-#endif //GEOSX_PHYSICSSOLVERS_FLUIDFLOW_SINGLEPHASEBASE_HPP_
+#endif  //GEOSX_PHYSICSSOLVERS_FLUIDFLOW_SINGLEPHASEBASE_HPP_

@@ -22,19 +22,20 @@
 
 namespace geosx
 {
-
-
-void erase( OrderedVariableToManyElementRelation & relation,
-            localIndex const firstIndex,
-            localIndex const er,
-            localIndex const esr,
-            localIndex const ei )
+void
+erase( OrderedVariableToManyElementRelation & relation,
+       localIndex const firstIndex,
+       localIndex const er,
+       localIndex const esr,
+       localIndex const ei )
 {
-  for( localIndex a=relation.m_toElementRegion.sizeOfArray( firstIndex )-1; a>=0; --a )
+  for( localIndex a = relation.m_toElementRegion.sizeOfArray( firstIndex ) - 1;
+       a >= 0;
+       --a )
   {
-    if( er==relation.m_toElementRegion[firstIndex][a] &&
-        esr==relation.m_toElementSubRegion[firstIndex][a] &&
-        ei==relation.m_toElementIndex[firstIndex][a] )
+    if( er == relation.m_toElementRegion[firstIndex][a] &&
+        esr == relation.m_toElementSubRegion[firstIndex][a] &&
+        ei == relation.m_toElementIndex[firstIndex][a] )
     {
       relation.m_toElementRegion.eraseFromArray( firstIndex, a );
       relation.m_toElementSubRegion.eraseFromArray( firstIndex, a );
@@ -43,18 +44,20 @@ void erase( OrderedVariableToManyElementRelation & relation,
   }
 }
 
-void insert( OrderedVariableToManyElementRelation & relation,
-             localIndex const firstIndex,
-             localIndex const er,
-             localIndex const esr,
-             localIndex const ei )
+void
+insert( OrderedVariableToManyElementRelation & relation,
+        localIndex const firstIndex,
+        localIndex const er,
+        localIndex const esr,
+        localIndex const ei )
 {
   bool alreadyPresent = false;
-  for( localIndex a=0; a<relation.m_toElementRegion.sizeOfArray( firstIndex ); ++a )
+  for( localIndex a = 0; a < relation.m_toElementRegion.sizeOfArray( firstIndex );
+       ++a )
   {
-    if( er==relation.m_toElementRegion[firstIndex][a] &&
-        esr==relation.m_toElementSubRegion[firstIndex][a] &&
-        ei==relation.m_toElementIndex[firstIndex][a] )
+    if( er == relation.m_toElementRegion[firstIndex][a] &&
+        esr == relation.m_toElementSubRegion[firstIndex][a] &&
+        ei == relation.m_toElementIndex[firstIndex][a] )
     {
       alreadyPresent = true;
     }

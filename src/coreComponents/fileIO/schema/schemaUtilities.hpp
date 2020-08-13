@@ -28,7 +28,6 @@
 
 namespace geosx
 {
-
 // Forward declarations
 namespace dataRepository
 {
@@ -37,7 +36,6 @@ class Group;
 
 namespace schemaUtilities
 {
-
 /**
  * @brief Generates the XML schema.
  *
@@ -45,14 +43,18 @@ namespace schemaUtilities
  * @param group group passed in from which the schema information is extracted
  * @param documentationType type of XML schema generated
  */
-void ConvertDocumentationToSchema( std::string const & fname, dataRepository::Group * const group, integer documentationType );
+void
+ConvertDocumentationToSchema( std::string const & fname,
+                              dataRepository::Group * const group,
+                              integer documentationType );
 
 /**
  * @brief Generates the simple schema types.
  *
  * @param schemaRoot XML node corresponding to the root
  */
-void BuildSimpleSchemaTypes( xmlWrapper::xmlNode schemaRoot );
+void
+BuildSimpleSchemaTypes( xmlWrapper::xmlNode schemaRoot );
 
 /**
  * @brief Recursively builds the schema from the data structure skeleton.
@@ -62,10 +64,13 @@ void BuildSimpleSchemaTypes( xmlWrapper::xmlNode schemaRoot );
  * @param schemaParent XML node for the parent node
  * @param documentationType type of XML schema generated
  */
-void SchemaConstruction( dataRepository::Group * const group, xmlWrapper::xmlNode schemaRoot, xmlWrapper::xmlNode schemaParent,
-                         integer documentationType );
+void
+SchemaConstruction( dataRepository::Group * const group,
+                    xmlWrapper::xmlNode schemaRoot,
+                    xmlWrapper::xmlNode schemaParent,
+                    integer documentationType );
 
-} /// namespace schemaUtilities
-} /// namespace geosx
+}  // namespace schemaUtilities
+}  // namespace geosx
 
 #endif /* GEOSX_FILEIO_SCHEMA_SCHEMAUTILITIES_HPP_ */

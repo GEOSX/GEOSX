@@ -28,7 +28,6 @@
 
 namespace geosx
 {
-
 namespace dataRepository
 {
 class Group;
@@ -43,7 +42,6 @@ class ObjectManagerBase;
 class PartitionBase
 {
 public:
-
   /**
    * @brief Virtual empty destructor for C++ inheritance reasons
    */
@@ -55,37 +53,41 @@ public:
    *
    * Actually unused function, consider removing.
    */
-  void SetDomain( DomainPartition * domain );
-
+  void
+  SetDomain( DomainPartition * domain );
 
   /**
    * @brief Checks if the point located inside the current partition.
    * @param elemCenter The point coordinates.
    * @return The predicate result.
    */
-  virtual bool IsCoordInPartition( const R1Tensor & elemCenter ) = 0;
+  virtual bool
+  IsCoordInPartition( const R1Tensor & elemCenter ) = 0;
   /**
    * @brief Checks if the point located inside the current partition, taking in to account the distant partition.
    * @param elemCenter The point coordinates.
    * @param numDistPartition The number of distant partitions.
    * @return The predicate result.
    */
-  virtual bool IsCoordInPartition( const R1Tensor & elemCenter,
-                                   const int numDistPartition ) = 0;
+  virtual bool
+  IsCoordInPartition( const R1Tensor & elemCenter,
+                      const int numDistPartition ) = 0;
   /**
    * @brief Checks if the point located inside the current partition in the given direction dir.
    * @param coord The point coordinates.
    * @param dir The considered direction.
    * @return The predicate result.
    */
-  virtual bool IsCoordInPartition( const realT & coord, const int dir ) = 0;
+  virtual bool
+  IsCoordInPartition( const realT & coord, const int dir ) = 0;
 
   /**
    * @brief Defines the dimensions of the grid.
    * @param min Global minimum spatial dimensions.
    * @param max Global maximum spatial dimensions.
    */
-  virtual void setSizes( const R1Tensor & min, const R1Tensor & max ) = 0;
+  virtual void
+  setSizes( const R1Tensor & min, const R1Tensor & max ) = 0;
 
   /**
    * @brief Defines the number of partitions along the three (x, y, z) axis.
@@ -93,58 +95,60 @@ public:
    * @param yPartitions Number of partitions along y.
    * @param zPartitions Number of partitions along z.
    */
-  virtual void setPartitions( unsigned int xPartitions,
-                              unsigned int yPartitions,
-                              unsigned int zPartitions ) = 0;
+  virtual void
+  setPartitions( unsigned int xPartitions,
+                 unsigned int yPartitions,
+                 unsigned int zPartitions ) = 0;
 
   /**
    * @brief Checks if the point (as an element center) is in contact of a ghost.
    * @param elemCenter The position of an element center.
    * @return The predicate result.
    */
-  virtual bool IsCoordInContactGhostRange( const R1Tensor & elemCenter ) = 0;
+  virtual bool
+  IsCoordInContactGhostRange( const R1Tensor & elemCenter ) = 0;
 
-//  virtual void ReadXML( xmlWrapper::xmlNode const & targetNode ) = 0;
+  //  virtual void ReadXML( xmlWrapper::xmlNode const & targetNode ) = 0;
 
   //virtual void AssignGlobalIndices( DomainPartition * domain );
 
-//  virtual void FindMatchedBoundaryIndices( string const & key,
-//                                           const ObjectManagerBase& object );
+  //  virtual void FindMatchedBoundaryIndices( string const & key,
+  //                                           const ObjectManagerBase& object );
 
+  //  virtual void SetUpNeighborLists( DomainPartition * domain,
+  //                                   const bool contactActive );
 
-//  virtual void SetUpNeighborLists( DomainPartition * domain,
-//                                   const bool contactActive );
+  //  void SetRankOfNeighborNeighbors();
 
-//  void SetRankOfNeighborNeighbors();
+  //  virtual void ResetNeighborLists( PhysicalDomainT& domain,
+  //                                   const int elementGhostingDepth );
 
-//  virtual void ResetNeighborLists( PhysicalDomainT& domain,
-//                                   const int elementGhostingDepth );
+  //  virtual void ModifyGhostsAndNeighborLists( const ModifiedObjectLists& modifiedObjects );
 
-//  virtual void ModifyGhostsAndNeighborLists( const ModifiedObjectLists& modifiedObjects );
+  //  template< typename T >
+  //  void SendReceive( const array1d< array1d< T > > & sendArray, array1d< array1d< T > > & recvArray );
 
-//  template< typename T >
-//  void SendReceive( const array1d< array1d< T > > & sendArray, array1d< array1d< T > > & recvArray );
+  //  void SynchronizeFields( const std::map<std::string, string_array >& fieldNames,
+  //                          const CommRegistry::commID commID = CommRegistry::genericComm01 );
 
-//  void SynchronizeFields( const std::map<std::string, string_array >& fieldNames,
-//                          const CommRegistry::commID commID = CommRegistry::genericComm01 );
+  //  void SetOwnedByRank( const std::map< std::string, globalIndex_array > & localBoundaryGlobalIndices,
+  //                       std::map< std::string, std::map< globalIndex, int > > & boundaryOwnership );
 
-//  void SetOwnedByRank( const std::map< std::string, globalIndex_array > & localBoundaryGlobalIndices,
-//                       std::map< std::string, std::map< globalIndex, int > > & boundaryOwnership );
+  //  void SetGhostArrays( DomainPartition * domain );
 
-//  void SetGhostArrays( DomainPartition * domain );
-
-//  localIndex_array GetFaceSendIndices();
+  //  localIndex_array GetFaceSendIndices();
 
   /**
    * @brief Defines a distance/buffer below which we are considered in the contact zone ghosts.
    * @param bufferSize The distance.
    */
-  virtual void SetContactGhostRange( const realT bufferSize ) = 0;
-//
-//  void SetBufferSizes( const std::map<string, string_array >& fieldNames,
-//                       const CommRegistry::commID commID  );
-//
-//  int NumberOfNeighbors( ) {return LvArray::integerConversion<int>(m_neighbors.size());}
+  virtual void
+  SetContactGhostRange( const realT bufferSize ) = 0;
+  //
+  //  void SetBufferSizes( const std::map<string, string_array >& fieldNames,
+  //                       const CommRegistry::commID commID  );
+  //
+  //  int NumberOfNeighbors( ) {return LvArray::integerConversion<int>(m_neighbors.size());}
 
   /// Size of the group associated with the MPI communicator
   int m_size;
@@ -159,7 +163,8 @@ public:
    *
    * @note The other Color member function.
    */
-  virtual int GetColor() = 0;
+  virtual int
+  GetColor() = 0;
 
   /**
    * @brief Returns the associated color.
@@ -167,15 +172,23 @@ public:
    *
    * @note The other GetColor member function.
    */
-  int Color() const {return m_color;}
+  int
+  Color() const
+  {
+    return m_color;
+  }
   /**
    * @brief Returns the number of colors.
    * @return The number of associated colors.
    */
-  int NumColor() const {return m_numColors;}
+  int
+  NumColor() const
+  {
+    return m_numColors;
+  }
 
-//  void DeleteExcessNeighbors();
-//  void GraphBasedColoring();
+  //  void DeleteExcessNeighbors();
+  //  void GraphBasedColoring();
 
 protected:
   /**
@@ -187,14 +200,16 @@ protected:
    * @param numPartitions Size of the partitions.
    * @param thisPartiton The rank of the build partition.
    */
-  PartitionBase( const unsigned int numPartitions, const unsigned int thisPartiton );
+  PartitionBase( const unsigned int numPartitions,
+                 const unsigned int thisPartiton );
 
   /**
    * @brief Called by Initialize() after to initializing sub-Groups.
    * @param group A group that is passed in to the initialization functions
    *              in order to facilitate the initialization.
    */
-  virtual void InitializePostSubGroups( dataRepository::Group * const group ) = 0;
+  virtual void
+  InitializePostSubGroups( dataRepository::Group * const group ) = 0;
 
   /**
    * @brief Array of neighbor communicators.
@@ -256,14 +271,12 @@ public:
   int m_ghostDepth;
 
 private:
-//  virtual void AssignGlobalIndices( ObjectDataStructureBaseT& object, const ObjectDataStructureBaseT&
-// compositionObject );
+  //  virtual void AssignGlobalIndices( ObjectDataStructureBaseT& object, const ObjectDataStructureBaseT&
+  // compositionObject );
 
-//  void CommunicateRequiredObjectIndices();
-
-
+  //  void CommunicateRequiredObjectIndices();
 };
 
-}
+}  // namespace geosx
 
 #endif /* GEOSX_MPICOMMUNICATIONS_PARTITIONBASE_HPP_ */

@@ -24,7 +24,6 @@
 
 namespace geosx
 {
-
 /**
  * @class ChomboIO
  *
@@ -43,29 +42,34 @@ public:
    * @brief Catalog name interface
    * @return This type's catalog name
    */
-  static string CatalogName()
-  { return "ChomboIO"; }
+  static string
+  CatalogName()
+  {
+    return "ChomboIO";
+  }
 
   /**
    * @brief Writes out a Chombo plot file.
    * @copydetails EventBase::Execute()
    */
-  virtual void Execute( real64 const time_n,
-                        real64 const dt,
-                        integer const cycleNumber,
-                        integer const eventCounter,
-                        real64 const eventProgress,
-                        dataRepository::Group * const domain ) override;
+  virtual void
+  Execute( real64 const time_n,
+           real64 const dt,
+           integer const cycleNumber,
+           integer const eventCounter,
+           real64 const eventProgress,
+           dataRepository::Group * const domain ) override;
 
   /**
    * @brief Writes out a Chombo plot file at the end of the simulation.
    * @copydetails ExecutableGroup::Cleanup()
    */
-  virtual void Cleanup( real64 const time_n,
-                        integer const cycleNumber,
-                        integer const eventCounter,
-                        real64 const eventProgress,
-                        dataRepository::Group * const domain ) override
+  virtual void
+  Cleanup( real64 const time_n,
+           integer const cycleNumber,
+           integer const eventCounter,
+           real64 const eventProgress,
+           dataRepository::Group * const domain ) override
   {
     m_waitForInput = 0;
     Execute( time_n, 0.0, cycleNumber, eventCounter, eventProgress, domain );
@@ -96,7 +100,6 @@ private:
   integer m_waitForInput;
   integer m_useChomboPressures;
 };
-
 
 } /* namespace geosx */
 

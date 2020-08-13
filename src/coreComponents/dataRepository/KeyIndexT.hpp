@@ -34,17 +34,15 @@
  * upon first use. The intent is to use the index for lookups, and check the
  * key to confirm the key is correct.
  */
-template< typename KEY_TYPE = std::string,
-          typename INDEX_TYPE = int,
-          int INVALID_INDEX = -1 >
+template< typename KEY_TYPE = std::string, typename INDEX_TYPE = int, int INVALID_INDEX = -1 >
 class KeyIndexT
 {
 public:
   /// the type used for the map key
-  using key_type      = KEY_TYPE;
+  using key_type = KEY_TYPE;
 
   /// the type used for the index
-  using index_type    = INDEX_TYPE;
+  using index_type = INDEX_TYPE;
 
   /// the value of an invalid index
   constexpr static INDEX_TYPE invalid_index = INVALID_INDEX;
@@ -58,7 +56,7 @@ public:
    * @brief Constructor that sets the key.
    * @param[in] key the key that defines the KeyIndex
    */
-  KeyIndexT( KEY_TYPE const & key ):
+  KeyIndexT( KEY_TYPE const & key ) :
     m_key( key ),
     m_index( INVALID_INDEX )
   {}
@@ -72,7 +70,8 @@ public:
    * @brief Copy assignment operator.
    * @return reference to this object
    */
-  KeyIndexT & operator=( KeyIndexT const & ) = default;
+  KeyIndexT &
+  operator=( KeyIndexT const & ) = default;
 
   /**
    * @brief Move constructor.
@@ -83,49 +82,62 @@ public:
    * @brief Move assignment operator.
    * @return reference to this object
    */
-  KeyIndexT & operator=( KeyIndexT && ) = default;
+  KeyIndexT &
+  operator=( KeyIndexT && ) = default;
 
   /**
    * @brief Comparison equals operator.
    * @param key the key to compare
    * @return true if m_key==key
    */
-  bool operator==( KEY_TYPE const & key ) const
-  { return m_key == key; }
+  bool
+  operator==( KEY_TYPE const & key ) const
+  {
+    return m_key == key;
+  }
 
   /**
    * @brief Destructor.
    */
-  virtual ~KeyIndexT() {}
+  virtual ~KeyIndexT()
+  {}
 
   /**
    * @brief Access for the key.
    * @return a const reference of the key
    */
-  KEY_TYPE const & Key() const
-  { return m_key; }
+  KEY_TYPE const &
+  Key() const
+  {
+    return m_key;
+  }
 
   /**
    * @brief Access for the index.
    * @return a const reference to the index
    */
-  INDEX_TYPE const & Index() const
-  { return m_index; }
+  INDEX_TYPE const &
+  Index() const
+  {
+    return m_index;
+  }
 
   /**
    * @brief Check to see of the index has been set.
    * @return true if the index has been set
    */
-  bool isIndexSet() const
+  bool
+  isIndexSet() const
   {
-    return m_index==INVALID_INDEX ? false : true;
+    return m_index == INVALID_INDEX ? false : true;
   }
 
   /**
    * @brief Set the index.
    * @param[in] index new value of the index
    */
-  void setIndex( INDEX_TYPE const & index ) const
+  void
+  setIndex( INDEX_TYPE const & index ) const
   {
     m_index = index;
   }
@@ -148,7 +160,9 @@ private:
  * @return a reference to the stream @p os
  */
 template< typename KEY_TYPE, typename INDEX_TYPE, int INVALID_INDEX >
-std::ostream & operator<<( std::ostream & os, const KeyIndexT< KEY_TYPE, INDEX_TYPE, INVALID_INDEX > key )
+std::ostream &
+operator<<( std::ostream & os,
+            const KeyIndexT< KEY_TYPE, INDEX_TYPE, INVALID_INDEX > key )
 {
   os << key.Key();
   return os;

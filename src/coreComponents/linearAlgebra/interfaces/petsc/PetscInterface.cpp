@@ -23,8 +23,9 @@
 
 namespace geosx
 {
-
-void PetscInterface::initialize( int & GEOSX_UNUSED_PARAM( argc ), char * * & GEOSX_UNUSED_PARAM( argv ) )
+void
+PetscInterface::initialize( int & GEOSX_UNUSED_PARAM( argc ),
+                            char **& GEOSX_UNUSED_PARAM( argv ) )
 {
   PetscOptionsSetValue( nullptr, "-no_signal_handler", "" );
   PetscOptionsSetValue( nullptr, "-on_error_abort", "" );
@@ -32,7 +33,8 @@ void PetscInterface::initialize( int & GEOSX_UNUSED_PARAM( argc ), char * * & GE
   PetscInitializeNoArguments();
 }
 
-void PetscInterface::finalize()
+void
+PetscInterface::finalize()
 {
   PetscFinalize();
 }
@@ -43,4 +45,4 @@ PetscInterface::createPreconditioner( LinearSolverParameters params )
   return std::make_unique< PetscPreconditioner >( params );
 }
 
-} //namespace geosx
+}  //namespace geosx

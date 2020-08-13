@@ -1,0 +1,90 @@
+# requires clang 10
+# https://releases.llvm.org/10.0.0/tools/clang/docs/ClangFormatStyleOptions.html
+
+BasedOnStyle: Google
+Language: Cpp
+Standard: c++14 
+
+AccessModifierOffset: -2
+
+AllowAllArgumentsOnNextLine: false
+AllowAllConstructorInitializersOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortFunctionsOnASingleLine: None
+AllowShortLambdasOnASingleLine: All
+
+AlwaysBreakAfterReturnType: All
+AlwaysBreakTemplateDeclarations: Yes
+AlwaysBreakBeforeMultilineStrings: false
+
+BinPackArguments: false
+BinPackParameters: false
+BreakConstructorInitializers: AfterColon
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel:  true
+  AfterClass:      true
+  AfterControlStatement: true
+  AfterEnum:       true
+  AfterFunction:   true
+  AfterNamespace:  true
+  AfterObjCDeclaration: false
+  AfterStruct:     true
+  AfterUnion:      true
+  AfterExternBlock: false
+  BeforeCatch:     true
+  BeforeElse:      true
+  # BeforeLambdaBody: true   # available in clang 11
+  IndentBraces:    false
+  SplitEmptyFunction: false
+  SplitEmptyRecord: false
+  SplitEmptyNamespace: false
+
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+ConstructorInitializerIndentWidth: 2
+ContinuationIndentWidth: 2
+ColumnLimit: 0
+
+DerivePointerAlignment: false
+
+FixNamespaceComments: true
+
+IndentCaseLabels: true
+IndentPPDirectives: BeforeHash
+IndentWidth: 2
+
+KeepEmptyLinesAtTheStartOfBlocks: true
+
+PenaltyExcessCharacter: 10
+
+PointerAlignment: Middle
+
+ReflowComments: false
+
+SortIncludes: false
+SpaceAfterTemplateKeyword: false
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: Never
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceInEmptyBlock: false
+SpaceInEmptyParentheses: false
+SpacesBeforeTrailingComments: 2
+SpacesInAngles: true
+SpacesInCStyleCastParentheses: false
+SpacesInContainerLiterals: false
+SpacesInConditionalStatement: false
+SpacesInParentheses: true
+SpacesInSquareBrackets: false
+
+UseTab: Never
+
+## Possible changes
+
+# Axom defaults for alignment -- consider changing
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignOperands: false

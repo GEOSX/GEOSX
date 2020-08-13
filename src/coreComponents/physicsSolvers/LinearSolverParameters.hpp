@@ -24,7 +24,6 @@
 
 namespace geosx
 {
-
 /**
  * @brief Linear solver parameters with Group capabilities
  *
@@ -41,7 +40,6 @@ namespace geosx
 class LinearSolverParametersInput : public dataRepository::Group
 {
 public:
-
   LinearSolverParametersInput() = delete;
 
   /// Constructor
@@ -54,44 +52,63 @@ public:
   virtual ~LinearSolverParametersInput() override = default;
 
   /// Catalog name
-  static string CatalogName() { return "LinearSolverParameters"; }
+  static string
+  CatalogName()
+  {
+    return "LinearSolverParameters";
+  }
 
   /// Postprocessing of input
-  virtual void PostProcessInput() override;
+  virtual void
+  PostProcessInput() override;
 
-  LinearSolverParameters const & get() const
-  { return m_parameters; }
+  LinearSolverParameters const &
+  get() const
+  {
+    return m_parameters;
+  }
 
-  LinearSolverParameters & get()
-  { return m_parameters; }
+  LinearSolverParameters &
+  get()
+  {
+    return m_parameters;
+  }
 
   /// Keys appearing in XML
   struct viewKeyStruct
   {
-    static constexpr auto solverTypeString         = "solverType";         ///< Solver type key
-    static constexpr auto preconditionerTypeString = "preconditionerType"; ///< Preconditioner type key
+    static constexpr auto solverTypeString = "solverType";  ///< Solver type key
+    static constexpr auto preconditionerTypeString =
+      "preconditionerType";  ///< Preconditioner type key
 
-    static constexpr auto krylovMaxIterString     = "krylovMaxIter";     ///< Krylov max iterations key
-    static constexpr auto krylovMaxRestartString  = "krylovMaxRestart";  ///< Krylov max iterations key
-    static constexpr auto krylovTolString         = "krylovTol";         ///< Krylov tolerance key
-    static constexpr auto krylovAdaptiveTolString = "krylovAdaptiveTol"; ///< Krylov adaptive tolerance key
-    static constexpr auto krylovWeakTolString     = "krylovWeakestTol";  ///< Krylov weakest tolerance key
+    static constexpr auto krylovMaxIterString =
+      "krylovMaxIter";  ///< Krylov max iterations key
+    static constexpr auto krylovMaxRestartString =
+      "krylovMaxRestart";                                 ///< Krylov max iterations key
+    static constexpr auto krylovTolString = "krylovTol";  ///< Krylov tolerance key
+    static constexpr auto krylovAdaptiveTolString =
+      "krylovAdaptiveTol";  ///< Krylov adaptive tolerance key
+    static constexpr auto krylovWeakTolString =
+      "krylovWeakestTol";  ///< Krylov weakest tolerance key
 
-    static constexpr auto amgNumSweepsString = "amgNumSweeps";             ///< AMG number of sweeps key
-    static constexpr auto amgSmootherString  = "amgSmootherType";          ///< AMG smoother type key
-    static constexpr auto amgCoarseString    = "amgCoarseSolver";          ///< AMG coarse solver key
-    static constexpr auto amgThresholdString = "amgThreshold";             ///< AMG threshold key
+    static constexpr auto amgNumSweepsString =
+      "amgNumSweeps";  ///< AMG number of sweeps key
+    static constexpr auto amgSmootherString =
+      "amgSmootherType";  ///< AMG smoother type key
+    static constexpr auto amgCoarseString =
+      "amgCoarseSolver";  ///< AMG coarse solver key
+    static constexpr auto amgThresholdString =
+      "amgThreshold";  ///< AMG threshold key
 
-    static constexpr auto iluFillString      = "iluFill";       ///< ILU fill key
-    static constexpr auto iluThresholdString = "iluThreshold";  ///< ILU threshold key
+    static constexpr auto iluFillString = "iluFill";  ///< ILU fill key
+    static constexpr auto iluThresholdString =
+      "iluThreshold";  ///< ILU threshold key
   } viewKeys;
 
 private:
-
   LinearSolverParameters m_parameters;
-
 };
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif //GEOSX_PHYSICSSOLVERS_LINEARSOLVERPARAMETERS_HPP_
+#endif  //GEOSX_PHYSICSSOLVERS_LINEARSOLVERPARAMETERS_HPP_

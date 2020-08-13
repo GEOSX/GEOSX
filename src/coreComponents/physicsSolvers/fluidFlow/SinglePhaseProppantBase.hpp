@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 class SinglePhaseProppantBase : public SinglePhaseBase
 {
 public:
@@ -32,8 +31,7 @@ public:
    * @param name the name of this instantiation of Group in the repository
    * @param parent the parent group of this instantiation of Group
    */
-  SinglePhaseProppantBase( const std::string & name,
-                           Group * const parent );
+  SinglePhaseProppantBase( const std::string & name, Group * const parent );
 
   SinglePhaseProppantBase() = delete;
 
@@ -44,30 +42,37 @@ public:
   SinglePhaseProppantBase( SinglePhaseProppantBase && ) = default;
 
   /// deleted assignment operator
-  SinglePhaseProppantBase & operator=( SinglePhaseProppantBase const & ) = delete;
+  SinglePhaseProppantBase &
+  operator=( SinglePhaseProppantBase const & ) = delete;
 
   /// deleted move operator
-  SinglePhaseProppantBase & operator=( SinglePhaseProppantBase && ) = delete;
+  SinglePhaseProppantBase &
+  operator=( SinglePhaseProppantBase && ) = delete;
 
   /**
    * @brief default destructor
    */
   virtual ~SinglePhaseProppantBase();
 
-  virtual void UpdateFluidModel( Group & dataGroup, localIndex const targetIndex ) const override;
+  virtual void
+  UpdateFluidModel( Group & dataGroup,
+                    localIndex const targetIndex ) const override;
 
 protected:
+  virtual void
+  ValidateFluidModels( DomainPartition const & domain ) const override;
 
-  virtual void ValidateFluidModels( DomainPartition const & domain ) const override;
+  virtual FluidPropViews
+  getFluidProperties(
+    constitutive::ConstitutiveBase const & fluid ) const override;
 
-  virtual FluidPropViews getFluidProperties( constitutive::ConstitutiveBase const & fluid ) const override;
-
-  virtual arrayView1d< real64 const > const & getPoreVolumeMult( ElementSubRegionBase const & subRegion ) const override;
+  virtual arrayView1d< real64 const > const &
+  getPoreVolumeMult(
+    ElementSubRegionBase const & subRegion ) const override;
 
 private:
-
-  virtual void ResetViewsPrivate( ElementRegionManager const & elemManager ) override;
-
+  virtual void
+  ResetViewsPrivate( ElementRegionManager const & elemManager ) override;
 };
-}
+}  // namespace geosx
 #endif /* GEOSX_PHYSICSSOLVERS_FLUIDFLOW_SINGLEPHASEPROPPANTBASE_HPP_ */

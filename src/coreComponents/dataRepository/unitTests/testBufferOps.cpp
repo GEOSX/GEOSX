@@ -19,7 +19,6 @@
 using namespace geosx;
 using namespace bufferOps;
 
-
 TEST( testGeosxTraits, test_is_noncontainer_type_packable )
 {
   static_assert( is_noncontainer_type_packable< int >, "Should be true." );
@@ -28,27 +27,32 @@ TEST( testGeosxTraits, test_is_noncontainer_type_packable )
   static_assert( is_noncontainer_type_packable< string >, "Should be true." );
 
   static_assert( !is_noncontainer_type_packable< void >, "Should be false." );
-  static_assert( !is_noncontainer_type_packable< array1d< double > >, "Should be false." );
-  static_assert( !is_noncontainer_type_packable< SortedArray< double > >, "Should be false." );
-  static_assert( !is_noncontainer_type_packable< map< string, int > >, "Should be false." );
-  static_assert( !is_noncontainer_type_packable< std::pair< string, int > >, "Should be false." );
+  static_assert( !is_noncontainer_type_packable< array1d< double > >,
+                 "Should be false." );
+  static_assert( !is_noncontainer_type_packable< SortedArray< double > >,
+                 "Should be false." );
+  static_assert( !is_noncontainer_type_packable< map< string, int > >,
+                 "Should be false." );
+  static_assert( !is_noncontainer_type_packable< std::pair< string, int > >,
+                 "Should be false." );
 }
-
 
 TEST( testGeosxTraits, test_is_array_packable )
 {
-  static_assert( is_packable_array< array2d< real64, RAJA::PERM_IJ > >, "Should be true." );
-  static_assert( is_packable_array< array2d< real64, RAJA::PERM_JI > >, "Should be true." );
+  static_assert( is_packable_array< array2d< real64, RAJA::PERM_IJ > >,
+                 "Should be true." );
+  static_assert( is_packable_array< array2d< real64, RAJA::PERM_JI > >,
+                 "Should be true." );
 
   static_assert( !is_packable_array< int >, "Should be false." );
   static_assert( !is_packable_array< double >, "Should be false." );
   static_assert( !is_packable_array< void >, "Should be false." );
 }
 
-
 TEST( testGeosxTraits, test_is_packable_map )
 {
   static_assert( is_packable_map< map< string, int > >, "Should be true." );
   static_assert( is_packable_map< map< string, array1d< int > > >, "Should be true." );
-  static_assert( !is_packable_map< map< string, std::pair< int, int > > >, "Should be false" );
+  static_assert( !is_packable_map< map< string, std::pair< int, int > > >,
+                 "Should be false" );
 }

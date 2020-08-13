@@ -23,13 +23,14 @@ template< typename T >
 class WrapperSetGet : public ::testing::Test
 {
 public:
-  WrapperSetGet():
+  WrapperSetGet() :
     m_group( "root", nullptr ),
     m_wrapper( "wrapper", &m_group ),
     m_wrapperBase( m_wrapper )
   {}
 
-  void testSizedFromParent( int const value )
+  void
+  testSizedFromParent( int const value )
   {
     {
       Wrapper< T > * rval = m_wrapper.setSizedFromParent( value );
@@ -44,7 +45,8 @@ public:
     }
   }
 
-  void testRestartFlags( RestartFlags const value )
+  void
+  testRestartFlags( RestartFlags const value )
   {
     {
       Wrapper< T > * rval = m_wrapper.setRestartFlags( value );
@@ -59,7 +61,8 @@ public:
     }
   }
 
-  void testPlotLevel( PlotLevel const value )
+  void
+  testPlotLevel( PlotLevel const value )
   {
     {
       Wrapper< T > * rval = m_wrapper.setPlotLevel( value );
@@ -74,7 +77,8 @@ public:
     }
   }
 
-  void testInputFlags( InputFlags const value )
+  void
+  testInputFlags( InputFlags const value )
   {
     {
       Wrapper< T > * rval = m_wrapper.setInputFlag( value );
@@ -89,7 +93,8 @@ public:
     }
   }
 
-  void testDescription( std::string const & value )
+  void
+  testDescription( std::string const & value )
   {
     {
       Wrapper< T > * rval = m_wrapper.setDescription( value );

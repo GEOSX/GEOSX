@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 /**
  * @brief Class defining a simple stopwatch for interval timing.
  * @note Current implementation relies on std::chrono::steady_clock
@@ -31,7 +30,6 @@ namespace geosx
 class Stopwatch
 {
 public:
-
   /**
    * @brief Constructor.
    */
@@ -43,7 +41,8 @@ public:
   /**
    * @brief Zero out the timer.
    */
-  void zero()
+  void
+  zero()
   {
     m_start = std::chrono::steady_clock::now();
   }
@@ -52,19 +51,20 @@ public:
    * @brief Return elapsed time in seconds since zero() was last called.
    * @return elapsed time
    */
-  real64 elapsedTime()
+  real64
+  elapsedTime()
   {
-    std::chrono::steady_clock::time_point const end = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point const end =
+      std::chrono::steady_clock::now();
     std::chrono::duration< real64 > const diff = end - m_start;
     return diff.count();
   }
 
 private:
-
   /// Time point of the last timer restart
   std::chrono::steady_clock::time_point m_start;
 };
 
-} // end geosx
+}  // namespace geosx
 
 #endif

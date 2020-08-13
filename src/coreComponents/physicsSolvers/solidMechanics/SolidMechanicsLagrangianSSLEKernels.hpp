@@ -26,8 +26,7 @@
 
 namespace geosx
 {
-
 namespace SolidMechanicsLagrangianSSLEKernels
-{} // namespace SolidMechanicsLagrangianSSLEKernels
+{}  // namespace SolidMechanicsLagrangianSSLEKernels
 
-} // namespace geosx
+}  // namespace geosx

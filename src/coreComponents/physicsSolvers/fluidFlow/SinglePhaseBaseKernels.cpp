@@ -20,8 +20,7 @@
 
 namespace geosx
 {
-
 namespace SinglePhaseBaseKernels
-{} // namespace SinglePhaseBaseKernels
+{}  // namespace SinglePhaseBaseKernels
 
-} // namespace geosx
+}  // namespace geosx

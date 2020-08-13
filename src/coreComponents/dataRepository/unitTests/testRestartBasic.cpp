@@ -33,13 +33,12 @@ namespace dataRepository
 {
 namespace testing
 {
-
 template< typename T >
 class SingleWrapperTest : public ::testing::Test
 {
 public:
-
-  virtual void SetUp() override
+  virtual void
+  SetUp() override
   {
     m_group = new Group( m_groupName, nullptr );
     m_groupSize = rand( 0, 100 );
@@ -50,12 +49,14 @@ public:
     m_wrapper->setSizedFromParent( m_wrapperSizedFromParent );
   }
 
-  virtual void TearDown() override
+  virtual void
+  TearDown() override
   {
     delete m_group;
   }
 
-  void test()
+  void
+  test()
   {
     T value;
     fill( value, 100 );
@@ -97,34 +98,34 @@ private:
   int m_wrapperSizedFromParent;
 };
 
-using TestTypes = ::testing::Types< int,
-                                    double,
-                                    R1Tensor,
-                                    std::pair< int, R1Tensor >, // This should be passed to conduit via an external
-                                                                // pointer but currently we're packing it.
-                                    std::pair< std::string, double >,
-                                    std::string,
-                                    std::vector< int >,
-                                    // std::vector< std::string > bufferOps currently can't pack this
-                                    array1d< double >,
-                                    array1d< std::string >,
-                                    array1d< array1d< double > >,
-                                    array1d< array1d< std::string > >,
-                                    array2d< double >,
-                                    array2d< std::string >,
-                                    array2d< double, RAJA::PERM_JI >,
-                                    array2d< std::string, RAJA::PERM_JI >,
-                                    array3d< double >,
-                                    array3d< std::string >,
-                                    array3d< double, RAJA::PERM_KJI >,
-                                    array3d< std::string, RAJA::PERM_IKJ >,
-                                    SortedArray< int >,
-                                    SortedArray< std::string >,
-                                    map< std::string, int >,
-                                    unordered_map< std::string, int >,
-                                    map< long, int >,
-                                    unordered_map< long, int >
-                                    >;
+using TestTypes =
+  ::testing::Types< int,
+                    double,
+                    R1Tensor,
+                    std::pair< int, R1Tensor >,  // This should be passed to conduit via an external
+                    // pointer but currently we're packing it.
+                    std::pair< std::string, double >,
+                    std::string,
+                    std::vector< int >,
+                    // std::vector< std::string > bufferOps currently can't pack this
+                    array1d< double >,
+                    array1d< std::string >,
+                    array1d< array1d< double > >,
+                    array1d< array1d< std::string > >,
+                    array2d< double >,
+                    array2d< std::string >,
+                    array2d< double, RAJA::PERM_JI >,
+                    array2d< std::string, RAJA::PERM_JI >,
+                    array3d< double >,
+                    array3d< std::string >,
+                    array3d< double, RAJA::PERM_KJI >,
+                    array3d< std::string, RAJA::PERM_IKJ >,
+                    SortedArray< int >,
+                    SortedArray< std::string >,
+                    map< std::string, int >,
+                    unordered_map< std::string, int >,
+                    map< long, int >,
+                    unordered_map< long, int > >;
 TYPED_TEST_SUITE( SingleWrapperTest, TestTypes, );
 
 TYPED_TEST( SingleWrapperTest, WriteAndRead )
@@ -132,11 +133,12 @@ TYPED_TEST( SingleWrapperTest, WriteAndRead )
   this->test();
 }
 
-} // namespace testing
-} // namespace dataRepository
-} // namespace geosx
+}  // namespace testing
+}  // namespace dataRepository
+}  // namespace geosx
 
-int main( int argc, char * argv[] )
+int
+main( int argc, char * argv[] )
 {
   testing::InitGoogleTest( &argc, argv );
 

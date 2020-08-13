@@ -19,7 +19,7 @@
 #ifndef GEOSX_CODINGUTILITIES_STATIC_IF_HPP_
 #define GEOSX_CODINGUTILITIES_STATIC_IF_HPP_
 
-// UNCRUSTIFY-OFF
+// clang-format off
 
 namespace geosx
 {
@@ -71,6 +71,6 @@ struct host_device_static_if<true>
 
 #define end_static_if );
 
-// UNCRUSTIFY-ON
+// clang-format on
 
 #endif /* GEOSX_CODINGUTILITIES_STATIC_IF_HPP_ */

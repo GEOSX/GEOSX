@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 /**
  * @class PeriodicEvent
  *
@@ -32,10 +31,8 @@ namespace geosx
 class PeriodicEvent : public EventBase
 {
 public:
-
   /// @copydoc geosx::dataRepository::Group::Group( std::string const & name, Group * const parent )
-  PeriodicEvent( const std::string & name,
-                 Group * const parent );
+  PeriodicEvent( const std::string & name, Group * const parent );
 
   /// Destructor
   virtual ~PeriodicEvent() override;
@@ -44,7 +41,11 @@ public:
    * @brief Catalog name interface.
    * @return This type's catalog name.
    **/
-  static string CatalogName() { return "PeriodicEvent"; }
+  static string
+  CatalogName()
+  {
+    return "PeriodicEvent";
+  }
 
   /**
    * @copydoc EventBase::EstimateEventTiming()
@@ -55,10 +56,11 @@ public:
    * @note In addition, there is an optional function input that will be called if the
    * the nominal forecast (based on timing) is zero.
    */
-  virtual void EstimateEventTiming( real64 const time,
-                                    real64 const dt,
-                                    integer const cycle,
-                                    dataRepository::Group * domain ) override;
+  virtual void
+  EstimateEventTiming( real64 const time,
+                       real64 const dt,
+                       integer const cycle,
+                       dataRepository::Group * domain ) override;
 
   /**
    * @brief Determine if an optional function f should be called, and call it if so.
@@ -81,27 +83,29 @@ public:
    *   - functionStatOption selects the statistic to compare against the eventThreshold (0 = min, 1 = average, 2 = max)
    *   - The event will be executed if f(object, arguments)[stat] >= eventThreshold
    */
-  void CheckOptionalFunctionThreshold( real64 const time,
-                                       real64 const dt,
-                                       integer const cycle,
-                                       dataRepository::Group * domain );
+  void
+  CheckOptionalFunctionThreshold( real64 const time,
+                                  real64 const dt,
+                                  integer const cycle,
+                                  dataRepository::Group * domain );
 
   /**
    * @copydoc EventBase::GetEventTypeDtRequest()
    * Grab the next time-step.  If requested, then limit the requested
    * dt to exactly match the time frequency
    */
-  virtual real64 GetEventTypeDtRequest( real64 const time ) override;
+  virtual real64
+  GetEventTypeDtRequest( real64 const time ) override;
 
   /**
    * @copydoc ExecutableGroup::Cleanup()
    */
-  virtual void Cleanup( real64 const time_n,
-                        integer const cycleNumber,
-                        integer const eventCounter,
-                        real64 const eventProgress,
-                        dataRepository::Group * domain ) override;
-
+  virtual void
+  Cleanup( real64 const time_n,
+           integer const cycleNumber,
+           integer const eventCounter,
+           real64 const eventProgress,
+           dataRepository::Group * domain ) override;
 
   /// A pointer to an optional function
   dataRepository::Group * m_functionTarget;
@@ -147,7 +151,6 @@ public:
   integer m_functionStatOption;
   /// The event threshold
   real64 m_eventThreshold;
-
 };
 
 } /* namespace geosx */

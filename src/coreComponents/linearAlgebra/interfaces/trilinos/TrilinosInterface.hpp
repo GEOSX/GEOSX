@@ -28,7 +28,6 @@
 
 namespace geosx
 {
-
 /**
  * @class TrilinosInterface
  * @brief This class holds aliases based on the Trilinos library.
@@ -41,12 +40,14 @@ struct TrilinosInterface
    * @param[in] argc standard argc as in any C main
    * @param[in] argv standard argv as in any C main
    */
-  static void initialize( int & argc, char * * & argv );
+  static void
+  initialize( int & argc, char **& argv );
 
   /**
    * @brief Finalizes the MPI environment for the Trilinos library
    */
-  static void finalize();
+  static void
+  finalize();
 
   /**
    * @brief Create a Trilinos-based preconditioner object.
@@ -61,7 +62,7 @@ struct TrilinosInterface
   /// Alias for EpetraVector
   using ParallelVector = EpetraVector;
   /// Alias for TrilinosSolver
-  using LinearSolver   = TrilinosSolver;
+  using LinearSolver = TrilinosSolver;
 };
 
 } /* namespace geosx */

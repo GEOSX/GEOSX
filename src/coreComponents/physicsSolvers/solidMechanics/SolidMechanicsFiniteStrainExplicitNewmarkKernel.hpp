@@ -24,14 +24,12 @@
 
 namespace geosx
 {
-
 namespace SolidMechanicsLagrangianFEMKernels
 {
-
-#if defined(GEOSX_USE_CUDA)
-/// Macro variable to indicate whether or not to calculate the shape function
-/// derivatives in the kernel instead of using a pre-calculated value.
-#define CALCFEMSHAPE
+#if defined( GEOSX_USE_CUDA )
+  /// Macro variable to indicate whether or not to calculate the shape function
+  /// derivatives in the kernel instead of using a pre-calculated value.
+  #define CALCFEMSHAPE
 #endif
 /// If UPDATE_STRESS is undef, uses total displacement and stress is not
 /// updated at all.
@@ -39,7 +37,6 @@ namespace SolidMechanicsLagrangianFEMKernels
 /// state to integral for nodalforces.
 /// If UPDATE_STRESS 2 then velocity*dt is used to update material stress state
 #define UPDATE_STRESS 2
-
 
 /**
  * @brief Integrate the divergence of a rank-2 tensor in Voigt notation
@@ -53,31 +50,30 @@ namespace SolidMechanicsLagrangianFEMKernels
  * @param result The resulting vector.
  */
 template< int N, int USD >
-GEOSX_HOST_DEVICE
-GEOSX_FORCE_INLINE
-static
-void Integrate( arraySlice1d< real64 const, USD > const & fieldVar,
- #if defined(CALCFEMSHAPE)
-                real64 const (&dNdX)[ N ][ 3 ],
- #else
-                arraySlice2d< real64 const > const & dNdX,
- #endif
-                real64 const detJ,
-                real64 const detF,
-                real64 const ( &fInv )[ 3 ][ 3 ],
-                real64 ( & result )[ N ][ 3 ] )
+GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE static void
+Integrate(
+  arraySlice1d< real64 const, USD > const & fieldVar,
+#if defined( CALCFEMSHAPE )
+  real64 const ( &dNdX )[N][3],
+#else
+  arraySlice2d< real64 const > const & dNdX,
+#endif
+  real64 const detJ,
+  real64 const detF,
+  real64 const ( &fInv )[3][3],
+  real64 ( &result )[N][3] )
 {
   GEOSX_ASSERT_EQ( fieldVar.size(), 6 );
 
   real64 const integrationFactor = -detJ * detF;
 
-  real64 P[ 3 ][ 3 ];
+  real64 P[3][3];
   LvArray::tensorOps::symAikBjk< 3 >( P, fieldVar, fInv );
   LvArray::tensorOps::scale< 3, 3 >( P, integrationFactor );
 
-  for( int a = 0; a < N; ++a )     // loop through all shape functions in element
+  for( int a = 0; a < N; ++a )  // loop through all shape functions in element
   {
-    LvArray::tensorOps::plusAijBj< 3, 3 >( result[ a ], P, dNdX[ a ] );
+    LvArray::tensorOps::plusAijBj< 3, 3 >( result[a], P, dNdX[a] );
   }
 }
 
@@ -89,34 +85,29 @@ void Integrate( arraySlice1d< real64 const, USD > const & fieldVar,
  * ### Explicit Small Strain Description
  * Finite strain implementation.
  */
-template< typename SUBREGION_TYPE,
-          typename CONSTITUTIVE_TYPE,
-          typename FE_TYPE >
-class ExplicitFiniteStrain : public ExplicitSmallStrain< SUBREGION_TYPE,
-                                                         CONSTITUTIVE_TYPE,
-                                                         FE_TYPE >
+template< typename SUBREGION_TYPE, typename CONSTITUTIVE_TYPE, typename FE_TYPE >
+class ExplicitFiniteStrain
+  : public ExplicitSmallStrain< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE >
 {
 public:
   /// Alias for the base class;
-  using Base = ExplicitSmallStrain< SUBREGION_TYPE,
-                                    CONSTITUTIVE_TYPE,
-                                    FE_TYPE >;
+  using Base = ExplicitSmallStrain< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE >;
 
-  using Base::numNodesPerElem;
+  using Base::m_constitutiveUpdate;
+  using Base::m_elemGhostRank;
+  using Base::m_elemsToNodes;
+  using Base::m_finiteElementSpace;
   using Base::numDofPerTestSupportPoint;
   using Base::numDofPerTrialSupportPoint;
-  using Base::m_elemsToNodes;
-  using Base::m_elemGhostRank;
-  using Base::m_constitutiveUpdate;
-  using Base::m_finiteElementSpace;
+  using Base::numNodesPerElem;
 
+  using Base::m_acc;
   using Base::m_dt;
   using Base::m_u;
   using Base::m_vel;
-  using Base::m_acc;
-#if !defined(CALCFEMSHAPE)
-  using Base::m_dNdX;
+#if !defined( CALCFEMSHAPE )
   using Base::m_detJ;
+  using Base::m_dNdX;
 #else
   using Base::m_X;
 #endif
@@ -131,7 +122,7 @@ public:
                         FE_TYPE const & finiteElementSpace,
                         CONSTITUTIVE_TYPE * const inputConstitutiveType,
                         real64 const dt,
-                        string const & elementListName ):
+                        string const & elementListName ) :
     Base( nodeManager,
           edgeManager,
           faceManager,
@@ -142,7 +133,6 @@ public:
           elementListName )
   {}
 
-
   //*****************************************************************************
   /**
    * @copydoc ExplicitSmallStrain::StackVariables
@@ -152,46 +142,44 @@ public:
     using Base::StackVariables::fLocal;
     using Base::StackVariables::varLocal;
 
-  #if defined(CALCFEMSHAPE)
-    using Base::StackVariables::xLocal;
-    using Base::StackVariables::dNdX;
+#if defined( CALCFEMSHAPE )
     using Base::StackVariables::detJ;
-  #endif
-
+    using Base::StackVariables::dNdX;
+    using Base::StackVariables::xLocal;
+#endif
 
     /**
      * @brief constructor
      */
     GEOSX_HOST_DEVICE
-    StackVariables():
+    StackVariables() :
       Base::StackVariables(),
-            uLocal{ {0.0} }
+      uLocal { { 0.0 } }
     {}
 
     /// Local stack storage for nodal displacements.
-    real64 uLocal[ numNodesPerElem ][ numDofPerTrialSupportPoint ];
+    real64 uLocal[numNodesPerElem][numDofPerTrialSupportPoint];
   };
   //*****************************************************************************
-
 
   /**
    * @copydoc ExplicitSmallStrain::setup
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  void setup( localIndex const k,
-              StackVariables & stack ) const
+  void
+  setup( localIndex const k, StackVariables & stack ) const
   {
-    for( localIndex a=0; a< numNodesPerElem; ++a )
+    for( localIndex a = 0; a < numNodesPerElem; ++a )
     {
       localIndex const nodeIndex = m_elemsToNodes( k, a );
-      for( int i=0; i<numDofPerTrialSupportPoint; ++i )
+      for( int i = 0; i < numDofPerTrialSupportPoint; ++i )
       {
-#if defined(CALCFEMSHAPE)
-        stack.xLocal[ a ][ i ] = m_X[ nodeIndex ][ i ];
+#if defined( CALCFEMSHAPE )
+        stack.xLocal[a][i] = m_X[nodeIndex][i];
 #endif
-        stack.uLocal[ a ][ i ] = m_u[ nodeIndex ][ i ];
-        stack.varLocal[ a ][ i ] = m_vel[ nodeIndex ][ i ];
+        stack.uLocal[a][i] = m_u[nodeIndex][i];
+        stack.varLocal[a][i] = m_vel[nodeIndex][i];
       }
     }
   }
@@ -201,30 +189,35 @@ public:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  void quadraturePointStateUpdate( localIndex const k,
-                                   localIndex const q,
-                                   StackVariables & stack ) const
+  void
+  quadraturePointStateUpdate( localIndex const k,
+                              localIndex const q,
+                              StackVariables & stack ) const
   {
-#if defined(CALCFEMSHAPE)
-    real64 dNdX[ numNodesPerElem ][ 3 ];
+#if defined( CALCFEMSHAPE )
+    real64 dNdX[numNodesPerElem][3];
     real64 const detJ = FE_TYPE::shapeFunctionDerivatives( q, stack.xLocal, dNdX );
 
-    /// Macro to substitute in the shape function derivatives.
-    #define DNDX dNdX
+  /// Macro to substitute in the shape function derivatives.
+  #define DNDX dNdX
 
-    /// Macro to substitute the determinant of the jacobian transformation to the parent space.
-    #define DETJ detJ
+  /// Macro to substitute the determinant of the jacobian transformation to the parent space.
+  #define DETJ detJ
 #else
-    /// @cond DOXYGEN_SKIP
-    #define DNDX m_dNdX[k][q]
-    #define DETJ m_detJ( k, q )
-    /// @endcond DOXYGEN_SKIP
+  /// @cond DOXYGEN_SKIP
+  #define DNDX m_dNdX[k][q]
+  #define DETJ m_detJ( k, q )
+      /// @endcond DOXYGEN_SKIP
 #endif
-    real64 dUhatdX[ 3 ][ 3 ], dUdX[ 3 ][ 3 ];
-    CalculateGradients< numNodesPerElem >( dUhatdX, dUdX, stack.varLocal, stack.uLocal, DNDX );
+    real64 dUhatdX[3][3], dUdX[3][3];
+    CalculateGradients< numNodesPerElem >( dUhatdX,
+                                           dUdX,
+                                           stack.varLocal,
+                                           stack.uLocal,
+                                           DNDX );
     LvArray::tensorOps::scale< 3, 3 >( dUhatdX, m_dt );
 
-    real64 F[ 3 ][ 3 ], Ldt[ 3 ][ 3 ], fInv[ 3 ][ 3 ];
+    real64 F[3][3], Ldt[3][3], fInv[3][3];
 
     // calculate du/dX
     LvArray::tensorOps::scaledCopy< 3, 3 >( F, dUhatdX, 0.5 );
@@ -241,8 +234,8 @@ public:
     LvArray::tensorOps::addIdentity< 3 >( F, 1.0 );
     real64 const detF = LvArray::tensorOps::invert< 3 >( fInv, F );
 
-    real64 Rot[ 3 ][ 3 ];
-    real64 Dadt[ 6 ];
+    real64 Rot[3][3];
+    real64 Dadt[6];
     HughesWinget( Rot, Dadt, Ldt );
 
     m_constitutiveUpdate.HypoElastic( k, q, Dadt, Rot );
@@ -254,18 +247,14 @@ public:
                                   fInv,
                                   stack.fLocal );
   }
-
-
-
 };
 #undef CALCFEMSHAPE
 #undef DNDX
 #undef DETJ
 #undef UPDATE_STRESS
 
+}  // namespace SolidMechanicsLagrangianFEMKernels
 
-} // namespace SolidMechanicsLagrangianFEMKernels
+}  // namespace geosx
 
-} // namespace geosx
-
-#endif //GEOSX_PHYSICSSOLVERS_SOLIDMECHANICS_SOLIDMECHANICSFINITESTRAINEXPLICITNEWMARK_HPP_
+#endif  //GEOSX_PHYSICSSOLVERS_SOLIDMECHANICS_SOLIDMECHANICSFINITESTRAINEXPLICITNEWMARK_HPP_

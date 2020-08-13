@@ -31,8 +31,6 @@
 
 namespace geosx
 {
-
-
 /**
  *  @class PAMELAMeshGenerator
  *  @brief The PAMELAMeshGenerator class provides a class implementation of PAMELA generated meshes.
@@ -40,23 +38,26 @@ namespace geosx
 class PAMELAMeshGenerator : public MeshGeneratorBase
 {
 public:
-/**
+  /**
  * @brief Main constructor for MeshGenerator base class.
  * @param[in] name of the PAMELAMeshGenerator object
  * @param[in] parent the parent Group pointer for the MeshGenerator object
  */
-  PAMELAMeshGenerator( const std::string & name,
-                       Group * const parent );
+  PAMELAMeshGenerator( const std::string & name, Group * const parent );
 
   virtual ~PAMELAMeshGenerator() override;
 
-/**
+  /**
  * @brief Return the name of the PAMELAMeshGenerator in object Catalog.
  * @return string that contains the key name to PAMELAMeshGenerator in the Catalog
  */
-  static string CatalogName() { return "PAMELAMeshGenerator"; }
+  static string
+  CatalogName()
+  {
+    return "PAMELAMeshGenerator";
+  }
 
-///@cond DO_NOT_DOCUMENT
+  ///@cond DO_NOT_DOCUMENT
   struct viewKeyStruct
   {
     constexpr static auto filePathString = "file";
@@ -65,9 +66,10 @@ public:
     constexpr static auto fieldNamesInGEOSXString = "fieldNamesInGEOSX";
     constexpr static auto reverseZString = "reverseZ";
   };
-/// @endcond
+  /// @endcond
 
-  virtual void GenerateElementRegions( DomainPartition & domain ) override;
+  virtual void
+  GenerateElementRegions( DomainPartition & domain ) override;
 
   /**
    * @brief Create a new geometric object (box, plane, etc) as a child of this group.
@@ -75,31 +77,34 @@ public:
    * @param childName the name of the new geometric object in the repository
    * @return the group child
    */
-  virtual Group * CreateChild( string const & childKey, string const & childName ) override;
+  virtual Group *
+  CreateChild( string const & childKey,
+               string const & childName ) override;
 
-  virtual void GenerateMesh( DomainPartition * const domain ) override;
+  virtual void
+  GenerateMesh( DomainPartition * const domain ) override;
 
-  virtual void GetElemToNodesRelationInBox ( const std::string & elementType,
-                                             const int index[],
-                                             const int & iEle,
-                                             int nodeIDInBox[],
-                                             const int size ) override;
+  virtual void
+  GetElemToNodesRelationInBox( const std::string & elementType,
+                               const int index[],
+                               const int & iEle,
+                               int nodeIDInBox[],
+                               const int size ) override;
 
-  virtual void RemapMesh ( dataRepository::Group * const domain ) override;
+  virtual void
+  RemapMesh( dataRepository::Group * const domain ) override;
 
 protected:
-
   /**
    * @brief This function provides capability to post process input values prior to
    * any other initialization operations.
    */
-  void PostProcessInput() override final;
-
+  void
+  PostProcessInput() override final;
 
 private:
-
   /// Unique Pointer to the Mesh in the data structure of PAMELA.
-  std::unique_ptr< PAMELA::Mesh >  m_pamelaMesh;
+  std::unique_ptr< PAMELA::Mesh > m_pamelaMesh;
 
   /// Names of the fields to be copied from PAMELA to GEOSX data structure
   string_array m_fieldsToImport;
@@ -117,22 +122,19 @@ private:
   int m_isZReverse;
 
   /// Map from PAMELA enumeration element type to string
-  const std::unordered_map< PAMELA::ELEMENTS::TYPE, string, PAMELA::ELEMENTS::EnumClassHash > ElementToLabel
-    =
-    {
-    { PAMELA::ELEMENTS::TYPE::VTK_VERTEX, "VERTEX"},
-    { PAMELA::ELEMENTS::TYPE::VTK_LINE, "LINE"  },
-    { PAMELA::ELEMENTS::TYPE::VTK_TRIANGLE, "TRIANGLE" },
-    { PAMELA::ELEMENTS::TYPE::VTK_QUAD, "QUAD" },
-    { PAMELA::ELEMENTS::TYPE::VTK_TETRA, "TETRA" },
-    { PAMELA::ELEMENTS::TYPE::VTK_HEXAHEDRON, "HEX" },
-    { PAMELA::ELEMENTS::TYPE::VTK_WEDGE, "WEDGE" },
-    { PAMELA::ELEMENTS::TYPE::VTK_PYRAMID, "PYRAMID" }
-    };
+  const std::unordered_map< PAMELA::ELEMENTS::TYPE, string, PAMELA::ELEMENTS::EnumClassHash >
+    ElementToLabel = { { PAMELA::ELEMENTS::TYPE::VTK_VERTEX, "VERTEX" },
+                       { PAMELA::ELEMENTS::TYPE::VTK_LINE, "LINE" },
+                       { PAMELA::ELEMENTS::TYPE::VTK_TRIANGLE, "TRIANGLE" },
+                       { PAMELA::ELEMENTS::TYPE::VTK_QUAD, "QUAD" },
+                       { PAMELA::ELEMENTS::TYPE::VTK_TETRA, "TETRA" },
+                       { PAMELA::ELEMENTS::TYPE::VTK_HEXAHEDRON, "HEX" },
+                       { PAMELA::ELEMENTS::TYPE::VTK_WEDGE, "WEDGE" },
+                       { PAMELA::ELEMENTS::TYPE::VTK_PYRAMID, "PYRAMID" } };
 
   class DecodePAMELALabels
   {
-public:
+  public:
     /*!
      * @brief Make a region label which is composed of the name of the region and the type
      * @details Some examples :
@@ -143,7 +145,9 @@ public:
      * @param[in] regionCellType the type of the cells (TETRA, HEX, WEDGE or PYRAMID)
      * @return the region label
      */
-    static string MakeRegionLabel( string const & regionName, string const & regionCellType )
+    static string
+    MakeRegionLabel( string const & regionName,
+                     string const & regionCellType )
     {
       return regionName + m_separator + regionCellType;
     }
@@ -154,16 +158,19 @@ public:
      * @param[in] pamelaLabel the surface or region label within PAMELA
      * @return the name of the surface or the region
      */
-    static string RetrieveSurfaceOrRegionName( string const & pamelaLabel )
+    static string
+    RetrieveSurfaceOrRegionName( string const & pamelaLabel )
     {
-      string_array const splitLabel = stringutilities::Tokenize( pamelaLabel, m_separator );
-      return splitLabel[splitLabel.size() -2 ];
+      string_array const splitLabel =
+        stringutilities::Tokenize( pamelaLabel, m_separator );
+      return splitLabel[splitLabel.size() - 2];
     }
-private:
+
+  private:
     static string const m_separator;
   };
 };
 
-}
+}  // namespace geosx
 
 #endif /* GEOSX_MESHUTILITIES_PAMELAMESHGENERATOR_HPP */

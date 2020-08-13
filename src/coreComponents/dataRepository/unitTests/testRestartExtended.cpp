@@ -22,15 +22,16 @@
 // TPL includes
 #include <gtest/gtest.h>
 
-
 namespace geosx
 {
 namespace dataRepository
 {
-
 template< typename T >
-Wrapper< array1d< T > > * createArrayView( Group * parent, const string & name,
-                                           int sfp, const array1d< T > & data )
+Wrapper< array1d< T > > *
+createArrayView( Group * parent,
+                 const string & name,
+                 int sfp,
+                 const array1d< T > & data )
 {
   Wrapper< array1d< T > > * view = parent->registerWrapper< array1d< T > >( name );
   view->setSizedFromParent( sfp );
@@ -51,9 +52,9 @@ Wrapper< array1d< T > > * createArrayView( Group * parent, const string & name,
   return view;
 }
 
-
 template< typename T >
-void checkArrayView( const Wrapper< array1d< T > > * view, int sfp, const array1d< T > & data )
+void
+checkArrayView( const Wrapper< array1d< T > > * view, int sfp, const array1d< T > & data )
 {
   EXPECT_EQ( view->sizedFromParent(), sfp );
   EXPECT_EQ( view->size(), data.size() );
@@ -65,8 +66,11 @@ void checkArrayView( const Wrapper< array1d< T > > * view, int sfp, const array1
 }
 
 template< typename T >
-Wrapper< array2d< T > > * createArray2dView( Group * parent, const string & name,
-                                             int sfp, const array2d< T > & data )
+Wrapper< array2d< T > > *
+createArray2dView( Group * parent,
+                   const string & name,
+                   int sfp,
+                   const array2d< T > & data )
 {
   Wrapper< array2d< T > > * view = parent->registerWrapper< array2d< T > >( name );
   view->setSizedFromParent( sfp );
@@ -93,9 +97,11 @@ Wrapper< array2d< T > > * createArray2dView( Group * parent, const string & name
   return view;
 }
 
-
 template< typename T >
-void checkArray2dView( const Wrapper< array2d< T > > * view, int sfp, const array2d< T > & data )
+void
+checkArray2dView( const Wrapper< array2d< T > > * view,
+                  int sfp,
+                  const array2d< T > & data )
 {
   EXPECT_EQ( view->sizedFromParent(), sfp );
   EXPECT_EQ( view->size(), data.size() );
@@ -108,16 +114,17 @@ void checkArray2dView( const Wrapper< array2d< T > > * view, int sfp, const arra
       EXPECT_EQ( view_data[i][j], data[i][j] );
     }
   }
-
 }
 
-
 template< typename T >
-Wrapper< SortedArray< T > > * createSetView( Group * parent, const string & name,
-                                             localIndex sfp, const SortedArray< T > & data )
+Wrapper< SortedArray< T > > *
+createSetView( Group * parent,
+               const string & name,
+               localIndex sfp,
+               const SortedArray< T > & data )
 {
   Wrapper< SortedArray< T > > * view = parent->registerWrapper< SortedArray< T > >( name );
-  view->setSizedFromParent( int(sfp) );
+  view->setSizedFromParent( int( sfp ) );
 
   /* Insert the data */
   view->reference().insert( data.begin(), data.end() );
@@ -128,9 +135,11 @@ Wrapper< SortedArray< T > > * createSetView( Group * parent, const string & name
   return view;
 }
 
-
 template< typename T >
-void checkSetView( const Wrapper< SortedArray< T > > * view, localIndex sfp, const SortedArray< T > & data )
+void
+checkSetView( const Wrapper< SortedArray< T > > * view,
+              localIndex sfp,
+              const SortedArray< T > & data )
 {
   EXPECT_EQ( view->sizedFromParent(), sfp );
   EXPECT_EQ( view->size(), data.size() );
@@ -141,9 +150,11 @@ void checkSetView( const Wrapper< SortedArray< T > > * view, localIndex sfp, con
   }
 }
 
-
-Wrapper< string > * createStringView( Group * parent, const string & name,
-                                      int sfp, const string & str )
+Wrapper< string > *
+createStringView( Group * parent,
+                  const string & name,
+                  int sfp,
+                  const string & str )
 {
   Wrapper< string > * view = parent->registerWrapper< string >( name );
   view->setSizedFromParent( sfp );
@@ -152,28 +163,30 @@ Wrapper< string > * createStringView( Group * parent, const string & name,
   view->reference() = str;
 
   /* Check that the Wrapper size and byteSize return the proper values */
-  EXPECT_EQ( static_cast< uint >(view->size() ), str.size() );
+  EXPECT_EQ( static_cast< uint >( view->size() ), str.size() );
 
   return view;
 }
 
-
-void checkStringView( const Wrapper< string > * view, const int sfp, const string & str )
+void
+checkStringView( const Wrapper< string > * view, const int sfp, const string & str )
 {
   EXPECT_EQ( view->sizedFromParent(), sfp );
   EXPECT_EQ( view->reference(), str );
 }
 
-
-Wrapper< string_array > * createStringArrayView( Group * parent, const string & name,
-                                                 int sfp, const string_array & arr )
+Wrapper< string_array > *
+createStringArrayView( Group * parent,
+                       const string & name,
+                       int sfp,
+                       const string_array & arr )
 {
   Wrapper< string_array > * view = parent->registerWrapper< string_array >( name );
   view->setSizedFromParent( sfp );
 
-  view->resize( static_cast< localIndex >(arr.size() ));
+  view->resize( static_cast< localIndex >( arr.size() ) );
 
-  EXPECT_EQ( static_cast< uint >(view->size() ), arr.size() );
+  EXPECT_EQ( static_cast< uint >( view->size() ), arr.size() );
 
   string_array & view_data = view->reference();
   for( localIndex i = 0; i < arr.size(); ++i )
@@ -184,8 +197,10 @@ Wrapper< string_array > * createStringArrayView( Group * parent, const string & 
   return view;
 }
 
-
-void checkStringArrayView( const Wrapper< string_array > * view, const int sfp, const string_array & arr )
+void
+checkStringArrayView( const Wrapper< string_array > * view,
+                      const int sfp,
+                      const string_array & arr )
 {
   EXPECT_EQ( view->sizedFromParent(), sfp );
   EXPECT_EQ( view->size(), arr.size() );
@@ -196,10 +211,12 @@ void checkStringArrayView( const Wrapper< string_array > * view, const int sfp, 
   }
 }
 
-
 template< typename T >
-Wrapper< T > * createScalarView( Group * parent, const string & name,
-                                 int sfp, const T & value )
+Wrapper< T > *
+createScalarView( Group * parent,
+                  const string & name,
+                  int sfp,
+                  const T & value )
 {
   Wrapper< T > * view = parent->registerWrapper< T >( name );
   view->setSizedFromParent( sfp );
@@ -213,14 +230,13 @@ Wrapper< T > * createScalarView( Group * parent, const string & name,
   return view;
 }
 
-
 template< typename T >
-void checkScalarView( const Wrapper< T > * view, int sfp, const T value )
+void
+checkScalarView( const Wrapper< T > * view, int sfp, const T value )
 {
   EXPECT_EQ( view->sizedFromParent(), sfp );
   EXPECT_EQ( view->reference(), value );
 }
-
 
 TEST( testRestartExtended, testRestartExtended )
 {
@@ -241,7 +257,10 @@ TEST( testRestartExtended, testRestartExtended )
   {
     view_globalIndex_data[i] = i * i * i;
   }
-  createArrayView( root, view_globalIndex_name, view_globalIndex_sfp, view_globalIndex_data );
+  createArrayView( root,
+                   view_globalIndex_name,
+                   view_globalIndex_sfp,
+                   view_globalIndex_data );
 
   /* Create a new string Wrapper. */
   string view_hope_name = "hope";
@@ -269,14 +288,16 @@ TEST( testRestartExtended, testRestartExtended )
   string view_hello_name = "hello";
   int view_hello_sfp = sfp++;
   string view_hello_str = "Hello, how are you doing on this fine day?";
-  createStringView( strings_group, view_hello_name, view_hello_sfp,
-                    view_hello_str );
+  createStringView( strings_group, view_hello_name, view_hello_sfp, view_hello_str );
 
   /* Create a new string Wrapper. */
   string view_goodbye_name = "goodbye";
   int view_goodbye_sfp = sfp++;
-  string view_goodbye_str = "I hate this weather so I'm heading inside. Goodbye.";
-  createStringView( strings_group, view_goodbye_name, view_goodbye_sfp,
+  string view_goodbye_str =
+    "I hate this weather so I'm heading inside. Goodbye.";
+  createStringView( strings_group,
+                    view_goodbye_name,
+                    view_goodbye_sfp,
                     view_goodbye_str );
 
   /* Create a new group. */
@@ -290,9 +311,11 @@ TEST( testRestartExtended, testRestartExtended )
   real64_array view_real641_data( view_real641_size );
   for( int i = 0; i < view_real641_size; i++ )
   {
-    view_real641_data[i] = i * i / (i + 5.0);
+    view_real641_data[i] = i * i / ( i + 5.0 );
   }
-  createArrayView( real64_group, view_real641_name, view_real641_sfp,
+  createArrayView( real64_group,
+                   view_real641_name,
+                   view_real641_sfp,
                    view_real641_data );
 
   /* Create a new real64_array Wrapper. */
@@ -302,9 +325,11 @@ TEST( testRestartExtended, testRestartExtended )
   real64_array view_real642_data( view_real642_size );
   for( int i = 0; i < view_real642_size; i++ )
   {
-    view_real642_data[i] = i * i / (5.0 + 5.0 * i + i * i);
+    view_real642_data[i] = i * i / ( 5.0 + 5.0 * i + i * i );
   }
-  createArrayView( real64_group, view_real642_name, view_real642_sfp,
+  createArrayView( real64_group,
+                   view_real642_name,
+                   view_real642_sfp,
                    view_real642_data );
 
   /* Create a new group. */
@@ -320,7 +345,10 @@ TEST( testRestartExtended, testRestartExtended )
   {
     view_localIndex_data[i] = i * i - 100 * i + 3;
   }
-  createArrayView( mixed_group, view_localIndex_name, view_localIndex_sfp, view_localIndex_data );
+  createArrayView( mixed_group,
+                   view_localIndex_name,
+                   view_localIndex_sfp,
+                   view_localIndex_data );
 
   /* Create a new real32_array Wrapper. */
   string view_real32_name = "real32";
@@ -329,10 +357,9 @@ TEST( testRestartExtended, testRestartExtended )
   real32_array view_real32_data( view_real32_size );
   for( int i = 0; i < view_real32_size; i++ )
   {
-    view_real32_data[i] = (i * i - 100.0f * i + 3.0f) / (i + 3.0f);
+    view_real32_data[i] = ( i * i - 100.0f * i + 3.0f ) / ( i + 3.0f );
   }
-  createArrayView( mixed_group, view_real32_name, view_real32_sfp,
-                   view_real32_data );
+  createArrayView( mixed_group, view_real32_name, view_real32_sfp, view_real32_data );
 
   /* Create a new string Wrapper. */
   string view_what_name = "what";
@@ -346,7 +373,6 @@ TEST( testRestartExtended, testRestartExtended )
   real64 view_pi_value = 3.14159;
   createScalarView( mixed_group, view_pi_name, view_pi_sfp, view_pi_value );
 
-
   /* Create a new SortedArray<int> Wrapper. */
   string view_setlocalIndex_name = "view_setlocalIndex";
   localIndex view_setlocalIndex_sfp = sfp++;
@@ -357,8 +383,10 @@ TEST( testRestartExtended, testRestartExtended )
   view_setlocalIndex_set.insert( 0 );
   view_setlocalIndex_set.insert( 1000 );
   view_setlocalIndex_set.insert( -1000 );
-  createSetView( mixed_group, view_setlocalIndex_name, view_setlocalIndex_sfp, view_setlocalIndex_set );
-
+  createSetView( mixed_group,
+                 view_setlocalIndex_name,
+                 view_setlocalIndex_sfp,
+                 view_setlocalIndex_set );
 
   /* Create a new SortedArray<string> Wrapper. */
   string view_setString_name = "view_setString";
@@ -370,8 +398,10 @@ TEST( testRestartExtended, testRestartExtended )
   view_setString_set.insert( "az" );
   view_setString_set.insert( "g" );
   view_setString_set.insert( "this better be sorted" );
-  createSetView( mixed_group, view_setString_name, view_setString_sfp, view_setString_set );
-
+  createSetView( mixed_group,
+                 view_setString_name,
+                 view_setString_sfp,
+                 view_setString_set );
 
   string view_real642d_name = "view_real642d";
   int view_real642d_sfp = sfp++;
@@ -385,8 +415,10 @@ TEST( testRestartExtended, testRestartExtended )
       view_real642d_arr[i][j] = i * i / 3.0 + j;
     }
   }
-  createArray2dView( mixed_group, view_real642d_name, view_real642d_sfp, view_real642d_arr );
-
+  createArray2dView( mixed_group,
+                     view_real642d_name,
+                     view_real642d_sfp,
+                     view_real642d_arr );
 
   string view_r1t2d_name = "view_r1t2d";
   int view_r1t2d_sfp = sfp++;
@@ -405,8 +437,6 @@ TEST( testRestartExtended, testRestartExtended )
   }
   createArray2dView( mixed_group, view_r1t2d_name, view_r1t2d_sfp, view_r1t2d_arr );
 
-
-
   /* Save the conduit tree */
   root->prepareToWrite();
   writeTree( path );
@@ -421,28 +451,42 @@ TEST( testRestartExtended, testRestartExtended )
   root = new Group( std::string( "data" ), nullptr );
 
   /* Create dual GEOS tree. Groups automatically register with the associated conduit::Node. */
-  Wrapper< globalIndex_array > * view_globalIndex_new = root->registerWrapper< globalIndex_array >( view_globalIndex_name );
+  Wrapper< globalIndex_array > * view_globalIndex_new =
+    root->registerWrapper< globalIndex_array >( view_globalIndex_name );
   Wrapper< string > * view_hope_new = root->registerWrapper< string >( view_hope_name );
-  Wrapper< string_array > * view_restart_new = root->registerWrapper< string_array >( view_restart_name );
+  Wrapper< string_array > * view_restart_new =
+    root->registerWrapper< string_array >( view_restart_name );
 
   Group * strings_group_new = root->RegisterGroup( "strings" );
-  Wrapper< string > * view_hello_new = strings_group_new->registerWrapper< string >( view_hello_name );
-  Wrapper< string > * view_goodbye_new = strings_group_new->registerWrapper< string >( view_goodbye_name );
+  Wrapper< string > * view_hello_new =
+    strings_group_new->registerWrapper< string >( view_hello_name );
+  Wrapper< string > * view_goodbye_new =
+    strings_group_new->registerWrapper< string >( view_goodbye_name );
 
   Group * real64_group_new = root->RegisterGroup( "real64" );
-  Wrapper< real64_array > * view_real641_new = real64_group_new->registerWrapper< real64_array >( view_real641_name );
-  Wrapper< real64_array > * view_real642_new = real64_group_new->registerWrapper< real64_array >( view_real642_name );
+  Wrapper< real64_array > * view_real641_new =
+    real64_group_new->registerWrapper< real64_array >( view_real641_name );
+  Wrapper< real64_array > * view_real642_new =
+    real64_group_new->registerWrapper< real64_array >( view_real642_name );
 
   Group * mixed_group_new = real64_group_new->RegisterGroup( "mixed" );
-  Wrapper< localIndex_array > * view_localIndex_new = mixed_group_new->registerWrapper< localIndex_array >( view_localIndex_name );
-  Wrapper< real32_array > * view_real32_new = mixed_group_new->registerWrapper< real32_array >( view_real32_name );
-  Wrapper< string > * view_what_new = mixed_group_new->registerWrapper< string >( view_what_name );
-  Wrapper< real64 > * view_pi_new = mixed_group_new->registerWrapper< real64 >( view_pi_name );
-  Wrapper< SortedArray< localIndex > > * view_setlocalIndex_new = mixed_group_new->registerWrapper< SortedArray< localIndex > >( view_setlocalIndex_name );
-  Wrapper< SortedArray< string > > * view_setString_new = mixed_group_new->registerWrapper< SortedArray< string > >( view_setString_name );
-  Wrapper< array2d< real64 > > * view_real642d_new = mixed_group_new->registerWrapper< array2d< real64 > >( view_real642d_name );
-  Wrapper< array2d< R1Tensor > > * view_r1t2d_new = mixed_group_new->registerWrapper< array2d< R1Tensor > >( view_r1t2d_name );
-
+  Wrapper< localIndex_array > * view_localIndex_new =
+    mixed_group_new->registerWrapper< localIndex_array >( view_localIndex_name );
+  Wrapper< real32_array > * view_real32_new =
+    mixed_group_new->registerWrapper< real32_array >( view_real32_name );
+  Wrapper< string > * view_what_new =
+    mixed_group_new->registerWrapper< string >( view_what_name );
+  Wrapper< real64 > * view_pi_new =
+    mixed_group_new->registerWrapper< real64 >( view_pi_name );
+  Wrapper< SortedArray< localIndex > > * view_setlocalIndex_new =
+    mixed_group_new->registerWrapper< SortedArray< localIndex > >(
+      view_setlocalIndex_name );
+  Wrapper< SortedArray< string > > * view_setString_new =
+    mixed_group_new->registerWrapper< SortedArray< string > >( view_setString_name );
+  Wrapper< array2d< real64 > > * view_real642d_new =
+    mixed_group_new->registerWrapper< array2d< real64 > >( view_real642d_name );
+  Wrapper< array2d< R1Tensor > > * view_r1t2d_new =
+    mixed_group_new->registerWrapper< array2d< R1Tensor > >( view_r1t2d_name );
 
   /* Load the data */
   root->loadFromConduit();
@@ -465,7 +509,9 @@ TEST( testRestartExtended, testRestartExtended )
   checkArrayView( view_real32_new, view_real32_sfp, view_real32_data );
   checkStringView( view_what_new, view_what_sfp, view_what_str );
   checkScalarView( view_pi_new, view_pi_sfp, view_pi_value );
-  checkSetView( view_setlocalIndex_new, view_setlocalIndex_sfp, view_setlocalIndex_set );
+  checkSetView( view_setlocalIndex_new,
+                view_setlocalIndex_sfp,
+                view_setlocalIndex_set );
   checkSetView( view_setString_new, view_setString_sfp, view_setString_set );
   checkArray2dView( view_real642d_new, view_real642d_sfp, view_real642d_arr );
   checkArray2dView( view_r1t2d_new, view_r1t2d_sfp, view_r1t2d_arr );
@@ -476,8 +522,8 @@ TEST( testRestartExtended, testRestartExtended )
 } /* end namespace dataRepository */
 } /* end namespace geosx */
 
-
-int main( int argc, char * argv[] )
+int
+main( int argc, char * argv[] )
 {
   testing::InitGoogleTest( &argc, argv );
 

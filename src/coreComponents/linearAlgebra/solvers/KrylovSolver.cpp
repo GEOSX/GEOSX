@@ -24,34 +24,38 @@
 
 namespace geosx
 {
-
 template< typename VECTOR >
 KrylovSolver< VECTOR >::KrylovSolver( LinearOperator< Vector > const & matrix,
                                       LinearOperator< Vector > const & precond,
                                       real64 const tolerance,
                                       localIndex const maxIterations,
-                                      integer const verbosity )
-  : Base(),
+                                      integer const verbosity ) :
+  Base(),
   m_operator( matrix ),
   m_precond( precond ),
   m_tolerance( tolerance ),
   m_maxIterations( maxIterations ),
   m_logLevel( verbosity )
 {
-  GEOSX_ERROR_IF_LE_MSG( m_maxIterations, 0, "Krylov solver: max number of iteration must be positive." );
+  GEOSX_ERROR_IF_LE_MSG(
+    m_maxIterations,
+    0,
+    "Krylov solver: max number of iteration must be positive." );
   GEOSX_LAI_ASSERT_EQ( m_operator.numGlobalRows(), m_precond.numGlobalRows() );
   GEOSX_LAI_ASSERT_EQ( m_operator.numGlobalCols(), m_precond.numGlobalCols() );
 }
 
 template< typename VECTOR >
 std::unique_ptr< KrylovSolver< VECTOR > >
-KrylovSolver< VECTOR >::Create( LinearSolverParameters const & parameters,
-                                LinearOperator< VECTOR > const & matrix,
-                                LinearOperator< VECTOR > const & precond )
+KrylovSolver< VECTOR >::Create(
+  LinearSolverParameters const & parameters,
+  LinearOperator< VECTOR > const & matrix,
+  LinearOperator< VECTOR > const & precond )
 {
   if( parameters.solverType == "cg" )
   {
-    GEOSX_ERROR_IF( !parameters.isSymmetric, "Cannot use CG solver with a non-symmetric system" );
+    GEOSX_ERROR_IF( !parameters.isSymmetric,
+                    "Cannot use CG solver with a non-symmetric system" );
     return std::make_unique< CGsolver< Vector > >( matrix,
                                                    precond,
                                                    parameters.krylov.relTolerance,
@@ -60,11 +64,12 @@ KrylovSolver< VECTOR >::Create( LinearSolverParameters const & parameters,
   }
   else if( parameters.solverType == "bicgstab" )
   {
-    return std::make_unique< BiCGSTABsolver< Vector > >( matrix,
-                                                         precond,
-                                                         parameters.krylov.relTolerance,
-                                                         parameters.krylov.maxIterations,
-                                                         parameters.logLevel );
+    return std::make_unique< BiCGSTABsolver< Vector > >(
+      matrix,
+      precond,
+      parameters.krylov.relTolerance,
+      parameters.krylov.maxIterations,
+      parameters.logLevel );
   }
   else if( parameters.solverType == "gmres" )
   {
@@ -100,4 +105,4 @@ template class KrylovSolver< PetscInterface::ParallelVector >;
 template class KrylovSolver< BlockVectorView< PetscInterface::ParallelVector > >;
 #endif
 
-}
+}  // namespace geosx

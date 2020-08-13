@@ -22,13 +22,10 @@
 
 namespace geosx
 {
-
 namespace constitutive
 {
-
 namespace internal
 {
-
 template< typename T, int DIM >
 struct ArraySliceOrRefHelper
 {
@@ -45,7 +42,7 @@ struct ArraySliceOrRefHelper< T, 0 >
 template< typename T, int DIM >
 using ArraySliceOrRef = typename ArraySliceOrRefHelper< T, DIM >::type;
 
-} // namespace internal
+}  // namespace internal
 
 /**
  * @brief Helper struct used to represent a variable and its compositional derivatives
@@ -54,14 +51,14 @@ using ArraySliceOrRef = typename ArraySliceOrRefHelper< T, DIM >::type;
 template< int DIM >
 struct CompositionalVarContainer
 {
-  internal::ArraySliceOrRef< real64, DIM > const & value; // variable value
-  internal::ArraySliceOrRef< real64, DIM > const & dPres; // derivative w.r.t. pressure
-  internal::ArraySliceOrRef< real64, DIM > const & dTemp; // derivative w.r.t. temperature
-  internal::ArraySliceOrRef< real64, DIM + 1 > const & dComp; // derivative w.r.t. composition
+  internal::ArraySliceOrRef< real64, DIM > const & value;      // variable value
+  internal::ArraySliceOrRef< real64, DIM > const & dPres;      // derivative w.r.t. pressure
+  internal::ArraySliceOrRef< real64, DIM > const & dTemp;      // derivative w.r.t. temperature
+  internal::ArraySliceOrRef< real64, DIM + 1 > const & dComp;  // derivative w.r.t. composition
 };
 
-} // namespace constitutive
+}  // namespace constitutive
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif //GEOSX_CONSTITUTIVE_FLUID_MULTIFLUIDUTILS_HPP_
+#endif  //GEOSX_CONSTITUTIVE_FLUID_MULTIFLUIDUTILS_HPP_

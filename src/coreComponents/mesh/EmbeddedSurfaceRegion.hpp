@@ -24,7 +24,6 @@
 
 namespace geosx
 {
-
 class EdgeManager;
 
 /**
@@ -37,7 +36,6 @@ class EdgeManager;
 class EmbeddedSurfaceRegion : public ElementRegionBase
 {
 public:
-
   /**
    * @name Constructor / Destructor
    */
@@ -71,11 +69,17 @@ public:
    * @brief Get the key name for the EmbeddedSurfaceRegion in the object catalog.
    * @return A string containing the key name.
    */
-  static const string CatalogName()
-  { return "EmbeddedSurfaceElementRegion"; }
+  static const string
+  CatalogName()
+  {
+    return "EmbeddedSurfaceElementRegion";
+  }
 
-  virtual const string getCatalogName() const override final
-  { return EmbeddedSurfaceRegion::CatalogName(); }
+  virtual const string
+  getCatalogName() const override final
+  {
+    return EmbeddedSurfaceRegion::CatalogName();
+  }
 
   ///@}
 
@@ -91,11 +95,8 @@ public:
     static constexpr auto defaultApertureString = "defaultAperture";
   };
 
-
 private:
-
   real64 m_defaultAperture;
-
 };
 
 } /* namespace geosx */

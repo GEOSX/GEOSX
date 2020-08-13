@@ -25,10 +25,8 @@
 
 namespace geosx
 {
-
 namespace constitutive
 {
-
 /**
  * @enum Enumeration describing available approximations of the exponent
  */
@@ -41,7 +39,6 @@ enum class ExponentApproximationType
 
 namespace detail
 {
-
 // bring into scope for ADL
 using std::exp;
 using std::log;
@@ -62,16 +59,23 @@ struct ExponentialCompute< T, ExponentApproximationType::Full, false >
 {
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & x, T & y )
+  static void
+  Compute( const T & x0, const T & y0, const T & alpha, const T & x, T & y )
   {
-    y = y0 * exp( alpha * (x - x0));
+    y = y0 * exp( alpha * ( x - x0 ) );
   }
 
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & x, T & y, T & dy_dx )
+  static void
+  Compute( const T & x0,
+           const T & y0,
+           const T & alpha,
+           const T & x,
+           T & y,
+           T & dy_dx )
   {
-    y = y0 * exp( alpha * (x - x0));
+    y = y0 * exp( alpha * ( x - x0 ) );
     dy_dx = alpha * y;
   }
 };
@@ -81,14 +85,21 @@ struct ExponentialCompute< T, ExponentApproximationType::Full, true >
 {
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & y, T & x )
+  static void
+  Compute( const T & x0, const T & y0, const T & alpha, const T & y, T & x )
   {
     x = x0 + log( y / y0 ) / alpha;
   }
 
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & y, T & x, T & dx_dy )
+  static void
+  Compute( const T & x0,
+           const T & y0,
+           const T & alpha,
+           const T & y,
+           T & x,
+           T & dx_dy )
   {
     const T alpha_inv = T( 1.0 ) / alpha;
     x = x0 + alpha_inv * log( y / y0 );
@@ -101,18 +112,25 @@ struct ExponentialCompute< T, ExponentApproximationType::Quadratic, false >
 {
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & x, T & y )
+  static void
+  Compute( const T & x0, const T & y0, const T & alpha, const T & x, T & y )
   {
-    const T z = T( 1.0 ) + alpha * (x - x0);
-    y = y0 / T( 2.0 ) * (T( 1.0 ) + z * z);
+    const T z = T( 1.0 ) + alpha * ( x - x0 );
+    y = y0 / T( 2.0 ) * ( T( 1.0 ) + z * z );
   }
 
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & x, T & y, T & dy_dx )
+  static void
+  Compute( const T & x0,
+           const T & y0,
+           const T & alpha,
+           const T & x,
+           T & y,
+           T & dy_dx )
   {
-    const T z = T( 1.0 ) + alpha * (x - x0);
-    y = y0 / T( 2.0 ) * (T( 1.0 ) + z * z);
+    const T z = T( 1.0 ) + alpha * ( x - x0 );
+    y = y0 / T( 2.0 ) * ( T( 1.0 ) + z * z );
     dy_dx = alpha * y0 * z;
   }
 };
@@ -122,20 +140,27 @@ struct ExponentialCompute< T, ExponentApproximationType::Quadratic, true >
 {
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & y, T & x )
+  static void
+  Compute( const T & x0, const T & y0, const T & alpha, const T & y, T & x )
   {
-    const T z = sqrt( T( 2.0 ) * y / y0 - T( 1.0 ));
-    x = x0 + (z - 1) / alpha;
+    const T z = sqrt( T( 2.0 ) * y / y0 - T( 1.0 ) );
+    x = x0 + ( z - 1 ) / alpha;
   }
 
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & y, T & x, T & dx_dy )
+  static void
+  Compute( const T & x0,
+           const T & y0,
+           const T & alpha,
+           const T & y,
+           T & x,
+           T & dx_dy )
   {
     const T alpha_inv = T( 1.0 ) / alpha;
-    const T z = sqrt( T( 2.0 ) * y / y0 - T( 1.0 ));
-    x = x0 + alpha_inv * (z - 1);
-    dx_dy = alpha_inv / (y0 * z);
+    const T z = sqrt( T( 2.0 ) * y / y0 - T( 1.0 ) );
+    x = x0 + alpha_inv * ( z - 1 );
+    dx_dy = alpha_inv / ( y0 * z );
   }
 };
 
@@ -144,16 +169,23 @@ struct ExponentialCompute< T, ExponentApproximationType::Linear, false >
 {
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & x, T & y )
+  static void
+  Compute( const T & x0, const T & y0, const T & alpha, const T & x, T & y )
   {
-    y = y0 * (T( 1.0 ) + alpha * (x - x0));
+    y = y0 * ( T( 1.0 ) + alpha * ( x - x0 ) );
   }
 
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & x, T & y, T & dy_dx )
+  static void
+  Compute( const T & x0,
+           const T & y0,
+           const T & alpha,
+           const T & x,
+           T & y,
+           T & dy_dx )
   {
-    y = y0 * (T( 1.0 ) + alpha * (x - x0));
+    y = y0 * ( T( 1.0 ) + alpha * ( x - x0 ) );
     dy_dx = alpha * y0;
   }
 };
@@ -163,22 +195,29 @@ struct ExponentialCompute< T, ExponentApproximationType::Linear, true >
 {
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & y, T & x )
+  static void
+  Compute( const T & x0, const T & y0, const T & alpha, const T & y, T & x )
   {
-    x = x0 + (y / y0 - 1) / alpha;
+    x = x0 + ( y / y0 - 1 ) / alpha;
   }
 
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  static void Compute( const T & x0, const T & y0, const T & alpha, const T & y, T & x, T & dx_dy )
+  static void
+  Compute( const T & x0,
+           const T & y0,
+           const T & alpha,
+           const T & y,
+           T & x,
+           T & dx_dy )
   {
     const T alpha_inv = T( 1.0 ) / alpha;
-    x = x0 + alpha_inv * (y / y0 - 1);
+    x = x0 + alpha_inv * ( y / y0 - 1 );
     dx_dy = alpha_inv / y0;
   }
 };
 
-}
+}  // namespace detail
 
 /**
  * @class ExponentialRelation
@@ -194,7 +233,6 @@ template< typename T, ExponentApproximationType EAT >
 class ExponentialRelation
 {
 public:
-
   static constexpr ExponentApproximationType type = EAT;
 
   // *** constructors ***
@@ -203,8 +241,8 @@ public:
    * @brief Default constructor. Sets \f$ x0 = 0, y0 = 1, alpha = 1 \f$
    */
   GEOSX_HOST_DEVICE
-  ExponentialRelation()
-    : ExponentialRelation( T( 0 ), T( 1 ), T( 1 ) )
+  ExponentialRelation() :
+    ExponentialRelation( T( 0 ), T( 1 ), T( 1 ) )
   {}
 
   /**
@@ -228,7 +266,8 @@ public:
    * @param alpha exponential coefficient
    */
   GEOSX_HOST_DEVICE
-  void SetCoefficients( T x0, T y0, T alpha )
+  void
+  SetCoefficients( T x0, T y0, T alpha )
   {
     m_x0 = x0;
     m_y0 = y0;
@@ -243,11 +282,11 @@ public:
    * @param y
    */
   GEOSX_HOST_DEVICE
-  void Compute( const T & x, T & y ) const
+  void
+  Compute( const T & x, T & y ) const
   {
     detail::ExponentialCompute< T, EAT >::Compute( m_x0, m_y0, m_alpha, x, y );
   }
-
 
   /**
    * @brief Compute inverse value
@@ -255,7 +294,8 @@ public:
    * @param x
    */
   GEOSX_HOST_DEVICE
-  void Inverse( const T & y, T & x ) const
+  void
+  Inverse( const T & y, T & x ) const
   {
     detail::ExponentialCompute< T, EAT, true >::Compute( m_x0, m_y0, m_alpha, y, x );
   }
@@ -269,7 +309,8 @@ public:
    * @param dy_dx
    */
   GEOSX_HOST_DEVICE
-  void Compute( const T & x, T & y, T & dy_dx ) const
+  void
+  Compute( const T & x, T & y, T & dy_dx ) const
   {
     detail::ExponentialCompute< T, EAT >::Compute( m_x0, m_y0, m_alpha, x, y, dy_dx );
   }
@@ -281,13 +322,13 @@ public:
    * @param dx_dy
    */
   GEOSX_HOST_DEVICE
-  void Inverse( const T & y, T & x, T & dx_dy ) const
+  void
+  Inverse( const T & y, T & x, T & dx_dy ) const
   {
     detail::ExponentialCompute< T, EAT, true >::Compute( m_x0, m_y0, m_alpha, y, x, dx_dy );
   }
 
 private:
-
   /// variable shift
   T m_x0;
 
@@ -296,13 +337,12 @@ private:
 
   /// exponential coefficient
   T m_alpha;
-
 };
 
-inline ExponentApproximationType stringToExponentType( string const & model )
+inline ExponentApproximationType
+stringToExponentType( string const & model )
 {
-  static std::map< string, ExponentApproximationType > const approxTypes =
-  {
+  static std::map< string, ExponentApproximationType > const approxTypes = {
     { "linear", ExponentApproximationType::Linear },
     { "quadratic", ExponentApproximationType::Quadratic },
     { "exponential", ExponentApproximationType::Full },
@@ -325,25 +365,35 @@ struct ExponentApproximationTypeWrapper
  * @param lambda user-provided generic lambda to be called with an instance of EAT wrapper type
  */
 template< typename T, typename LAMBDA >
-void ExponentApproximationTypeSwitchBlock( ExponentApproximationType const type, T const & x0, T const & y0, T const & alpha, LAMBDA lambda )
+void
+ExponentApproximationTypeSwitchBlock( ExponentApproximationType const type,
+                                      T const & x0,
+                                      T const & y0,
+                                      T const & alpha,
+                                      LAMBDA lambda )
 {
   switch( type )
   {
     case ExponentApproximationType::Full:
     {
-      return lambda( ExponentialRelation< T, ExponentApproximationType::Full >( x0, y0, alpha ) );
+      return lambda(
+        ExponentialRelation< T, ExponentApproximationType::Full >( x0, y0, alpha ) );
     }
     case ExponentApproximationType::Quadratic:
     {
-      return lambda( ExponentialRelation< T, ExponentApproximationType::Quadratic >( x0, y0, alpha ) );
+      return lambda(
+        ExponentialRelation< T, ExponentApproximationType::Quadratic >( x0, y0, alpha ) );
     }
     case ExponentApproximationType::Linear:
     {
-      return lambda( ExponentialRelation< T, ExponentApproximationType::Linear >( x0, y0, alpha ) );
+      return lambda(
+        ExponentialRelation< T, ExponentApproximationType::Linear >( x0, y0, alpha ) );
     }
     default:
     {
-      GEOSX_ERROR( "ExponentApproximationTypeSwitchBlock() ExponentApproximationType is invalid!" );
+      GEOSX_ERROR(
+        "ExponentApproximationTypeSwitchBlock() ExponentApproximationType is "
+        "invalid!" );
     }
   }
 }
@@ -359,15 +409,22 @@ void ExponentApproximationTypeSwitchBlock( ExponentApproximationType const type,
  * @param lambda user-provided generic lambda that will be passed an instance of ExponentialRelation<T,?>
  */
 template< typename T, typename LAMBDA >
-void makeExponentialRelation( ExponentApproximationType type,
-                              T const & x0, T const & y0, T const & alpha,
-                              LAMBDA && lambda )
+void
+makeExponentialRelation( ExponentApproximationType type,
+                         T const & x0,
+                         T const & y0,
+                         T const & alpha,
+                         LAMBDA && lambda )
 {
-  ExponentApproximationTypeSwitchBlock( type, x0, y0, alpha, std::forward< LAMBDA >( lambda ) );
+  ExponentApproximationTypeSwitchBlock( type,
+                                        x0,
+                                        y0,
+                                        alpha,
+                                        std::forward< LAMBDA >( lambda ) );
 }
 
-} // namespace constitutive
+}  // namespace constitutive
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif // GEOSX_CONSITUTIVE_EXPONENTIALRELATION_HPP_
+#endif  // GEOSX_CONSITUTIVE_EXPONENTIALRELATION_HPP_

@@ -29,7 +29,8 @@
 
 using namespace geosx;
 
-LinearSolverParameters params_CG()
+LinearSolverParameters
+params_CG()
 {
   LinearSolverParameters parameters;
   parameters.krylov.relTolerance = 1e-8;
@@ -39,7 +40,8 @@ LinearSolverParameters params_CG()
   return parameters;
 }
 
-LinearSolverParameters params_BiCGSTAB()
+LinearSolverParameters
+params_BiCGSTAB()
 {
   LinearSolverParameters parameters;
   parameters.krylov.relTolerance = 1e-8;
@@ -48,7 +50,8 @@ LinearSolverParameters params_BiCGSTAB()
   return parameters;
 }
 
-LinearSolverParameters params_GMRES()
+LinearSolverParameters
+params_GMRES()
 {
   LinearSolverParameters parameters;
   parameters.krylov.relTolerance = 1e-8;
@@ -61,20 +64,18 @@ template< typename OPERATOR, typename PRECOND, typename VECTOR >
 class KrylovSolverTestBase : public ::testing::Test
 {
 public:
-
   using Base = ::testing::Test;
 
   // Constructor that allows subclass to pass initialization args to matrix/precond
   // Unfortunately, only one set of args can be passed to both and none to vectors
-  template< typename ... ARGS >
-  KrylovSolverTestBase( ARGS && ... args ):
+  template< typename... ARGS >
+  KrylovSolverTestBase( ARGS &&... args ) :
     Base(),
-    matrix( std::forward< ARGS >( args ) ... ),
-    precond( std::forward< ARGS >( args ) ... )
+    matrix( std::forward< ARGS >( args )... ),
+    precond( std::forward< ARGS >( args )... )
   {}
 
 protected:
-
   OPERATOR matrix;
   PRECOND precond;
   VECTOR sol_true;
@@ -82,7 +83,8 @@ protected:
   VECTOR rhs_true;
   real64 cond_est = 1.0;
 
-  void test( LinearSolverParameters const & params )
+  void
+  test( LinearSolverParameters const & params )
   {
     sol_true.rand();
     sol_comp.zero();
@@ -90,7 +92,8 @@ protected:
 
     // Create the solver and solve the system
     using Vector = typename OPERATOR::Vector;
-    std::unique_ptr< KrylovSolver< Vector > > const solver = KrylovSolver< Vector >::Create( params, matrix, precond );
+    std::unique_ptr< KrylovSolver< Vector > > const solver =
+      KrylovSolver< Vector >::Create( params, matrix, precond );
     solver->solve( rhs_true, sol_comp );
     EXPECT_TRUE( solver->result().success() );
 
@@ -104,12 +107,12 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////////////
 
 template< typename LAI >
-class KrylovSolverTest : public KrylovSolverTestBase< typename LAI::ParallelMatrix,
-                                                      PreconditionerIdentity< LAI >,
-                                                      typename LAI::ParallelVector >
+class KrylovSolverTest
+  : public KrylovSolverTestBase< typename LAI::ParallelMatrix,
+                                 PreconditionerIdentity< LAI >,
+                                 typename LAI::ParallelVector >
 {
 public:
-
   using Matrix = typename LAI::ParallelMatrix;
   using Vector = typename LAI::ParallelVector;
 
@@ -117,11 +120,13 @@ public:
                                      PreconditionerIdentity< LAI >,
                                      typename LAI::ParallelVector >;
 
-  KrylovSolverTest(): Base() {}
+  KrylovSolverTest() :
+    Base()
+  {}
 
 protected:
-
-  void SetUp()
+  void
+  SetUp()
   {
     // Compute matrix and preconditioner
     globalIndex constexpr n = 100;
@@ -129,9 +134,12 @@ protected:
     this->precond.compute( this->matrix );
 
     // Set up vectors
-    this->sol_true.createWithGlobalSize( this->matrix.numGlobalCols(), MPI_COMM_GEOSX );
-    this->sol_comp.createWithGlobalSize( this->matrix.numGlobalCols(), MPI_COMM_GEOSX );
-    this->rhs_true.createWithGlobalSize( this->matrix.numGlobalRows(), MPI_COMM_GEOSX );
+    this->sol_true.createWithGlobalSize( this->matrix.numGlobalCols(),
+                                         MPI_COMM_GEOSX );
+    this->sol_comp.createWithGlobalSize( this->matrix.numGlobalCols(),
+                                         MPI_COMM_GEOSX );
+    this->rhs_true.createWithGlobalSize( this->matrix.numGlobalRows(),
+                                         MPI_COMM_GEOSX );
 
     // Condition number for the Laplacian matrix estimate: 4 * n^2 / pi^2
     this->cond_est = 1.5 * 4.0 * n * n / std::pow( M_PI, 2 );
@@ -155,10 +163,7 @@ TYPED_TEST_P( KrylovSolverTest, GMRES )
   this->test( params_GMRES() );
 }
 
-REGISTER_TYPED_TEST_SUITE_P( KrylovSolverTest,
-                             CG,
-                             BiCGSTAB,
-                             GMRES );
+REGISTER_TYPED_TEST_SUITE_P( KrylovSolverTest, CG, BiCGSTAB, GMRES );
 
 #ifdef GEOSX_USE_TRILINOS
 INSTANTIATE_TYPED_TEST_SUITE_P( Trilinos, KrylovSolverTest, TrilinosInterface, );
@@ -175,27 +180,31 @@ INSTANTIATE_TYPED_TEST_SUITE_P( Petsc, KrylovSolverTest, PetscInterface, );
 ///////////////////////////////////////////////////////////////////////////////////////
 
 template< typename LAI >
-class KrylovSolverBlockTest : public KrylovSolverTestBase< BlockOperatorWrapper< typename LAI::ParallelVector, typename LAI::ParallelMatrix >,
-                                                           BlockOperatorWrapper< typename LAI::ParallelVector >,
-                                                           BlockVector< typename LAI::ParallelVector > >
+class KrylovSolverBlockTest
+  : public KrylovSolverTestBase<
+      BlockOperatorWrapper< typename LAI::ParallelVector, typename LAI::ParallelMatrix >,
+      BlockOperatorWrapper< typename LAI::ParallelVector >,
+      BlockVector< typename LAI::ParallelVector > >
 {
 public:
-
   using Matrix = typename LAI::ParallelMatrix;
   using Vector = typename LAI::ParallelVector;
 
-  using Base = KrylovSolverTestBase< BlockOperatorWrapper< typename LAI::ParallelVector, typename LAI::ParallelMatrix >,
-                                     BlockOperatorWrapper< typename LAI::ParallelVector >,
-                                     BlockVector< typename LAI::ParallelVector > >;
+  using Base = KrylovSolverTestBase<
+    BlockOperatorWrapper< typename LAI::ParallelVector, typename LAI::ParallelMatrix >,
+    BlockOperatorWrapper< typename LAI::ParallelVector >,
+    BlockVector< typename LAI::ParallelVector > >;
 
-  KrylovSolverBlockTest(): Base( 2, 2 ) {}
+  KrylovSolverBlockTest() :
+    Base( 2, 2 )
+  {}
 
 protected:
-
   Matrix laplace2D;
   PreconditionerIdentity< LAI > identity;
 
-  void SetUp()
+  void
+  SetUp()
   {
     globalIndex constexpr n = 100;
     compute2DLaplaceOperator( MPI_COMM_GEOSX, n, laplace2D );
@@ -218,9 +227,12 @@ protected:
 
     for( localIndex i = 0; i < 2; ++i )
     {
-      this->sol_true.block( i ).createWithGlobalSize( laplace2D.numGlobalCols(), MPI_COMM_GEOSX );
-      this->sol_comp.block( i ).createWithGlobalSize( laplace2D.numGlobalCols(), MPI_COMM_GEOSX );
-      this->rhs_true.block( i ).createWithGlobalSize( laplace2D.numGlobalRows(), MPI_COMM_GEOSX );
+      this->sol_true.block( i ).createWithGlobalSize( laplace2D.numGlobalCols(),
+                                                      MPI_COMM_GEOSX );
+      this->sol_comp.block( i ).createWithGlobalSize( laplace2D.numGlobalCols(),
+                                                      MPI_COMM_GEOSX );
+      this->rhs_true.block( i ).createWithGlobalSize( laplace2D.numGlobalRows(),
+                                                      MPI_COMM_GEOSX );
     }
 
     // Condition number for the Laplacian matrix estimate: 4 * n^2 / pi^2
@@ -245,13 +257,12 @@ TYPED_TEST_P( KrylovSolverBlockTest, GMRES )
   this->test( params_GMRES() );
 }
 
-REGISTER_TYPED_TEST_SUITE_P( KrylovSolverBlockTest,
-                             CG,
-                             BiCGSTAB,
-                             GMRES );
+REGISTER_TYPED_TEST_SUITE_P( KrylovSolverBlockTest, CG, BiCGSTAB, GMRES );
 
 #ifdef GEOSX_USE_TRILINOS
-INSTANTIATE_TYPED_TEST_SUITE_P( Trilinos, KrylovSolverBlockTest, TrilinosInterface, );
+INSTANTIATE_TYPED_TEST_SUITE_P( Trilinos,
+                                KrylovSolverBlockTest,
+                                TrilinosInterface, );
 #endif
 
 #ifdef GEOSX_USE_HYPRE
@@ -262,8 +273,8 @@ INSTANTIATE_TYPED_TEST_SUITE_P( Hypre, KrylovSolverBlockTest, HypreInterface, );
 INSTANTIATE_TYPED_TEST_SUITE_P( Petsc, KrylovSolverBlockTest, PetscInterface, );
 #endif
 
-
-int main( int argc, char * * argv )
+int
+main( int argc, char ** argv )
 {
   ::testing::InitGoogleTest( &argc, argv );
   geosx::basicSetup( argc, argv );

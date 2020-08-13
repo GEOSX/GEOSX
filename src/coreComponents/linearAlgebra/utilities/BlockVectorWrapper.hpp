@@ -24,7 +24,6 @@
 
 namespace geosx
 {
-
 /**
  * @brief "Shallow" representation of a block vector.
  * @tparam VECTOR type of sub-vectors
@@ -37,7 +36,6 @@ template< typename VECTOR >
 class BlockVectorWrapper : public BlockVectorView< VECTOR >
 {
 public:
-
   /// Alias for base type
   using Base = BlockVectorView< VECTOR >;
 
@@ -45,8 +43,8 @@ public:
    * @brief Create a vector wrapper of @p nBlocks blocks.
    * @param nBlocks number of blocks
    */
-  explicit BlockVectorWrapper( localIndex const nBlocks )
-    : BlockVectorView< VECTOR >( nBlocks )
+  explicit BlockVectorWrapper( localIndex const nBlocks ) :
+    BlockVectorView< VECTOR >( nBlocks )
   {}
 
   /**
@@ -71,7 +69,8 @@ public:
    * @param blockIndex index of the block
    * @param vec        target vector (must not go out of scope before the wrapper object)
    */
-  void set( localIndex const blockIndex, VECTOR & vec )
+  void
+  set( localIndex const blockIndex, VECTOR & vec )
   {
     GEOSX_LAI_ASSERT_GE( blockIndex, 0 );
     GEOSX_LAI_ASSERT_GT( this->blockSize(), blockIndex );
@@ -79,6 +78,6 @@ public:
   }
 };
 
-} //namespace geosx
+}  //namespace geosx
 
-#endif //GEOSX_LINEARALGEBRA_UTILITIES_BLOCKVECTORWRAPPER_HPP_
+#endif  //GEOSX_LINEARALGEBRA_UTILITIES_BLOCKVECTORWRAPPER_HPP_

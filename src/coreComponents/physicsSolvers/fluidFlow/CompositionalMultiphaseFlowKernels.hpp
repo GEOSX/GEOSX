@@ -25,10 +25,8 @@
 
 namespace geosx
 {
-
 namespace CompositionalMultiphaseFlowKernels
 {
-
 /******************************** ComponentFractionKernel ********************************/
 
 /**
@@ -37,13 +35,12 @@ namespace CompositionalMultiphaseFlowKernels
 struct ComponentFractionKernel
 {
   template< localIndex NC >
-  GEOSX_HOST_DEVICE
-  GEOSX_FORCE_INLINE
-  static void
-  Compute( arraySlice1d< real64 const > compDens,
-           arraySlice1d< real64 const > dCompDens,
-           arraySlice1d< real64 > compFrac,
-           arraySlice2d< real64 > dCompFrac_dCompDens );
+  GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE static void
+  Compute(
+    arraySlice1d< real64 const > compDens,
+    arraySlice1d< real64 const > dCompDens,
+    arraySlice1d< real64 > compFrac,
+    arraySlice2d< real64 > dCompFrac_dCompDens );
 
   template< localIndex NC >
   static void
@@ -70,21 +67,20 @@ struct ComponentFractionKernel
 struct PhaseVolumeFractionKernel
 {
   template< localIndex NC, localIndex NP >
-  GEOSX_HOST_DEVICE
-  GEOSX_FORCE_INLINE
-  static void
-  Compute( arraySlice1d< real64 const > const & compDens,
-           arraySlice1d< real64 const > const & dCompDens,
-           arraySlice2d< real64 const > const & dCompFrac_dCompDens,
-           arraySlice1d< real64 const > const & phaseDens,
-           arraySlice1d< real64 const > const & dPhaseDens_dPres,
-           arraySlice2d< real64 const > const & dPhaseDens_dComp,
-           arraySlice1d< real64 const > const & phaseFrac,
-           arraySlice1d< real64 const > const & dPhaseFrac_dPres,
-           arraySlice2d< real64 const > const & dPhaseFrac_dComp,
-           arraySlice1d< real64 > const & phaseVolFrac,
-           arraySlice1d< real64 > const & dPhaseVolFrac_dPres,
-           arraySlice2d< real64 > const & dPhaseVolFrac_dComp );
+  GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE static void
+  Compute(
+    arraySlice1d< real64 const > const & compDens,
+    arraySlice1d< real64 const > const & dCompDens,
+    arraySlice2d< real64 const > const & dCompFrac_dCompDens,
+    arraySlice1d< real64 const > const & phaseDens,
+    arraySlice1d< real64 const > const & dPhaseDens_dPres,
+    arraySlice2d< real64 const > const & dPhaseDens_dComp,
+    arraySlice1d< real64 const > const & phaseFrac,
+    arraySlice1d< real64 const > const & dPhaseFrac_dPres,
+    arraySlice2d< real64 const > const & dPhaseFrac_dComp,
+    arraySlice1d< real64 > const & phaseVolFrac,
+    arraySlice1d< real64 > const & dPhaseVolFrac_dPres,
+    arraySlice2d< real64 > const & dPhaseVolFrac_dComp );
 
   template< localIndex NC, localIndex NP >
   static void
@@ -127,23 +123,22 @@ struct PhaseVolumeFractionKernel
 struct PhaseMobilityKernel
 {
   template< localIndex NC, localIndex NP >
-  GEOSX_HOST_DEVICE
-  GEOSX_FORCE_INLINE
-  static void
-  Compute( arraySlice2d< real64 const > const & dCompFrac_dCompDens,
-           arraySlice1d< real64 const > const & phaseDens,
-           arraySlice1d< real64 const > const & dPhaseDens_dPres,
-           arraySlice2d< real64 const > const & dPhaseDens_dComp,
-           arraySlice1d< real64 const > const & phaseVisc,
-           arraySlice1d< real64 const > const & dPhaseVisc_dPres,
-           arraySlice2d< real64 const > const & dPhaseVisc_dComp,
-           arraySlice1d< real64 const > const & phaseRelPerm,
-           arraySlice2d< real64 const > const & dPhaseRelPerm_dPhaseVolFrac,
-           arraySlice1d< real64 const > const & dPhaseVolFrac_dPres,
-           arraySlice2d< real64 const > const & dPhaseVolFrac_dComp,
-           arraySlice1d< real64 > const & phaseMob,
-           arraySlice1d< real64 > const & dPhaseMob_dPres,
-           arraySlice2d< real64 > const & dPhaseMob_dComp );
+  GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE static void
+  Compute(
+    arraySlice2d< real64 const > const & dCompFrac_dCompDens,
+    arraySlice1d< real64 const > const & phaseDens,
+    arraySlice1d< real64 const > const & dPhaseDens_dPres,
+    arraySlice2d< real64 const > const & dPhaseDens_dComp,
+    arraySlice1d< real64 const > const & phaseVisc,
+    arraySlice1d< real64 const > const & dPhaseVisc_dPres,
+    arraySlice2d< real64 const > const & dPhaseVisc_dComp,
+    arraySlice1d< real64 const > const & phaseRelPerm,
+    arraySlice2d< real64 const > const & dPhaseRelPerm_dPhaseVolFrac,
+    arraySlice1d< real64 const > const & dPhaseVolFrac_dPres,
+    arraySlice2d< real64 const > const & dPhaseVolFrac_dComp,
+    arraySlice1d< real64 > const & phaseMob,
+    arraySlice1d< real64 > const & dPhaseMob_dPres,
+    arraySlice2d< real64 > const & dPhaseMob_dComp );
 
   template< localIndex NC, localIndex NP >
   static void
@@ -194,8 +189,7 @@ struct FluidUpdateKernel
           real64 const temp,
           arrayView2d< real64 const > const & compFrac )
   {
-    forAll< POLICY >( size, [=] ( localIndex const k )
-    {
+    forAll< POLICY >( size, [=]( localIndex const k ) {
       for( localIndex q = 0; q < fluidWrapper.numGauss(); ++q )
       {
         fluidWrapper.Update( k, q, pres[k], temp, compFrac[k] );
@@ -212,8 +206,7 @@ struct FluidUpdateKernel
           real64 const temp,
           arrayView2d< real64 const > const & compFrac )
   {
-    forAll< POLICY >( size, [=] ( localIndex const k )
-    {
+    forAll< POLICY >( size, [=]( localIndex const k ) {
       for( localIndex q = 0; q < fluidWrapper.numGauss(); ++q )
       {
         fluidWrapper.Update( k, q, pres[k] + dPres[k], temp, compFrac[k] );
@@ -230,8 +223,7 @@ struct FluidUpdateKernel
           real64 const temp,
           arrayView2d< real64 const > const & compFrac )
   {
-    forAll< POLICY >( targetSet.size(), [=] ( localIndex const a )
-    {
+    forAll< POLICY >( targetSet.size(), [=]( localIndex const a ) {
       localIndex const k = targetSet[a];
       for( localIndex q = 0; q < fluidWrapper.numGauss(); ++q )
       {
@@ -248,8 +240,7 @@ struct FluidUpdateKernel
           real64 const temp,
           arrayView2d< real64 const > const & compFrac )
   {
-    forAll< POLICY >( targetSet.size(), [=] ( localIndex const a )
-    {
+    forAll< POLICY >( targetSet.size(), [=]( localIndex const a ) {
       localIndex const k = targetSet[a];
       for( localIndex q = 0; q < fluidWrapper.numGauss(); ++q )
       {
@@ -269,8 +260,7 @@ struct RelativePermeabilityUpdateKernel
           RELPERM_WRAPPER const & relPermWrapper,
           arrayView2d< real64 const > const & phaseVolFrac )
   {
-    forAll< POLICY >( size, [=] GEOSX_HOST_DEVICE ( localIndex const k )
-    {
+    forAll< POLICY >( size, [=] GEOSX_HOST_DEVICE( localIndex const k ) {
       for( localIndex q = 0; q < relPermWrapper.numGauss(); ++q )
       {
         relPermWrapper.Update( k, q, phaseVolFrac[k] );
@@ -284,8 +274,7 @@ struct RelativePermeabilityUpdateKernel
           RELPERM_WRAPPER const & relPermWrapper,
           arrayView2d< real64 const > const & phaseVolFrac )
   {
-    forAll< POLICY >( targetSet.size(), [=] GEOSX_HOST_DEVICE ( localIndex const a )
-    {
+    forAll< POLICY >( targetSet.size(), [=] GEOSX_HOST_DEVICE( localIndex const a ) {
       localIndex const k = targetSet[a];
       for( localIndex q = 0; q < relPermWrapper.numGauss(); ++q )
       {
@@ -305,8 +294,7 @@ struct CapillaryPressureUpdateKernel
           CAPPRES_WRAPPER const & capPresWrapper,
           arrayView2d< real64 const > const & phaseVolFrac )
   {
-    forAll< POLICY >( size, [=] GEOSX_HOST_DEVICE ( localIndex const k )
-    {
+    forAll< POLICY >( size, [=] GEOSX_HOST_DEVICE( localIndex const k ) {
       for( localIndex q = 0; q < capPresWrapper.numGauss(); ++q )
       {
         capPresWrapper.Update( k, q, phaseVolFrac[k] );
@@ -320,8 +308,7 @@ struct CapillaryPressureUpdateKernel
           CAPPRES_WRAPPER const & capPresWrapper,
           arrayView2d< real64 const > const & phaseVolFrac )
   {
-    forAll< POLICY >( targetSet.size(), [=] GEOSX_HOST_DEVICE ( localIndex const a )
-    {
+    forAll< POLICY >( targetSet.size(), [=] GEOSX_HOST_DEVICE( localIndex const a ) {
       localIndex const k = targetSet[a];
       for( localIndex q = 0; q < capPresWrapper.numGauss(); ++q )
       {
@@ -339,30 +326,29 @@ struct CapillaryPressureUpdateKernel
 struct AccumulationKernel
 {
   template< localIndex NC >
-  GEOSX_HOST_DEVICE
-  GEOSX_FORCE_INLINE
-  static void
-    Compute( localIndex const numPhases,
-             real64 const & volume,
-             real64 const & porosityOld,
-             real64 const & porosityRef,
-             real64 const & pvMult,
-             real64 const & dPvMult_dPres,
-             arraySlice2d< real64 const > const & dCompFrac_dCompDens,
-             arraySlice1d< real64 const > const & phaseVolFracOld,
-             arraySlice1d< real64 const > const & phaseVolFrac,
-             arraySlice1d< real64 const > const & dPhaseVolFrac_dPres,
-             arraySlice2d< real64 const > const & dPhaseVolFrac_dCompDens,
-             arraySlice1d< real64 const > const & phaseDensOld,
-             arraySlice1d< real64 const > const & phaseDens,
-             arraySlice1d< real64 const > const & dPhaseDens_dPres,
-             arraySlice2d< real64 const > const & dPhaseDens_dComp,
-             arraySlice2d< real64 const > const & phaseCompFracOld,
-             arraySlice2d< real64 const > const & phaseCompFrac,
-             arraySlice2d< real64 const > const & dPhaseCompFrac_dPres,
-             arraySlice3d< real64 const > const & dPhaseCompFrac_dComp,
-             real64 ( &localAccum )[NC],
-             real64 ( &localAccumJacobian )[NC][NC+1] );
+  GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE static void
+  Compute(
+    localIndex const numPhases,
+    real64 const & volume,
+    real64 const & porosityOld,
+    real64 const & porosityRef,
+    real64 const & pvMult,
+    real64 const & dPvMult_dPres,
+    arraySlice2d< real64 const > const & dCompFrac_dCompDens,
+    arraySlice1d< real64 const > const & phaseVolFracOld,
+    arraySlice1d< real64 const > const & phaseVolFrac,
+    arraySlice1d< real64 const > const & dPhaseVolFrac_dPres,
+    arraySlice2d< real64 const > const & dPhaseVolFrac_dCompDens,
+    arraySlice1d< real64 const > const & phaseDensOld,
+    arraySlice1d< real64 const > const & phaseDens,
+    arraySlice1d< real64 const > const & dPhaseDens_dPres,
+    arraySlice2d< real64 const > const & dPhaseDens_dComp,
+    arraySlice2d< real64 const > const & phaseCompFracOld,
+    arraySlice2d< real64 const > const & phaseCompFrac,
+    arraySlice2d< real64 const > const & dPhaseCompFrac_dPres,
+    arraySlice3d< real64 const > const & dPhaseCompFrac_dComp,
+    real64 ( &localAccum )[NC],
+    real64 ( &localAccumJacobian )[NC][NC + 1] );
 
   template< localIndex NC >
   static void
@@ -400,7 +386,6 @@ struct AccumulationKernel
  */
 struct FluxKernel
 {
-
   /**
    * @brief The type for element-based data. Consists entirely of ArrayView's.
    *
@@ -408,68 +393,69 @@ struct FluxKernel
    * by calling .toView() or .toViewConst() on an accessor instance
    */
   template< typename VIEWTYPE >
-  using ElementView = typename ElementRegionManager::ElementViewAccessor< VIEWTYPE >::ViewTypeConst;
+  using ElementView =
+    typename ElementRegionManager::ElementViewAccessor< VIEWTYPE >::ViewTypeConst;
 
   template< localIndex NC, localIndex NUM_ELEMS, localIndex MAX_STENCIL >
-  GEOSX_HOST_DEVICE
-  GEOSX_FORCE_INLINE
-  static void
-  Compute( localIndex const stencilSize,
-           localIndex const numPhases,
-           arraySlice1d< localIndex const > const & seri,
-           arraySlice1d< localIndex const > const & sesri,
-           arraySlice1d< localIndex const > const & sei,
-           arraySlice1d< real64 const > const & stencilWeights,
-           ElementView< arrayView1d< real64 const > > const & pres,
-           ElementView< arrayView1d< real64 const > > const & dPres,
-           ElementView< arrayView1d< real64 const > > const & gravCoef,
-           ElementView< arrayView2d< real64 const > > const & phaseMob,
-           ElementView< arrayView2d< real64 const > > const & dPhaseMob_dPres,
-           ElementView< arrayView3d< real64 const > > const & dPhaseMob_dComp,
-           ElementView< arrayView2d< real64 const > > const & dPhaseVolFrac_dPres,
-           ElementView< arrayView3d< real64 const > > const & dPhaseVolFrac_dComp,
-           ElementView< arrayView3d< real64 const > > const & dCompFrac_dCompDens,
-           ElementView< arrayView3d< real64 const > > const & phaseDens,
-           ElementView< arrayView3d< real64 const > > const & dPhaseDens_dPres,
-           ElementView< arrayView4d< real64 const > > const & dPhaseDens_dComp,
-           ElementView< arrayView4d< real64 const > > const & phaseCompFrac,
-           ElementView< arrayView4d< real64 const > > const & dPhaseCompFrac_dPres,
-           ElementView< arrayView5d< real64 const > > const & dPhaseCompFrac_dComp,
-           ElementView< arrayView3d< real64 const > > const & phaseCapPressure,
-           ElementView< arrayView4d< real64 const > > const & dPhaseCapPressure_dPhaseVolFrac,
-           integer const capPressureFlag,
-           real64 const dt,
-           arraySlice1d< real64 > const & localFlux,
-           arraySlice2d< real64 > const & localFluxJacobian );
+  GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE static void
+  Compute(
+    localIndex const stencilSize,
+    localIndex const numPhases,
+    arraySlice1d< localIndex const > const & seri,
+    arraySlice1d< localIndex const > const & sesri,
+    arraySlice1d< localIndex const > const & sei,
+    arraySlice1d< real64 const > const & stencilWeights,
+    ElementView< arrayView1d< real64 const > > const & pres,
+    ElementView< arrayView1d< real64 const > > const & dPres,
+    ElementView< arrayView1d< real64 const > > const & gravCoef,
+    ElementView< arrayView2d< real64 const > > const & phaseMob,
+    ElementView< arrayView2d< real64 const > > const & dPhaseMob_dPres,
+    ElementView< arrayView3d< real64 const > > const & dPhaseMob_dComp,
+    ElementView< arrayView2d< real64 const > > const & dPhaseVolFrac_dPres,
+    ElementView< arrayView3d< real64 const > > const & dPhaseVolFrac_dComp,
+    ElementView< arrayView3d< real64 const > > const & dCompFrac_dCompDens,
+    ElementView< arrayView3d< real64 const > > const & phaseDens,
+    ElementView< arrayView3d< real64 const > > const & dPhaseDens_dPres,
+    ElementView< arrayView4d< real64 const > > const & dPhaseDens_dComp,
+    ElementView< arrayView4d< real64 const > > const & phaseCompFrac,
+    ElementView< arrayView4d< real64 const > > const & dPhaseCompFrac_dPres,
+    ElementView< arrayView5d< real64 const > > const & dPhaseCompFrac_dComp,
+    ElementView< arrayView3d< real64 const > > const & phaseCapPressure,
+    ElementView< arrayView4d< real64 const > > const & dPhaseCapPressure_dPhaseVolFrac,
+    integer const capPressureFlag,
+    real64 const dt,
+    arraySlice1d< real64 > const & localFlux,
+    arraySlice2d< real64 > const & localFluxJacobian );
 
   template< localIndex NC, typename STENCIL_TYPE >
   static void
-  Launch( localIndex const numPhases,
-          STENCIL_TYPE const & stencil,
-          globalIndex const rankOffset,
-          ElementView< arrayView1d< globalIndex const > > const & dofNumber,
-          ElementView< arrayView1d< integer const > > const & ghostRank,
-          ElementView< arrayView1d< real64 const > > const & pres,
-          ElementView< arrayView1d< real64 const > > const & dPres,
-          ElementView< arrayView1d< real64 const > > const & gravCoef,
-          ElementView< arrayView2d< real64 const > > const & phaseMob,
-          ElementView< arrayView2d< real64 const > > const & dPhaseMob_dPres,
-          ElementView< arrayView3d< real64 const > > const & dPhaseMob_dComp,
-          ElementView< arrayView2d< real64 const > > const & dPhaseVolFrac_dPres,
-          ElementView< arrayView3d< real64 const > > const & dPhaseVolFrac_dComp,
-          ElementView< arrayView3d< real64 const > > const & dCompFrac_dCompDens,
-          ElementView< arrayView3d< real64 const > > const & phaseDens,
-          ElementView< arrayView3d< real64 const > > const & dPhaseDens_dPres,
-          ElementView< arrayView4d< real64 const > > const & dPhaseDens_dComp,
-          ElementView< arrayView4d< real64 const > > const & phaseCompFrac,
-          ElementView< arrayView4d< real64 const > > const & dPhaseCompFrac_dPres,
-          ElementView< arrayView5d< real64 const > > const & dPhaseCompFrac_dComp,
-          ElementView< arrayView3d< real64 const > > const & phaseCapPressure,
-          ElementView< arrayView4d< real64 const > > const & dPhaseCapPressure_dPhaseVolFrac,
-          integer const capPressureFlag,
-          real64 const dt,
-          CRSMatrixView< real64, globalIndex const > const & localMatrix,
-          arrayView1d< real64 > const & localRhs );
+  Launch(
+    localIndex const numPhases,
+    STENCIL_TYPE const & stencil,
+    globalIndex const rankOffset,
+    ElementView< arrayView1d< globalIndex const > > const & dofNumber,
+    ElementView< arrayView1d< integer const > > const & ghostRank,
+    ElementView< arrayView1d< real64 const > > const & pres,
+    ElementView< arrayView1d< real64 const > > const & dPres,
+    ElementView< arrayView1d< real64 const > > const & gravCoef,
+    ElementView< arrayView2d< real64 const > > const & phaseMob,
+    ElementView< arrayView2d< real64 const > > const & dPhaseMob_dPres,
+    ElementView< arrayView3d< real64 const > > const & dPhaseMob_dComp,
+    ElementView< arrayView2d< real64 const > > const & dPhaseVolFrac_dPres,
+    ElementView< arrayView3d< real64 const > > const & dPhaseVolFrac_dComp,
+    ElementView< arrayView3d< real64 const > > const & dCompFrac_dCompDens,
+    ElementView< arrayView3d< real64 const > > const & phaseDens,
+    ElementView< arrayView3d< real64 const > > const & dPhaseDens_dPres,
+    ElementView< arrayView4d< real64 const > > const & dPhaseDens_dComp,
+    ElementView< arrayView4d< real64 const > > const & phaseCompFrac,
+    ElementView< arrayView4d< real64 const > > const & dPhaseCompFrac_dPres,
+    ElementView< arrayView5d< real64 const > > const & dPhaseCompFrac_dComp,
+    ElementView< arrayView3d< real64 const > > const & phaseCapPressure,
+    ElementView< arrayView4d< real64 const > > const & dPhaseCapPressure_dPhaseVolFrac,
+    integer const capPressureFlag,
+    real64 const dt,
+    CRSMatrixView< real64, globalIndex const > const & localMatrix,
+    arrayView1d< real64 > const & localRhs );
 };
 
 /******************************** VolumeBalanceKernel ********************************/
@@ -480,18 +466,17 @@ struct FluxKernel
 struct VolumeBalanceKernel
 {
   template< localIndex NC, localIndex NP >
-  GEOSX_HOST_DEVICE
-  GEOSX_FORCE_INLINE
-  static void
-  Compute( real64 const & volume,
-           real64 const & porosityRef,
-           real64 const & pvMult,
-           real64 const & dPvMult_dPres,
-           arraySlice1d< real64 const > const & phaseVolFrac,
-           arraySlice1d< real64 const > const & dPhaseVolFrac_dPres,
-           arraySlice2d< real64 const > const & dPhaseVolFrac_dCompDens,
-           real64 & localVolBalance,
-           real64 * const localVolBalanceJacobian );
+  GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE static void
+  Compute(
+    real64 const & volume,
+    real64 const & porosityRef,
+    real64 const & pvMult,
+    real64 const & dPvMult_dPres,
+    arraySlice1d< real64 const > const & phaseVolFrac,
+    arraySlice1d< real64 const > const & dPhaseVolFrac_dPres,
+    arraySlice2d< real64 const > const & dPhaseVolFrac_dCompDens,
+    real64 & localVolBalance,
+    real64 * const localVolBalanceJacobian );
 
   template< localIndex NC, localIndex NP >
   static void
@@ -514,60 +499,85 @@ struct VolumeBalanceKernel
 
 namespace internal
 {
-
 template< typename T, typename LAMBDA >
-void KernelLaunchSelectorCompSwitch( T value, LAMBDA && lambda )
+void
+KernelLaunchSelectorCompSwitch( T value, LAMBDA && lambda )
 {
-  static_assert( std::is_integral< T >::value, "KernelLaunchSelectorCompSwitch: type should be integral" );
+  static_assert( std::is_integral< T >::value,
+                 "KernelLaunchSelectorCompSwitch: type should be integral" );
 
   switch( value )
   {
     case 1:
-    { lambda( std::integral_constant< T, 1 >() ); return; }
+    {
+      lambda( std::integral_constant< T, 1 >() );
+      return;
+    }
     case 2:
-    { lambda( std::integral_constant< T, 2 >() ); return; }
+    {
+      lambda( std::integral_constant< T, 2 >() );
+      return;
+    }
     case 3:
-    { lambda( std::integral_constant< T, 3 >() ); return; }
+    {
+      lambda( std::integral_constant< T, 3 >() );
+      return;
+    }
     case 4:
-    { lambda( std::integral_constant< T, 4 >() ); return; }
+    {
+      lambda( std::integral_constant< T, 4 >() );
+      return;
+    }
     case 5:
-    { lambda( std::integral_constant< T, 5 >() ); return; }
+    {
+      lambda( std::integral_constant< T, 5 >() );
+      return;
+    }
     default:
-    { GEOSX_ERROR( "Unsupported number of components: " << value ); }
+    {
+      GEOSX_ERROR( "Unsupported number of components: " << value );
+    }
   }
 }
 
-} // namespace helpers
+}  // namespace internal
 
-template< typename KERNELWRAPPER, typename ... ARGS >
-void KernelLaunchSelector1( localIndex numComp, ARGS && ... args )
+template< typename KERNELWRAPPER, typename... ARGS >
+void
+KernelLaunchSelector1( localIndex numComp, ARGS &&... args )
 {
-  internal::KernelLaunchSelectorCompSwitch( numComp, [&] ( auto NC )
-  {
+  internal::KernelLaunchSelectorCompSwitch( numComp, [&]( auto NC ) {
     KERNELWRAPPER::template Launch< NC() >( std::forward< ARGS >( args )... );
   } );
 }
 
-template< typename KERNELWRAPPER, typename ... ARGS >
-void KernelLaunchSelector2( localIndex numComp, localIndex numPhase, ARGS && ... args )
+template< typename KERNELWRAPPER, typename... ARGS >
+void
+KernelLaunchSelector2( localIndex numComp, localIndex numPhase, ARGS &&... args )
 {
-  internal::KernelLaunchSelectorCompSwitch( numComp, [&] ( auto NC )
-  {
+  internal::KernelLaunchSelectorCompSwitch( numComp, [&]( auto NC ) {
     switch( numPhase )
     {
       case 2:
-        { KERNELWRAPPER::template Launch< NC(), 2 >( std::forward< ARGS >( args )... ); return; }
+      {
+        KERNELWRAPPER::template Launch< NC(), 2 >( std::forward< ARGS >( args )... );
+        return;
+      }
       case 3:
-        { KERNELWRAPPER::template Launch< NC(), 3 >( std::forward< ARGS >( args )... ); return; }
+      {
+        KERNELWRAPPER::template Launch< NC(), 3 >( std::forward< ARGS >( args )... );
+        return;
+      }
       default:
-        { GEOSX_ERROR( "Unsupported number of phases: " << numPhase ); }
+      {
+        GEOSX_ERROR( "Unsupported number of phases: " << numPhase );
+      }
     }
   } );
 }
 
-} // namespace CompositionalMultiphaseFlowKernels
+}  // namespace CompositionalMultiphaseFlowKernels
 
-} // namespace geosx
+}  // namespace geosx
 
-
-#endif //GEOSX_PHYSICSSOLVERS_FINITEVOLUME_COMPOSITIONALMULTIPHASEFLOWKERNELS_HPP
+#endif  //GEOSX_PHYSICSSOLVERS_FINITEVOLUME_COMPOSITIONALMULTIPHASEFLOWKERNELS_HPP

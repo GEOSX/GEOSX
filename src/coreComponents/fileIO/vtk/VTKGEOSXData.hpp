@@ -23,7 +23,6 @@ namespace geosx
 {
 namespace vtk
 {
-
 /*!
  * @brief VTK GEOSX data class.
  * @details This class let us to deal with special types such
@@ -36,7 +35,8 @@ public:
    * @brief Factory function
    * @return VTK GEOSX data class
    */
-  static VTKGEOSXData *New()
+  static VTKGEOSXData *
+  New()
   {
     VTK_STANDARD_NEW_BODY( VTKGEOSXData );
   }
@@ -46,7 +46,8 @@ public:
    * @param[in] val value to be inserted
    */
   template< typename T >
-  void CustomInsertValue( localIndex index, T const & val )
+  void
+  CustomInsertValue( localIndex index, T const & val )
   {
     this->InsertValue( index, val );
   }
@@ -58,9 +59,11 @@ public:
  * @param[in] val R1Tensor to be inserted
  */
 template<>
-void VTKGEOSXData::CustomInsertValue< R1Tensor >( localIndex index, R1Tensor const & val );
+void
+VTKGEOSXData::CustomInsertValue< R1Tensor >( localIndex index,
+                                             R1Tensor const & val );
 
-}
-}
+}  // namespace vtk
+}  // namespace geosx
 
 #endif

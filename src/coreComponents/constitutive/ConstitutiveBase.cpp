@@ -33,8 +33,6 @@
  * @file ConstitutiveBase.cpp
  */
 
-
-
 #include "ConstitutiveBase.hpp"
 
 namespace geosx
@@ -42,9 +40,7 @@ namespace geosx
 using namespace dataRepository;
 namespace constitutive
 {
-
-ConstitutiveBase::ConstitutiveBase( std::string const & name,
-                                    Group * const parent ):
+ConstitutiveBase::ConstitutiveBase( std::string const & name, Group * const parent ) :
   Group( name, parent ),
   m_numQuadraturePoints( 1 ),
   m_constitutiveDataGroup( nullptr )
@@ -55,16 +51,17 @@ ConstitutiveBase::ConstitutiveBase( std::string const & name,
 ConstitutiveBase::~ConstitutiveBase()
 {}
 
-
-
-ConstitutiveBase::CatalogInterface::CatalogType & ConstitutiveBase::GetCatalog()
+ConstitutiveBase::CatalogInterface::CatalogType &
+ConstitutiveBase::GetCatalog()
 {
   static ConstitutiveBase::CatalogInterface::CatalogType catalog;
   return catalog;
 }
 
-void ConstitutiveBase::AllocateConstitutiveData( dataRepository::Group * const parent,
-                                                 localIndex const numConstitutivePointsPerParentIndex )
+void
+ConstitutiveBase::AllocateConstitutiveData(
+  dataRepository::Group * const parent,
+  localIndex const numConstitutivePointsPerParentIndex )
 {
   m_numQuadraturePoints = numConstitutivePointsPerParentIndex;
   m_constitutiveDataGroup = parent;
@@ -76,8 +73,10 @@ void ConstitutiveBase::AllocateConstitutiveData( dataRepository::Group * const p
       if( wrapper.second->sizedFromParent() )
       {
         string const wrapperName = wrapper.first;
-        parent->registerWrapper( makeFieldName( this->getName(), wrapperName ), wrapper.second->clone( wrapperName, parent ) )->
-          setRestartFlags( RestartFlags::NO_WRITE );
+        parent
+          ->registerWrapper( makeFieldName( this->getName(), wrapperName ),
+                             wrapper.second->clone( wrapperName, parent ) )
+          ->setRestartFlags( RestartFlags::NO_WRITE );
       }
     }
   }
@@ -87,29 +86,30 @@ void ConstitutiveBase::AllocateConstitutiveData( dataRepository::Group * const p
     if( wrapper.second->sizedFromParent() )
     {
       string const wrapperName = wrapper.first;
-      parent->registerWrapper( makeFieldName( this->getName(), wrapperName ), wrapper.second->clone( wrapperName, parent ) )->
-        setRestartFlags( RestartFlags::NO_WRITE );
+      parent
+        ->registerWrapper( makeFieldName( this->getName(), wrapperName ),
+                           wrapper.second->clone( wrapperName, parent ) )
+        ->setRestartFlags( RestartFlags::NO_WRITE );
     }
   }
-
 }
 
-void ConstitutiveBase::resize( localIndex newsize )
+void
+ConstitutiveBase::resize( localIndex newsize )
 {
   Group::resize( newsize );
 }
 
-void ConstitutiveBase::DeliverClone( string const & GEOSX_UNUSED_PARAM( name ),
-                                     Group * const GEOSX_UNUSED_PARAM( parent ),
-                                     std::unique_ptr< ConstitutiveBase > & clone ) const
+void
+ConstitutiveBase::DeliverClone( string const & GEOSX_UNUSED_PARAM( name ),
+                                Group * const GEOSX_UNUSED_PARAM( parent ),
+                                std::unique_ptr< ConstitutiveBase > & clone ) const
 {
   GEOSX_ASSERT( clone );
-  clone->forWrappers( [&]( WrapperBase & wrapper )
-  {
-    wrapper.CopyWrapperAttributes( *(this->getWrapperBase( wrapper.getName() ) ) );
+  clone->forWrappers( [&]( WrapperBase & wrapper ) {
+    wrapper.CopyWrapperAttributes( *( this->getWrapperBase( wrapper.getName() ) ) );
   } );
 }
 
-
-}
+}  // namespace constitutive
 } /* namespace geosx */

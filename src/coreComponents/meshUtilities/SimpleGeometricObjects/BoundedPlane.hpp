@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 /**
  * @class BoundedPlane
  * @brief Class to represent a geometric box in GEOSX.
@@ -31,7 +30,6 @@ namespace geosx
 class BoundedPlane : public SimpleGeometricObjectBase
 {
 public:
-
   /**
    * @name Constructor / Destructor
    */
@@ -42,8 +40,7 @@ public:
    * @param name name of the object in the data hierarchy.
    * @param parent pointer to the parent group in the data hierarchy.
    */
-  BoundedPlane( const std::string & name,
-                Group * const parent );
+  BoundedPlane( const std::string & name, Group * const parent );
 
   /**
    * @brief Default destructor.
@@ -61,16 +58,22 @@ public:
    * @brief Get the catalog name.
    * @return the name of this class in the catalog
    */
-  static string CatalogName() { return "BoundedPlane"; }
+  static string
+  CatalogName()
+  {
+    return "BoundedPlane";
+  }
 
   ///@}
 
-  bool IsCoordInObject( const R1Tensor & coord ) const override final;
+  bool
+  IsCoordInObject( const R1Tensor & coord ) const override final;
 
   /**
    * @brief Find the bounds of the plane.
    */
-  void findRectangleLimits();
+  void
+  findRectangleLimits();
 
   /**
    * @name Getters
@@ -81,57 +84,87 @@ public:
    * @brief Get the normal to the plane.
    * @return the normal vector
    */
-  R1Tensor & getNormal() {return m_normal;}
+  R1Tensor &
+  getNormal()
+  {
+    return m_normal;
+  }
 
   /**
    * @copydoc getNormal()
    */
-  R1Tensor const & getNormal() const {return m_normal;}
+  R1Tensor const &
+  getNormal() const
+  {
+    return m_normal;
+  }
 
   /**
    * @brief Get the origin of the plane.
    * @return the origin of the plane
    */
-  R1Tensor & getCenter() {return m_origin;}
+  R1Tensor &
+  getCenter()
+  {
+    return m_origin;
+  }
 
   /**
    * @copydoc getCenter()
    */
-  R1Tensor const & getCenter() const {return m_origin;}
+  R1Tensor const &
+  getCenter() const
+  {
+    return m_origin;
+  }
 
   /**
    * @brief Get one of the tangent vectors defining the orthonormal basis along with the normal.
    * @return the tangent vector
    */
-  R1Tensor & getWidthVector() {return m_widthVector;}
+  R1Tensor &
+  getWidthVector()
+  {
+    return m_widthVector;
+  }
 
   /**
    * @copydoc getWidthVector()
    */
-  R1Tensor const & getWidthVector() const {return m_widthVector;}
+  R1Tensor const &
+  getWidthVector() const
+  {
+    return m_widthVector;
+  }
 
   /**
    * @brief Get one of the tangent vectors defining the orthonormal basis along with the normal.
    * @return the length vector
    */
-  R1Tensor & getLengthVector() {return m_lengthVector;}
+  R1Tensor &
+  getLengthVector()
+  {
+    return m_lengthVector;
+  }
 
   /**
    * @copydoc getLengthVector()
    */
-  R1Tensor const & getLengthVector() const {return m_lengthVector;}
-
+  R1Tensor const &
+  getLengthVector() const
+  {
+    return m_lengthVector;
+  }
 
 protected:
-
   /**
    * @brief This function provides the capability to post process input values prior to
    * any other initialization operations.
    */
-  virtual void PostProcessInput() override final;
+  virtual void
+  PostProcessInput() override final;
 
 private:
-
   /// Origin point (x,y,z) of the plane (basically, any point on the plane)
   R1Tensor m_origin;
   /// Normal (n_x,n_y,n_z) to the plane (will be normalized automatically)
@@ -141,7 +174,7 @@ private:
   /// Width vector in the orthonormal basis along with the normal
   R1Tensor m_widthVector;
   /// Dimensions of the bounded plane
-  array1d< real64 >   m_dimensions;
+  array1d< real64 > m_dimensions;
   /// Length and width of the bounded plane
   array1d< R1Tensor > m_points;
 
@@ -151,13 +184,12 @@ private:
   {
     static constexpr auto originString = "origin";
     static constexpr auto normalString = "normal";
-    static constexpr auto dimensionsString    = "dimensions";
+    static constexpr auto dimensionsString = "dimensions";
     static constexpr auto mLengthVectorString = "lengthVector";
-    static constexpr auto mWidthVectorString  = "widthVector";
+    static constexpr auto mWidthVectorString = "widthVector";
   };
 
   /// @endcond
-
 };
 } /* namespace geosx */
 

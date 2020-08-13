@@ -12,7 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-
 #include "gtest/gtest.h"
 
 #include "managers/ProblemManager.hpp"
@@ -27,7 +26,8 @@ TEST( testXML, testXML )
   problemManager.ParseInputFile();
 }
 
-int main( int argc, char * * argv )
+int
+main( int argc, char ** argv )
 {
   ::testing::InitGoogleTest( &argc, argv );
 

@@ -20,31 +20,35 @@
 
 namespace geosx
 {
-
-FaceElementStencil::FaceElementStencil():
+FaceElementStencil::FaceElementStencil() :
   StencilBase< FaceElementStencil_Traits, FaceElementStencil >()
 {}
 
-void FaceElementStencil::move( LvArray::MemorySpace const space )
+void
+FaceElementStencil::move( LvArray::MemorySpace const space )
 {
   StencilBase< FaceElementStencil_Traits, FaceElementStencil >::move( space );
   m_cellCenterToEdgeCenters.move( space, true );
 }
 
-void FaceElementStencil::add( localIndex const numPts,
-                              localIndex const * const elementRegionIndices,
-                              localIndex const * const elementSubRegionIndices,
-                              localIndex const * const elementIndices,
-                              real64 const * const weights,
-                              localIndex const connectorIndex )
+void
+FaceElementStencil::add( localIndex const numPts,
+                         localIndex const * const elementRegionIndices,
+                         localIndex const * const elementSubRegionIndices,
+                         localIndex const * const elementIndices,
+                         real64 const * const weights,
+                         localIndex const connectorIndex )
 {
   GEOSX_ERROR_IF( numPts >= MAX_STENCIL_SIZE, "Maximum stencil size exceeded" );
 
-  typename decltype( m_connectorIndices )::iterator iter = m_connectorIndices.find( connectorIndex );
-  if( iter==m_connectorIndices.end() )
+  typename decltype( m_connectorIndices )::iterator iter =
+    m_connectorIndices.find( connectorIndex );
+  if( iter == m_connectorIndices.end() )
   {
-    m_elementRegionIndices.appendArray( elementRegionIndices, elementRegionIndices + numPts );
-    m_elementSubRegionIndices.appendArray( elementSubRegionIndices, elementSubRegionIndices + numPts );
+    m_elementRegionIndices.appendArray( elementRegionIndices,
+                                        elementRegionIndices + numPts );
+    m_elementSubRegionIndices.appendArray( elementSubRegionIndices,
+                                           elementSubRegionIndices + numPts );
     m_elementIndices.appendArray( elementIndices, elementIndices + numPts );
     m_weights.appendArray( weights, weights + numPts );
 
@@ -58,38 +62,48 @@ void FaceElementStencil::add( localIndex const numPts,
     m_elementIndices.clearArray( stencilIndex );
     m_weights.clearArray( stencilIndex );
 
-    m_elementRegionIndices.appendToArray( stencilIndex, elementRegionIndices, elementRegionIndices + numPts );
-    m_elementSubRegionIndices.appendToArray( stencilIndex, elementSubRegionIndices, elementSubRegionIndices + numPts );
-    m_elementIndices.appendToArray( stencilIndex, elementIndices, elementIndices + numPts );
+    m_elementRegionIndices.appendToArray( stencilIndex,
+                                          elementRegionIndices,
+                                          elementRegionIndices + numPts );
+    m_elementSubRegionIndices.appendToArray( stencilIndex,
+                                             elementSubRegionIndices,
+                                             elementSubRegionIndices + numPts );
+    m_elementIndices.appendToArray( stencilIndex,
+                                    elementIndices,
+                                    elementIndices + numPts );
     m_weights.appendToArray( stencilIndex, weights, weights + numPts );
   }
 }
 
-void FaceElementStencil::add( localIndex const numPts,
-                              R1Tensor const * const cellCenterToEdgeCenter,
-                              localIndex const connectorIndex )
+void
+FaceElementStencil::add( localIndex const numPts,
+                         R1Tensor const * const cellCenterToEdgeCenter,
+                         localIndex const connectorIndex )
 {
   GEOSX_ERROR_IF( numPts >= MAX_STENCIL_SIZE, "Maximum stencil size exceeded" );
 
-  typename decltype( m_connectorIndices )::iterator iter = m_connectorIndices.find( connectorIndex );
-  if( iter==m_connectorIndices.end() )
+  typename decltype( m_connectorIndices )::iterator iter =
+    m_connectorIndices.find( connectorIndex );
+  if( iter == m_connectorIndices.end() )
   {
     GEOSX_ERROR( "Wrong connectorIndex" );
   }
   else
   {
     localIndex const stencilIndex = iter->second;
-    if( stencilIndex < m_cellCenterToEdgeCenters.size())
+    if( stencilIndex < m_cellCenterToEdgeCenters.size() )
     {
       m_cellCenterToEdgeCenters.clearArray( stencilIndex );
-      m_cellCenterToEdgeCenters.appendToArray( stencilIndex, cellCenterToEdgeCenter, cellCenterToEdgeCenter + numPts );
+      m_cellCenterToEdgeCenters.appendToArray( stencilIndex,
+                                               cellCenterToEdgeCenter,
+                                               cellCenterToEdgeCenter + numPts );
     }
     else
     {
-      m_cellCenterToEdgeCenters.appendArray( cellCenterToEdgeCenter, cellCenterToEdgeCenter + numPts );
+      m_cellCenterToEdgeCenters.appendArray( cellCenterToEdgeCenter,
+                                             cellCenterToEdgeCenter + numPts );
     }
   }
 }
-
 
 } /* namespace geosx */

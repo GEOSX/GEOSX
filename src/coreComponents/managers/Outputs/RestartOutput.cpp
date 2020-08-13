@@ -23,36 +23,39 @@
 #include "managers/ProblemManager.hpp"
 #include "managers/FieldSpecification/FieldSpecificationManager.hpp"
 
-
 namespace geosx
 {
-
 using namespace dataRepository;
 
-RestartOutput::RestartOutput( std::string const & name,
-                              Group * const parent ):
+RestartOutput::RestartOutput( std::string const & name, Group * const parent ) :
   OutputBase( name, parent )
 {}
 
 RestartOutput::~RestartOutput()
 {}
 
-void RestartOutput::Execute( real64 const GEOSX_UNUSED_PARAM( time_n ),
-                             real64 const GEOSX_UNUSED_PARAM( dt ),
-                             integer const cycleNumber,
-                             integer const GEOSX_UNUSED_PARAM( eventCounter ),
-                             real64 const GEOSX_UNUSED_PARAM( eventProgress ),
-                             Group * domain )
+void
+RestartOutput::Execute( real64 const GEOSX_UNUSED_PARAM( time_n ),
+                        real64 const GEOSX_UNUSED_PARAM( dt ),
+                        integer const cycleNumber,
+                        integer const GEOSX_UNUSED_PARAM( eventCounter ),
+                        real64 const GEOSX_UNUSED_PARAM( eventProgress ),
+                        Group * domain )
 {
   GEOSX_MARK_FUNCTION;
 
   DomainPartition * domainPartition = Group::group_cast< DomainPartition * >( domain );
-  ProblemManager * problemManager = Group::group_cast< ProblemManager * >( domainPartition->getParent());
+  ProblemManager * problemManager =
+    Group::group_cast< ProblemManager * >( domainPartition->getParent() );
 
   // Ignoring the eventProgress indicator for now to be compliant with the integrated test repo
   // integer const eventProgressPercent = static_cast<integer const>(eventProgress * 100.0);
-  char fileName[200] = {0};
-  sprintf( fileName, "%s_%s_%09d", problemManager->getProblemName().c_str(), "restart", cycleNumber );
+  char fileName[200] = { 0 };
+  sprintf( fileName,
+           "%s_%s_%09d",
+           problemManager->getProblemName().c_str(),
+           "restart",
+           cycleNumber );
 
   problemManager->prepareToWrite();
   FunctionManager::Instance().prepareToWrite();
@@ -62,7 +65,6 @@ void RestartOutput::Execute( real64 const GEOSX_UNUSED_PARAM( time_n ),
   FunctionManager::Instance().finishWriting();
   FieldSpecificationManager::get().finishWriting();
 }
-
 
 REGISTER_CATALOG_ENTRY( OutputBase, RestartOutput, std::string const &, Group * const )
 } /* namespace geosx */

@@ -36,17 +36,17 @@
 
 namespace geosx
 {
-
-TrilinosSolver::TrilinosSolver( LinearSolverParameters parameters ):
+TrilinosSolver::TrilinosSolver( LinearSolverParameters parameters ) :
   m_parameters( std::move( parameters ) )
 {}
 
 TrilinosSolver::~TrilinosSolver() = default;
 
-void TrilinosSolver::solve( EpetraMatrix & mat,
-                            EpetraVector & sol,
-                            EpetraVector & rhs,
-                            DofManager const * const dofManager )
+void
+TrilinosSolver::solve( EpetraMatrix & mat,
+                       EpetraVector & sol,
+                       EpetraVector & rhs,
+                       DofManager const * const dofManager )
 {
   GEOSX_LAI_ASSERT( mat.ready() );
   GEOSX_LAI_ASSERT( sol.ready() );
@@ -77,9 +77,10 @@ void TrilinosSolver::solve( EpetraMatrix & mat,
   }
 }
 
-void TrilinosSolver::solve_direct( EpetraMatrix & mat,
-                                   EpetraVector & sol,
-                                   EpetraVector & rhs )
+void
+TrilinosSolver::solve_direct( EpetraMatrix & mat,
+                              EpetraVector & sol,
+                              EpetraVector & rhs )
 {
   // Time setup and solve
   Stopwatch watch;
@@ -119,14 +120,16 @@ void TrilinosSolver::solve_direct( EpetraMatrix & mat,
 
 namespace
 {
-
-void CreateTrilinosKrylovSolver( LinearSolverParameters const & params, AztecOO & solver )
+void
+CreateTrilinosKrylovSolver( LinearSolverParameters const & params,
+                            AztecOO & solver )
 {
   // Choose the solver type
   if( params.solverType == "gmres" )
   {
     GEOSX_LAI_CHECK_ERROR( solver.SetAztecOption( AZ_solver, AZ_gmres ) );
-    GEOSX_LAI_CHECK_ERROR( solver.SetAztecOption( AZ_kspace, params.krylov.maxRestart ) );
+    GEOSX_LAI_CHECK_ERROR(
+      solver.SetAztecOption( AZ_kspace, params.krylov.maxRestart ) );
   }
   else if( params.solverType == "bicgstab" )
   {
@@ -166,11 +169,12 @@ void CreateTrilinosKrylovSolver( LinearSolverParameters const & params, AztecOO 
   }
 }
 
-} // namespace
+}  // namespace
 
-void TrilinosSolver::solve_krylov( EpetraMatrix & mat,
-                                   EpetraVector & sol,
-                                   EpetraVector & rhs )
+void
+TrilinosSolver::solve_krylov( EpetraMatrix & mat,
+                              EpetraVector & sol,
+                              EpetraVector & rhs )
 {
   // Time setup and solve
   Stopwatch watch;
@@ -190,9 +194,12 @@ void TrilinosSolver::solve_krylov( EpetraMatrix & mat,
   EpetraMatrix separateComponentMatrix;
   if( m_parameters.amg.separateComponents )
   {
-    LAIHelperFunctions::SeparateComponentFilter( mat, separateComponentMatrix, m_parameters.dofsPerNode );
+    LAIHelperFunctions::SeparateComponentFilter( mat,
+                                                 separateComponentMatrix,
+                                                 m_parameters.dofsPerNode );
   }
-  EpetraMatrix & precondMat = m_parameters.amg.separateComponents ? separateComponentMatrix : mat;
+  EpetraMatrix & precondMat =
+    m_parameters.amg.separateComponents ? separateComponentMatrix : mat;
 
   // Create and compute preconditioner
   TrilinosPreconditioner precond( m_parameters );
@@ -207,9 +214,10 @@ void TrilinosSolver::solve_krylov( EpetraMatrix & mat,
                                      m_parameters.krylov.relTolerance );
   m_result.solveTime = watch.elapsedTime();
 
-  m_result.status = result ? LinearSolverResult::Status::NotConverged : LinearSolverResult::Status::Success;
+  m_result.status = result ? LinearSolverResult::Status::NotConverged
+                           : LinearSolverResult::Status::Success;
   m_result.numIterations = solver.NumIters();
   m_result.residualReduction = solver.ScaledResidual();
 }
 
-} // end geosx namespace
+}  // namespace geosx

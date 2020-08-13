@@ -24,7 +24,6 @@
 
 namespace geosx
 {
-
 class EdgeManager;
 
 /**
@@ -38,7 +37,6 @@ class EdgeManager;
 class FaceElementRegion : public ElementRegionBase
 {
 public:
-
   /**
    * @name Constructor / Destructor
    */
@@ -72,11 +70,17 @@ public:
    * @brief The key name for the FaceElementRegion in the object catalog.
    * @return a string containing the key name.
    */
-  static const string CatalogName()
-  { return "FaceElementRegion"; }
+  static const string
+  CatalogName()
+  {
+    return "FaceElementRegion";
+  }
 
-  virtual const string getCatalogName() const override final
-  { return FaceElementRegion::CatalogName(); }
+  virtual const string
+  getCatalogName() const override final
+  {
+    return FaceElementRegion::CatalogName();
+  }
 
   ///@}
 
@@ -85,7 +89,9 @@ public:
    */
   ///@{
 
-  virtual void GenerateMesh( Group * ) override {}
+  virtual void
+  GenerateMesh( Group * ) override
+  {}
 
   /**
    * @brief This function generates and adds entries to the face/fracture mesh.
@@ -97,12 +103,14 @@ public:
    * @param faceIndices the local indices of the new faces that define the face element.
    * @return the local index of the new FaceElement entry.
    */
-  localIndex AddToFractureMesh( real64 const time_np1,
-                                EdgeManager * const edgeManager,
-                                FaceManager const * const faceManager,
-                                ArrayOfArraysView< localIndex const > const & originalFaceToEdges,
-                                string const & subRegionName,
-                                localIndex const faceIndices[2] );
+  localIndex
+  AddToFractureMesh(
+    real64 const time_np1,
+    EdgeManager * const edgeManager,
+    FaceManager const * const faceManager,
+    ArrayOfArraysView< localIndex const > const & originalFaceToEdges,
+    string const & subRegionName,
+    localIndex const faceIndices[2] );
 
   ///@}
 
@@ -115,7 +123,11 @@ public:
    * @brief Get default aperture value.
    * @return default aperture value
    */
-  real64 getDefaultAperture() const { return m_defaultAperture; }
+  real64
+  getDefaultAperture() const
+  {
+    return m_defaultAperture;
+  }
 
   ///@}
 
@@ -133,15 +145,13 @@ public:
 
     /// Rupture time string
     constexpr static auto ruptureTimeString = "ruptureTime";
-
   };
 
 protected:
-  virtual void InitializePreSubGroups( Group * const ) override;
-
+  virtual void
+  InitializePreSubGroups( Group * const ) override;
 
 private:
-
   /// The default aperture
   real64 m_defaultAperture;
 };

@@ -24,7 +24,7 @@
 #include "LvArray/src/Macros.hpp"
 
 // System includes
-#if defined(GEOSX_USE_MPI)
+#if defined( GEOSX_USE_MPI )
   #include <mpi.h>
 #endif
 
@@ -45,14 +45,15 @@
  * @param EXP an expression that will be evaluated as a predicate
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_LOG_RANK_0_IF( EXP, msg ) \
-  do { \
+#define GEOSX_LOG_RANK_0_IF( EXP, msg )               \
+  do                                                  \
+  {                                                   \
     if( ::geosx::logger::internal::rank == 0 && EXP ) \
-    { \
-      std::ostringstream oss; \
-      oss << msg; \
-      std::cout << oss.str() << std::endl; \
-    } \
+    {                                                 \
+      std::ostringstream oss;                         \
+      oss << msg;                                     \
+      std::cout << oss.str() << std::endl;            \
+    }                                                 \
   } while( false )
 
 /**
@@ -66,14 +67,15 @@
  * @param EXP an expression that will be evaluated as a predicate
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_LOG_RANK_IF( EXP, msg ) \
-  do { \
-    if( EXP ) \
-    { \
-      std::ostringstream oss; \
+#define GEOSX_LOG_RANK_IF( EXP, msg )                                         \
+  do                                                                          \
+  {                                                                           \
+    if( EXP )                                                                 \
+    {                                                                         \
+      std::ostringstream oss;                                                 \
       oss << "Rank " << ::geosx::logger::internal::rankString << ": " << msg; \
-      *logger::internal::rankStream << oss.str() << std::endl; \
-    } \
+      *logger::internal::rankStream << oss.str() << std::endl;                \
+    }                                                                         \
   } while( false )
 
 /**
@@ -93,7 +95,10 @@
  * @param EXP an expression that will be evaluated as a predicate
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_ERROR_IF( EXP, msg ) LVARRAY_ERROR_IF( EXP, "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
+#define GEOSX_ERROR_IF( EXP, msg ) \
+  LVARRAY_ERROR_IF(                \
+    EXP,                           \
+    "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
 
 /**
  * @brief Raise a hard error and terminate the program.
@@ -106,7 +111,10 @@
  * @param EXP an expression that will be evaluated as a predicate
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_ASSERT_MSG( EXP, msg ) LVARRAY_ASSERT_MSG( EXP, "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
+#define GEOSX_ASSERT_MSG( EXP, msg ) \
+  LVARRAY_ASSERT_MSG(                \
+    EXP,                             \
+    "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
 
 /**
  * @brief Assert a condition in debug builds.
@@ -146,7 +154,11 @@
  * @param rhs expression to be evaluated and used as right-hand side in comparison
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_ERROR_IF_EQ_MSG( lhs, rhs, msg ) LVARRAY_ERROR_IF_EQ_MSG( lhs, rhs, "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
+#define GEOSX_ERROR_IF_EQ_MSG( lhs, rhs, msg ) \
+  LVARRAY_ERROR_IF_EQ_MSG(                     \
+    lhs,                                       \
+    rhs,                                       \
+    "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
 
 /**
  * @brief Raise a hard error if two values are equal.
@@ -161,7 +173,11 @@
  * @param rhs expression to be evaluated and used as right-hand side in comparison
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_ERROR_IF_NE_MSG( lhs, rhs, msg ) LVARRAY_ERROR_IF_NE_MSG( lhs, rhs, "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
+#define GEOSX_ERROR_IF_NE_MSG( lhs, rhs, msg ) \
+  LVARRAY_ERROR_IF_NE_MSG(                     \
+    lhs,                                       \
+    rhs,                                       \
+    "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
 
 /**
  * @brief Raise a hard error if two values are not equal.
@@ -176,7 +192,11 @@
  * @param rhs expression to be evaluated and used as right-hand side in comparison
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_ERROR_IF_GT_MSG( lhs, rhs, msg ) LVARRAY_ERROR_IF_GT_MSG( lhs, rhs, "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
+#define GEOSX_ERROR_IF_GT_MSG( lhs, rhs, msg ) \
+  LVARRAY_ERROR_IF_GT_MSG(                     \
+    lhs,                                       \
+    rhs,                                       \
+    "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
 
 /**
  * @brief Raise a hard error if one value compares greater than the other.
@@ -191,7 +211,11 @@
  * @param rhs expression to be evaluated and used as right-hand side in comparison
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_ERROR_IF_GE_MSG( lhs, rhs, msg ) LVARRAY_ERROR_IF_GE_MSG( lhs, rhs, "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
+#define GEOSX_ERROR_IF_GE_MSG( lhs, rhs, msg ) \
+  LVARRAY_ERROR_IF_GE_MSG(                     \
+    lhs,                                       \
+    rhs,                                       \
+    "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
 
 /**
  * @brief Raise a hard error if one value compares greater than or equal to the other.
@@ -206,7 +230,11 @@
  * @param rhs expression to be evaluated and used as right-hand side in comparison
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_ERROR_IF_LT_MSG( lhs, rhs, msg ) LVARRAY_ERROR_IF_LT_MSG( lhs, rhs, "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
+#define GEOSX_ERROR_IF_LT_MSG( lhs, rhs, msg ) \
+  LVARRAY_ERROR_IF_LT_MSG(                     \
+    lhs,                                       \
+    rhs,                                       \
+    "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
 
 /**
  * @brief Raise a hard error if one value compares less than the other.
@@ -221,7 +249,11 @@
  * @param rhs expression to be evaluated and used as right-hand side in comparison
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_ERROR_IF_LE_MSG( lhs, rhs, msg ) LVARRAY_ERROR_IF_LE_MSG( lhs, rhs, "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
+#define GEOSX_ERROR_IF_LE_MSG( lhs, rhs, msg ) \
+  LVARRAY_ERROR_IF_LE_MSG(                     \
+    lhs,                                       \
+    rhs,                                       \
+    "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
 
 /**
  * @brief Raise a hard error if one value compares less than or equal to the other.
@@ -236,7 +268,11 @@
  * @param rhs expression to be evaluated and used as right-hand side in comparison
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_ASSERT_EQ_MSG( lhs, rhs, msg ) LVARRAY_ASSERT_EQ_MSG( lhs, rhs, "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
+#define GEOSX_ASSERT_EQ_MSG( lhs, rhs, msg ) \
+  LVARRAY_ASSERT_EQ_MSG(                     \
+    lhs,                                     \
+    rhs,                                     \
+    "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
 
 /**
  * @brief Assert that two values compare equal in debug builds.
@@ -266,7 +302,11 @@
  * @param rhs expression to be evaluated and used as right-hand side in comparison
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_ASSERT_GT_MSG( lhs, rhs, msg ) LVARRAY_ASSERT_GT_MSG( lhs, rhs, "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
+#define GEOSX_ASSERT_GT_MSG( lhs, rhs, msg ) \
+  LVARRAY_ASSERT_GT_MSG(                     \
+    lhs,                                     \
+    rhs,                                     \
+    "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
 
 /**
  * @brief Assert that one value compares greater than the other in debug builds.
@@ -281,7 +321,11 @@
  * @param rhs expression to be evaluated and used as right-hand side in comparison
  * @param msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_ASSERT_GE_MSG( lhs, rhs, msg ) LVARRAY_ASSERT_GE_MSG( lhs, rhs, "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
+#define GEOSX_ASSERT_GE_MSG( lhs, rhs, msg ) \
+  LVARRAY_ASSERT_GE_MSG(                     \
+    lhs,                                     \
+    rhs,                                     \
+    "***** Rank " << ::geosx::logger::internal::rankString << ": " << msg )
 
 /**
  * @brief Assert that one value compares greater than or equal to the other in debug builds.
@@ -295,12 +339,13 @@
  * @param[in] minLevel Minimum log level
  * @param[in] fn Function to filter
  */
-#define GEOSX_LOG_LEVEL_FN( minLevel, fn )                                      \
-  do {                                                                         \
-    if( this->getLogLevel() >= minLevel )                                      \
-    {                                                                          \
-      fn;                                                                      \
-    }                                                                          \
+#define GEOSX_LOG_LEVEL_FN( minLevel, fn ) \
+  do                                       \
+  {                                        \
+    if( this->getLogLevel() >= minLevel )  \
+    {                                      \
+      fn;                                  \
+    }                                      \
   } while( false )
 
 /**
@@ -308,32 +353,31 @@
  * @param[in] minLevel minimum log level
  * @param[in] msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_LOG_LEVEL( minLevel, msg ) GEOSX_INFO_IF( this->getLogLevel() >= minLevel, msg );
+#define GEOSX_LOG_LEVEL( minLevel, msg ) \
+  GEOSX_INFO_IF( this->getLogLevel() >= minLevel, msg );
 
 /**
  * @brief Output messages (only on rank 0) based on current Group's log level.
  * @param[in] minLevel minimum log level
  * @param[in] msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_LOG_LEVEL_RANK_0( minLevel, msg ) GEOSX_LOG_RANK_0_IF( this->getLogLevel() >= minLevel, msg )
+#define GEOSX_LOG_LEVEL_RANK_0( minLevel, msg ) \
+  GEOSX_LOG_RANK_0_IF( this->getLogLevel() >= minLevel, msg )
 
 /**
  * @brief Output messages (with one line per rank) based on current Group's log level.
  * @param[in] minLevel minimum log level
  * @param[in] msg a message to log (any expression that can be stream inserted)
  */
-#define GEOSX_LOG_LEVEL_BY_RANK( minLevel, msg ) GEOSX_LOG_RANK_IF( this->getLogLevel() >= minLevel, msg )
-
+#define GEOSX_LOG_LEVEL_BY_RANK( minLevel, msg ) \
+  GEOSX_LOG_RANK_IF( this->getLogLevel() >= minLevel, msg )
 
 namespace geosx
 {
-
 namespace logger
 {
-
 namespace internal
 {
-
 extern int rank;
 
 extern std::string rankString;
@@ -342,33 +386,36 @@ extern int n_ranks;
 
 extern std::ostream * rankStream;
 
-#if defined(GEOSX_USE_MPI)
+#if defined( GEOSX_USE_MPI )
 extern MPI_Comm comm;
 #endif
-} // namespace internal
+}  // namespace internal
 
-#if defined(GEOSX_USE_MPI)
+#if defined( GEOSX_USE_MPI )
 /**
  * @brief Initialize the logger in a parallel build.
  * @param comm global MPI communicator
  * @param rank_output_dir output directory for rank log files
  */
-void InitializeLogger( MPI_Comm comm, const std::string & rank_output_dir="" );
+void
+InitializeLogger( MPI_Comm comm, const std::string & rank_output_dir = "" );
 #endif
 
 /**
  * @brief Initialize the logger in a serial build.
  * @param rank_output_dir output directory for rank log files
  */
-void InitializeLogger( const std::string & rank_output_dir="" );
+void
+InitializeLogger( const std::string & rank_output_dir = "" );
 
 /**
  * @brief Finalize the logger and close the rank streams.
  */
-void FinalizeLogger();
+void
+FinalizeLogger();
 
-} // namespace logger
+}  // namespace logger
 
-} // namespace geosx
+}  // namespace geosx
 
 #endif /* GEOSX_COMMON_LOGGER_HPP */

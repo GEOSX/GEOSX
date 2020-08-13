@@ -27,7 +27,6 @@ namespace dataRepository
 {
 namespace keys
 {
-
 /// @cond DO_NOT_DOCUMENT
 
 //static constexpr auto ReferencePosition = "ReferencePosition";
@@ -55,10 +54,10 @@ static constexpr auto beginTime = "beginTime";
 static constexpr auto endTime = "endTime";
 static constexpr auto dt = "dt";
 
-static constexpr auto domain  = "domain";
+static constexpr auto domain = "domain";
 static constexpr auto solvers = "solvers";
 static constexpr auto simulationParameterMap = "simulationParameterMap";
-static constexpr auto FE_Space    = "FE_Space";
+static constexpr auto FE_Space = "FE_Space";
 //static constexpr auto FEM_Nodes    = "FEM_Nodes";
 //static constexpr auto FEM_Edges    = "FEM_Edges";
 //static constexpr auto FEM_Faces    = "FEM_Faces";
@@ -68,7 +67,7 @@ static constexpr auto functionManager = "FunctionManager";
 
 /// @endcond
 
-}
-}
-}
+}  // namespace keys
+}  // namespace dataRepository
+}  // namespace geosx
 #endif /* GEOSX_DATAREPOSITORY__KEYNAMES_HPP_ */

@@ -28,18 +28,15 @@
 
 namespace geosx
 {
-
 class SinglePhaseReservoir : public ReservoirSolverBase
 {
 public:
-
   /**
    * @brief main constructor for ManagedGroup Objects
    * @param name the name of this instantiation of ManagedGroup in the repository
    * @param parent the parent group of this instantiation of ManagedGroup
    */
-  SinglePhaseReservoir( const std::string & name,
-                        Group * const parent );
+  SinglePhaseReservoir( const std::string & name, Group * const parent );
 
   /**
    * @brief default destructor
@@ -53,16 +50,22 @@ public:
   SinglePhaseReservoir( SinglePhaseReservoir && ) = default;
 
   /// deleted assignment operator
-  SinglePhaseReservoir & operator=( SinglePhaseReservoir const & ) = delete;
+  SinglePhaseReservoir &
+  operator=( SinglePhaseReservoir const & ) = delete;
 
   /// deleted move operator
-  SinglePhaseReservoir & operator=( SinglePhaseReservoir && ) = delete;
+  SinglePhaseReservoir &
+  operator=( SinglePhaseReservoir && ) = delete;
 
   /**
    * @brief name of the node manager in the object catalog
    * @return string that contains the catalog name to generate a new NodeManager object through the object catalog.
    */
-  static string CatalogName() { return "SinglePhaseReservoir"; }
+  static string
+  CatalogName()
+  {
+    return "SinglePhaseReservoir";
+  }
 
   /**
    * @defgroup Solver Interface Functions
@@ -73,17 +76,20 @@ public:
 
   /**@}*/
 
-  virtual void AddCouplingSparsityPattern( DomainPartition const & domain,
-                                           DofManager const & dofManager,
-                                           SparsityPatternView< globalIndex > const & pattern ) const override;
+  virtual void
+  AddCouplingSparsityPattern(
+    DomainPartition const & domain,
+    DofManager const & dofManager,
+    SparsityPatternView< globalIndex > const & pattern ) const override;
 
-  virtual void AssembleCouplingTerms( real64 const time_n,
-                                      real64 const dt,
-                                      DomainPartition const & domain,
-                                      DofManager const & dofManager,
-                                      CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                                      arrayView1d< real64 > const & localRhs ) override;
-
+  virtual void
+  AssembleCouplingTerms(
+    real64 const time_n,
+    real64 const dt,
+    DomainPartition const & domain,
+    DofManager const & dofManager,
+    CRSMatrixView< real64, globalIndex const > const & localMatrix,
+    arrayView1d< real64 > const & localRhs ) override;
 };
 
 } /* namespace geosx */

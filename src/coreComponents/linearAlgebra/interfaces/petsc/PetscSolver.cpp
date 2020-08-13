@@ -33,16 +33,15 @@
 // Put everything under the geosx namespace.
 namespace geosx
 {
-
-PetscSolver::PetscSolver( LinearSolverParameters parameters )
-  :
+PetscSolver::PetscSolver( LinearSolverParameters parameters ) :
   m_parameters( std::move( parameters ) )
 {}
 
-void PetscSolver::solve( PetscMatrix & mat,
-                         PetscVector & sol,
-                         PetscVector & rhs,
-                         DofManager const * const dofManager )
+void
+PetscSolver::solve( PetscMatrix & mat,
+                    PetscVector & sol,
+                    PetscVector & rhs,
+                    DofManager const * const dofManager )
 {
   GEOSX_LAI_ASSERT( mat.ready() );
   GEOSX_LAI_ASSERT( sol.ready() );
@@ -60,9 +59,8 @@ void PetscSolver::solve( PetscMatrix & mat,
   }
 }
 
-void PetscSolver::solve_direct( PetscMatrix & mat,
-                                PetscVector & sol,
-                                PetscVector & rhs )
+void
+PetscSolver::solve_direct( PetscMatrix & mat, PetscVector & sol, PetscVector & rhs )
 {
   MPI_Comm const comm = mat.getComm();
 
@@ -89,7 +87,8 @@ void PetscSolver::solve_direct( PetscMatrix & mat,
   KSPConvergedReason reason;
   GEOSX_LAI_CHECK_ERROR( KSPGetConvergedReason( ksp, &reason ) );
 
-  m_result.status = reason >= 0 ? LinearSolverResult::Status::Success : LinearSolverResult::Status::Breakdown;
+  m_result.status = reason >= 0 ? LinearSolverResult::Status::Success
+                                : LinearSolverResult::Status::Breakdown;
   m_result.numIterations = 1.0;
   m_result.residualReduction = NumericTraits< real64 >::eps;
 
@@ -99,15 +98,18 @@ void PetscSolver::solve_direct( PetscMatrix & mat,
 
 namespace
 {
-
-void CreatePetscKrylovSolver( LinearSolverParameters const & params,
-                              MPI_Comm const comm,
-                              KSP & ksp )
+void
+CreatePetscKrylovSolver( LinearSolverParameters const & params,
+                         MPI_Comm const comm,
+                         KSP & ksp )
 {
   GEOSX_LAI_CHECK_ERROR( KSPCreate( comm, &ksp ) );
   GEOSX_LAI_CHECK_ERROR( KSPSetNormType( ksp, KSP_NORM_UNPRECONDITIONED ) );
-  GEOSX_LAI_CHECK_ERROR( KSPSetTolerances( ksp, params.krylov.relTolerance, PETSC_DEFAULT,
-                                           PETSC_DEFAULT, params.krylov.maxIterations ) );
+  GEOSX_LAI_CHECK_ERROR( KSPSetTolerances( ksp,
+                                           params.krylov.relTolerance,
+                                           PETSC_DEFAULT,
+                                           PETSC_DEFAULT,
+                                           params.krylov.maxIterations ) );
 
   // pick the solver type
   if( params.solverType == "gmres" )
@@ -129,11 +131,10 @@ void CreatePetscKrylovSolver( LinearSolverParameters const & params,
   }
 }
 
-} // namespace
+}  // namespace
 
-void PetscSolver::solve_krylov( PetscMatrix & mat,
-                                PetscVector & sol,
-                                PetscVector & rhs )
+void
+PetscSolver::solve_krylov( PetscMatrix & mat, PetscVector & sol, PetscVector & rhs )
 {
   Stopwatch watch;
 
@@ -149,16 +150,20 @@ void PetscSolver::solve_krylov( PetscMatrix & mat,
   PetscMatrix separateComponentMatrix;
   if( m_parameters.amg.separateComponents )
   {
-    LAIHelperFunctions::SeparateComponentFilter( mat, separateComponentMatrix, m_parameters.dofsPerNode );
+    LAIHelperFunctions::SeparateComponentFilter( mat,
+                                                 separateComponentMatrix,
+                                                 m_parameters.dofsPerNode );
   }
-  PetscMatrix & precondMat = m_parameters.amg.separateComponents ? separateComponentMatrix : mat;
+  PetscMatrix & precondMat =
+    m_parameters.amg.separateComponents ? separateComponentMatrix : mat;
 
   // create and compute a preconditioner and set into KSP
   PetscPreconditioner precond( m_parameters );
   precond.compute( precondMat );
   KSPSetPC( ksp, precond.unwrapped() );
 
-  GEOSX_LAI_CHECK_ERROR( KSPSetOperators( ksp, mat.unwrapped(), precondMat.unwrapped() ) );
+  GEOSX_LAI_CHECK_ERROR(
+    KSPSetOperators( ksp, mat.unwrapped(), precondMat.unwrapped() ) );
 
   // display output
   if( m_parameters.logLevel > 0 )
@@ -211,4 +216,4 @@ void PetscSolver::solve_krylov( PetscMatrix & mat,
   GEOSX_LAI_CHECK_ERROR( KSPDestroy( &ksp ) );
 }
 
-} // end geosx namespace
+}  // namespace geosx

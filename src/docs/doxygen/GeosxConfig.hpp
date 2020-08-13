@@ -15,7 +15,7 @@
 /// GEOSX patch version number
 #define GEOSX_VERSION_PATCH 31
 /// GEOSX full version number string
-#define GEOSX_VERSION_FULL  "0.0.31"
+#define GEOSX_VERSION_FULL "0.0.31"
 
 /// Enables bounds check in LvArray classes (CMake option ARRAY_BOUNDS_CHECK)
 #define GEOSX_USE_ARRAY_BOUNDS_CHECK
@@ -83,5 +83,4 @@
 /// CMake option CMAKE_BUILD_TYPE
 #define GEOSX_CMAKE_BUILD_TYPE "Release"
 
-#endif  /* GEOSX_CONFIG_HPP */
-
+#endif /* GEOSX_CONFIG_HPP */

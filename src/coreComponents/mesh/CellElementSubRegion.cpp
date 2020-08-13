@@ -12,7 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-
 #include "CellElementSubRegion.hpp"
 
 #include "constitutive/ConstitutiveManager.hpp"
@@ -22,17 +21,24 @@ namespace geosx
 using namespace dataRepository;
 using namespace constitutive;
 
-CellElementSubRegion::CellElementSubRegion( string const & name, Group * const parent ):
+CellElementSubRegion::CellElementSubRegion( string const & name, Group * const parent ) :
   CellBlock( name, parent )
 {
-  registerWrapper( viewKeyStruct::constitutiveGroupingString, &m_constitutiveGrouping )->
-    setSizedFromParent( 0 );
+  registerWrapper( viewKeyStruct::constitutiveGroupingString,
+                   &m_constitutiveGrouping )
+    ->setSizedFromParent( 0 );
 
-  registerWrapper( viewKeyStruct::constitutivePointVolumeFraction, &m_constitutivePointVolumeFraction );
+  registerWrapper( viewKeyStruct::constitutivePointVolumeFraction,
+                   &m_constitutivePointVolumeFraction );
 
-  registerWrapper( viewKeyStruct::dNdXString, &m_dNdX )->setSizedFromParent( 1 )->reference().resizeDimension< 3 >( 3 );
+  registerWrapper( viewKeyStruct::dNdXString, &m_dNdX )
+    ->setSizedFromParent( 1 )
+    ->reference()
+    .resizeDimension< 3 >( 3 );
 
-  registerWrapper( viewKeyStruct::detJString, &m_detJ )->setSizedFromParent( 1 )->reference();
+  registerWrapper( viewKeyStruct::detJString, &m_detJ )
+    ->setSizedFromParent( 1 )
+    ->reference();
 }
 
 CellElementSubRegion::~CellElementSubRegion()
@@ -40,75 +46,86 @@ CellElementSubRegion::~CellElementSubRegion()
   // TODO Auto-generated destructor stub
 }
 
-void CellElementSubRegion::CopyFromCellBlock( CellBlock * source )
+void
+CellElementSubRegion::CopyFromCellBlock( CellBlock * source )
 {
-  this->SetElementType( source->GetElementTypeString());
+  this->SetElementType( source->GetElementTypeString() );
   this->setNumNodesPerElement( source->numNodesPerElement() );
   this->setNumFacesPerElement( source->numFacesPerElement() );
-  this->resize( source->size());
+  this->resize( source->size() );
   this->nodeList() = source->nodeList();
 
-  arrayView1d< globalIndex const > const & sourceLocalToGlobal = source->localToGlobalMap();
+  arrayView1d< globalIndex const > const & sourceLocalToGlobal =
+    source->localToGlobalMap();
   this->m_localToGlobalMap.resize( sourceLocalToGlobal.size() );
   for( localIndex i = 0; i < localToGlobalMap().size(); ++i )
   {
-    this->m_localToGlobalMap[ i ] = sourceLocalToGlobal[ i ];
+    this->m_localToGlobalMap[i] = sourceLocalToGlobal[i];
   }
 
   this->ConstructGlobalToLocalMap();
-  source->forExternalProperties( [&]( dataRepository::WrapperBase * const wrapper )
-  {
-    std::type_index typeIndex = std::type_index( wrapper->get_typeid());
-    rtTypes::ApplyArrayTypeLambda2( rtTypes::typeID( typeIndex ),
-                                    true,
-                                    [&]( auto type, auto GEOSX_UNUSED_PARAM( baseType ) )
-    {
-      using fieldType = decltype(type);
-      dataRepository::Wrapper< fieldType > & field = dataRepository::Wrapper< fieldType >::cast( *wrapper );
-      const fieldType & fieldref = field.reference();
-      this->registerWrapper( wrapper->getName(), &const_cast< fieldType & >( fieldref ) ); //TODO remove const_cast
-//      auto const & origFieldRef = field.reference();
-//      fieldType & fieldRef = this->registerWrapper<fieldType>( wrapper->getName() )->reference();
-//      fieldRef.resize( origFieldRef.size() );
-    } );
+  source->forExternalProperties( [&]( dataRepository::WrapperBase * const wrapper ) {
+    std::type_index typeIndex = std::type_index( wrapper->get_typeid() );
+    rtTypes::ApplyArrayTypeLambda2(
+      rtTypes::typeID( typeIndex ),
+      true,
+      [&]( auto type, auto GEOSX_UNUSED_PARAM( baseType ) ) {
+        using fieldType = decltype( type );
+        dataRepository::Wrapper< fieldType > & field =
+          dataRepository::Wrapper< fieldType >::cast( *wrapper );
+        const fieldType & fieldref = field.reference();
+        this->registerWrapper(
+          wrapper->getName(),
+          &const_cast< fieldType & >( fieldref ) );  //TODO remove const_cast
+        //      auto const & origFieldRef = field.reference();
+        //      fieldType & fieldRef = this->registerWrapper<fieldType>( wrapper->getName() )->reference();
+        //      fieldRef.resize( origFieldRef.size() );
+      } );
   } );
 }
 
-void CellElementSubRegion::ConstructSubRegionFromFaceSet( FaceManager const * const faceManager,
-                                                          string const & setName )
+void
+CellElementSubRegion::ConstructSubRegionFromFaceSet(
+  FaceManager const * const faceManager,
+  string const & setName )
 {
-  SortedArrayView< localIndex const > const & targetSet = faceManager->sets().getReference< SortedArray< localIndex > >( setName );
+  SortedArrayView< localIndex const > const & targetSet =
+    faceManager->sets().getReference< SortedArray< localIndex > >( setName );
   m_toFacesRelation.resize( 0, 2 );
   this->resize( targetSet.size() );
-
-
 }
 
-void CellElementSubRegion::ViewPackingExclusionList( SortedArray< localIndex > & exclusionList ) const
+void
+CellElementSubRegion::ViewPackingExclusionList(
+  SortedArray< localIndex > & exclusionList ) const
 {
   ObjectManagerBase::ViewPackingExclusionList( exclusionList );
-  exclusionList.insert( this->getWrapperIndex( viewKeyStruct::nodeListString ));
-//  exclusionList.insert(this->getWrapperIndex(this->viewKeys.edgeListString));
-  exclusionList.insert( this->getWrapperIndex( viewKeyStruct::faceListString ));
+  exclusionList.insert( this->getWrapperIndex( viewKeyStruct::nodeListString ) );
+  //  exclusionList.insert(this->getWrapperIndex(this->viewKeys.edgeListString));
+  exclusionList.insert( this->getWrapperIndex( viewKeyStruct::faceListString ) );
 }
 
-
-localIndex CellElementSubRegion::PackUpDownMapsSize( arrayView1d< localIndex const > const & packList ) const
+localIndex
+CellElementSubRegion::PackUpDownMapsSize(
+  arrayView1d< localIndex const > const & packList ) const
 {
   buffer_unit_type * junk = nullptr;
   return PackUpDownMapsPrivate< false >( junk, packList );
 }
 
-
-localIndex CellElementSubRegion::PackUpDownMaps( buffer_unit_type * & buffer,
-                                                 arrayView1d< localIndex const > const & packList ) const
+localIndex
+CellElementSubRegion::PackUpDownMaps(
+  buffer_unit_type *& buffer,
+  arrayView1d< localIndex const > const & packList ) const
 {
   return PackUpDownMapsPrivate< true >( buffer, packList );
 }
 
 template< bool DOPACK >
-localIndex CellElementSubRegion::PackUpDownMapsPrivate( buffer_unit_type * & buffer,
-                                                        arrayView1d< localIndex const > const & packList ) const
+localIndex
+CellElementSubRegion::PackUpDownMapsPrivate(
+  buffer_unit_type *& buffer,
+  arrayView1d< localIndex const > const & packList ) const
 {
   localIndex packedSize = 0;
 
@@ -129,11 +146,12 @@ localIndex CellElementSubRegion::PackUpDownMapsPrivate( buffer_unit_type * & buf
   return packedSize;
 }
 
-
-localIndex CellElementSubRegion::UnpackUpDownMaps( buffer_unit_type const * & buffer,
-                                                   localIndex_array & packList,
-                                                   bool const GEOSX_UNUSED_PARAM( overwriteUpMaps ),
-                                                   bool const GEOSX_UNUSED_PARAM( overwriteDownMaps ) )
+localIndex
+CellElementSubRegion::UnpackUpDownMaps(
+  buffer_unit_type const *& buffer,
+  localIndex_array & packList,
+  bool const GEOSX_UNUSED_PARAM( overwriteUpMaps ),
+  bool const GEOSX_UNUSED_PARAM( overwriteDownMaps ) )
 {
   localIndex unPackedSize = 0;
   unPackedSize += bufferOps::Unpack( buffer,
@@ -153,7 +171,8 @@ localIndex CellElementSubRegion::UnpackUpDownMaps( buffer_unit_type const * & bu
   return unPackedSize;
 }
 
-void CellElementSubRegion::FixUpDownMaps( bool const clearIfUnmapped )
+void
+CellElementSubRegion::FixUpDownMaps( bool const clearIfUnmapped )
 {
   ObjectManagerBase::FixUpDownMaps( nodeList(),
                                     m_unmappedGlobalIndicesInNodelist,
@@ -163,6 +182,5 @@ void CellElementSubRegion::FixUpDownMaps( bool const clearIfUnmapped )
                                     m_unmappedGlobalIndicesInFacelist,
                                     clearIfUnmapped );
 }
-
 
 } /* namespace geosx */

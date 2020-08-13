@@ -25,23 +25,23 @@ namespace geosx
 {
 namespace constitutive
 {
-
-class BrooksCoreyRelativePermeabilityUpdate final : public RelativePermeabilityBaseUpdate
+class BrooksCoreyRelativePermeabilityUpdate final
+  : public RelativePermeabilityBaseUpdate
 {
 public:
-
-  BrooksCoreyRelativePermeabilityUpdate( arrayView1d< real64 const > const & phaseMinVolumeFraction,
-                                         arrayView1d< real64 const > const & phaseRelPermExponent,
-                                         arrayView1d< real64 const > const & phaseRelPermMaxValue,
-                                         real64 const volFracScale,
-                                         arrayView1d< integer const > const & phaseTypes,
-                                         arrayView1d< integer const > const & phaseOrder,
-                                         arrayView3d< real64 > const & phaseRelPerm,
-                                         arrayView4d< real64 > const & dPhaseRelPerm_dPhaseVolFrac )
-    : RelativePermeabilityBaseUpdate( phaseTypes,
-                                      phaseOrder,
-                                      phaseRelPerm,
-                                      dPhaseRelPerm_dPhaseVolFrac ),
+  BrooksCoreyRelativePermeabilityUpdate(
+    arrayView1d< real64 const > const & phaseMinVolumeFraction,
+    arrayView1d< real64 const > const & phaseRelPermExponent,
+    arrayView1d< real64 const > const & phaseRelPermMaxValue,
+    real64 const volFracScale,
+    arrayView1d< integer const > const & phaseTypes,
+    arrayView1d< integer const > const & phaseOrder,
+    arrayView3d< real64 > const & phaseRelPerm,
+    arrayView4d< real64 > const & dPhaseRelPerm_dPhaseVolFrac ) :
+    RelativePermeabilityBaseUpdate( phaseTypes,
+                                    phaseOrder,
+                                    phaseRelPerm,
+                                    dPhaseRelPerm_dPhaseVolFrac ),
     m_phaseMinVolumeFraction( phaseMinVolumeFraction ),
     m_phaseRelPermExponent( phaseRelPermExponent ),
     m_phaseRelPermMaxValue( phaseRelPermMaxValue ),
@@ -49,28 +49,37 @@ public:
   {}
 
   /// Default copy constructor
-  BrooksCoreyRelativePermeabilityUpdate( BrooksCoreyRelativePermeabilityUpdate const & ) = default;
+  BrooksCoreyRelativePermeabilityUpdate(
+    BrooksCoreyRelativePermeabilityUpdate const & ) = default;
 
   /// Default move constructor
-  BrooksCoreyRelativePermeabilityUpdate( BrooksCoreyRelativePermeabilityUpdate && ) = default;
+  BrooksCoreyRelativePermeabilityUpdate(
+    BrooksCoreyRelativePermeabilityUpdate && ) = default;
 
   /// Deleted copy assignment operator
-  BrooksCoreyRelativePermeabilityUpdate & operator=( BrooksCoreyRelativePermeabilityUpdate const & ) = delete;
+  BrooksCoreyRelativePermeabilityUpdate &
+  operator=(
+    BrooksCoreyRelativePermeabilityUpdate const & ) = delete;
 
   /// Deleted move assignment operator
-  BrooksCoreyRelativePermeabilityUpdate & operator=( BrooksCoreyRelativePermeabilityUpdate && ) = delete;
+  BrooksCoreyRelativePermeabilityUpdate &
+  operator=(
+    BrooksCoreyRelativePermeabilityUpdate && ) = delete;
 
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  virtual void Compute( arraySlice1d< real64 const > const & phaseVolFraction,
-                        arraySlice1d< real64 > const & phaseRelPerm,
-                        arraySlice2d< real64 > const & dPhaseRelPerm_dPhaseVolFrac ) const override;
+  virtual void
+  Compute(
+    arraySlice1d< real64 const > const & phaseVolFraction,
+    arraySlice1d< real64 > const & phaseRelPerm,
+    arraySlice2d< real64 > const & dPhaseRelPerm_dPhaseVolFrac ) const override;
 
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  virtual void Update( localIndex const k,
-                       localIndex const q,
-                       arraySlice1d< real64 const > const & phaseVolFraction ) const override
+  virtual void
+  Update( localIndex const k,
+          localIndex const q,
+          arraySlice1d< real64 const > const & phaseVolFraction ) const override
   {
     Compute( phaseVolFraction,
              m_phaseRelPerm[k][q],
@@ -78,7 +87,6 @@ public:
   }
 
 private:
-
   arrayView1d< real64 const > m_phaseMinVolumeFraction;
   arrayView1d< real64 const > m_phaseRelPermExponent;
   arrayView1d< real64 const > m_phaseRelPermMaxValue;
@@ -88,19 +96,28 @@ private:
 class BrooksCoreyRelativePermeability : public RelativePermeabilityBase
 {
 public:
-
-  BrooksCoreyRelativePermeability( std::string const & name, dataRepository::Group * const parent );
+  BrooksCoreyRelativePermeability( std::string const & name,
+                                   dataRepository::Group * const parent );
 
   virtual ~BrooksCoreyRelativePermeability() override;
 
-  void DeliverClone( string const & name,
-                     Group * const parent,
-                     std::unique_ptr< ConstitutiveBase > & clone ) const override;
+  void
+  DeliverClone( string const & name,
+                Group * const parent,
+                std::unique_ptr< ConstitutiveBase > & clone ) const override;
 
-//START_SPHINX_INCLUDE_00
-  static std::string CatalogName() { return "BrooksCoreyRelativePermeability"; }
+  //START_SPHINX_INCLUDE_00
+  static std::string
+  CatalogName()
+  {
+    return "BrooksCoreyRelativePermeability";
+  }
 
-  virtual string GetCatalogName() override { return CatalogName(); }
+  virtual string
+  GetCatalogName() override
+  {
+    return CatalogName();
+  }
 
   /// Type of kernel wrapper for in-kernel update
   using KernelWrapper = BrooksCoreyRelativePermeabilityUpdate;
@@ -109,28 +126,30 @@ public:
    * @brief Create an update kernel wrapper.
    * @return the wrapper
    */
-  KernelWrapper createKernelWrapper();
+  KernelWrapper
+  createKernelWrapper();
 
-//START_SPHINX_INCLUDE_01
+  //START_SPHINX_INCLUDE_01
   struct viewKeyStruct : RelativePermeabilityBase::viewKeyStruct
   {
-    static constexpr auto phaseMinVolumeFractionString = "phaseMinVolumeFraction";
-    static constexpr auto phaseRelPermExponentString   = "phaseRelPermExponent";
-    static constexpr auto phaseRelPermMaxValueString   = "phaseRelPermMaxValue";
+    static constexpr auto phaseMinVolumeFractionString =
+      "phaseMinVolumeFraction";
+    static constexpr auto phaseRelPermExponentString = "phaseRelPermExponent";
+    static constexpr auto phaseRelPermMaxValueString = "phaseRelPermMaxValue";
 
     using ViewKey = dataRepository::ViewKey;
 
     ViewKey phaseMinVolumeFraction = { phaseMinVolumeFractionString };
-    ViewKey phaseRelPermExponent   = { phaseRelPermExponentString };
-    ViewKey phaseRelPermMaxValue   = { phaseRelPermMaxValueString };
+    ViewKey phaseRelPermExponent = { phaseRelPermExponentString };
+    ViewKey phaseRelPermMaxValue = { phaseRelPermMaxValueString };
 
   } vieKeysBrooksCoreyRelativePermeability;
 
 protected:
+  virtual void
+  PostProcessInput() override;
 
-  virtual void PostProcessInput() override;
-
-//START_SPHINX_INCLUDE_02
+  //START_SPHINX_INCLUDE_02
   array1d< real64 > m_phaseMinVolumeFraction;
   array1d< real64 > m_phaseRelPermExponent;
   array1d< real64 > m_phaseRelPermMaxValue;
@@ -141,10 +160,10 @@ protected:
 GEOSX_HOST_DEVICE
 GEOSX_FORCE_INLINE
 void
-BrooksCoreyRelativePermeabilityUpdate::
-  Compute( arraySlice1d< real64 const > const & phaseVolFraction,
-           arraySlice1d< real64 > const & phaseRelPerm,
-           arraySlice2d< real64 > const & dPhaseRelPerm_dPhaseVolFrac ) const
+BrooksCoreyRelativePermeabilityUpdate::Compute(
+  arraySlice1d< real64 const > const & phaseVolFraction,
+  arraySlice1d< real64 > const & phaseRelPerm,
+  arraySlice2d< real64 > const & dPhaseRelPerm_dPhaseVolFrac ) const
 {
   localIndex const NP = numPhases();
 
@@ -159,9 +178,10 @@ BrooksCoreyRelativePermeabilityUpdate::
 
   for( localIndex ip = 0; ip < NP; ++ip )
   {
-    real64 const satScaled = (phaseVolFraction[ip] - m_phaseMinVolumeFraction[ip]) * satScaleInv;
-    real64 const exponent  = m_phaseRelPermExponent[ip];
-    real64 const scale     = m_phaseRelPermMaxValue[ip];
+    real64 const satScaled =
+      ( phaseVolFraction[ip] - m_phaseMinVolumeFraction[ip] ) * satScaleInv;
+    real64 const exponent = m_phaseRelPermExponent[ip];
+    real64 const scale = m_phaseRelPermMaxValue[ip];
 
     if( satScaled > 0.0 && satScaled < 1.0 )
     {
@@ -173,13 +193,13 @@ BrooksCoreyRelativePermeabilityUpdate::
     }
     else
     {
-      phaseRelPerm[ip] = (satScaled <= 0.0) ? 0.0 : scale;
+      phaseRelPerm[ip] = ( satScaled <= 0.0 ) ? 0.0 : scale;
     }
   }
 }
 
-} // namespace constitutive
+}  // namespace constitutive
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif //GEOSX_CONSTITUTIVE_BROOKSCOREYRELATIVEPERMEABILITY_HPP
+#endif  //GEOSX_CONSTITUTIVE_BROOKSCOREYRELATIVEPERMEABILITY_HPP

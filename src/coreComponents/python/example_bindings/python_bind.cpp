@@ -12,7 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
 #include <numpy/arrayobject.h>
@@ -20,13 +19,14 @@
 #include <sstream>
 #include "common/Logger.hpp"
 
-void init_numpy()
+void
+init_numpy()
 {
   import_array();
 }
 
-
-int main( int argc, char * * argv )
+int
+main( int argc, char ** argv )
 {
   GEOSX_ERROR_IF( argc != 5, "The arguments are: path module x y" );
   GEOSX_LOG( "Testing c++ python bindings..." );
@@ -34,13 +34,13 @@ int main( int argc, char * * argv )
   // Initialize Python, setup the user-defined search path
   std::cout << "Initializing python..." << std::endl;
   Py_Initialize();
-  PyObject *sysPath = PySys_GetObject((char *)"path" );
-  PyObject *modPath = PyString_FromString((char *)argv[1] );
+  PyObject * sysPath = PySys_GetObject( (char *)"path" );
+  PyObject * modPath = PyString_FromString( (char *)argv[1] );
   PyList_Insert( sysPath, 0, modPath );
   init_numpy();
 
   // Load the targeted module and function
-  PyObject *pModule = PyImport_ImportModule((char *)argv[2] );
+  PyObject * pModule = PyImport_ImportModule( (char *)argv[2] );
   if( pModule == NULL )
   {
     PyErr_Print();
@@ -48,21 +48,23 @@ int main( int argc, char * * argv )
   }
 
   // Call the function designed to print and return modified string
-  PyObject *pFunc = PyObject_GetAttrString( pModule, (char *)"printStringFromPython" );
-  PyObject *pValue = Py_BuildValue( "(z)", (char *)"blah-blah-blah" );
-  PyObject *pResult = PyObject_CallObject( pFunc, pValue );
-  GEOSX_LOG( "Returned string: " << PyString_AsString( pResult ));
+  PyObject * pFunc =
+    PyObject_GetAttrString( pModule, (char *)"printStringFromPython" );
+  PyObject * pValue = Py_BuildValue( "(z)", (char *)"blah-blah-blah" );
+  PyObject * pResult = PyObject_CallObject( pFunc, pValue );
+  GEOSX_LOG( "Returned string: " << PyString_AsString( pResult ) );
 
   // Cast an array of doubles into a numpy array, modify the values in python
   const int numpy_size = 10;
   double numpy_array[numpy_size];
   npy_intp numpy_dims = numpy_size;
-  for( int ii=0; ii<numpy_size; ++ii )
+  for( int ii = 0; ii < numpy_size; ++ii )
   {
     numpy_array[ii] = (double)ii;
   }
 
-  PyObject *pArray = PyArray_SimpleNewFromData( 1, &numpy_dims, NPY_DOUBLE, (void *)numpy_array );
+  PyObject * pArray =
+    PyArray_SimpleNewFromData( 1, &numpy_dims, NPY_DOUBLE, (void *)numpy_array );
   PyObject * pFuncArgsA = PyTuple_New( 1 );
   PyTuple_SetItem( pFuncArgsA, 0, pArray );
   pFunc = PyObject_GetAttrString( pModule, (char *)"modifyNumpyArray" );
@@ -70,12 +72,11 @@ int main( int argc, char * * argv )
 
   // Print modified values
   std::cout << "Modified Array:\n[";
-  for( int ii; ii<numpy_size; ++ii )
+  for( int ii; ii < numpy_size; ++ii )
   {
     std::cout << numpy_array[ii] << ", ";
   }
   std::cout << "]" << std::endl;
-
 
   // On the fly, generate a function that will add two floats
   std::stringstream buf;
@@ -98,7 +99,8 @@ int main( int argc, char * * argv )
   PyObject * pResultB = PyObject_Call( pAddFn, pPosArgsB, pKywdArgs );
   PyObject * pResultRepr = PyObject_Repr( pResultB );
   std::cout << "Python add result:" << std::endl;
-  std::cout << argv[3] << "+" << argv[4] << "=" << PyString_AsString( pResultRepr ) << std::endl;
+  std::cout << argv[3] << "+" << argv[4] << "="
+            << PyString_AsString( pResultRepr ) << std::endl;
 
   // Clean up
   // Note: Tuples have ownership of their children, so no need to doulble decref

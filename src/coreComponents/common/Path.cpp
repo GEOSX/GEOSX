@@ -23,11 +23,11 @@
 
 namespace geosx
 {
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void getAbsolutePath( std::string const & path, std::string & absolutePath )
+void
+getAbsolutePath( std::string const & path, std::string & absolutePath )
 {
-  char absFilePath[ PATH_MAX + 1 ];
+  char absFilePath[PATH_MAX + 1];
   if( realpath( path.data(), absFilePath ) )
   {
     absolutePath = absFilePath;
@@ -36,23 +36,26 @@ void getAbsolutePath( std::string const & path, std::string & absolutePath )
   {
     char const * ret = getcwd( absFilePath, PATH_MAX + 1 );
     if( ret != nullptr )
-      GEOSX_ERROR( "Could not get the absolute path for " << path << " from " << absFilePath );
+      GEOSX_ERROR( "Could not get the absolute path for " << path << " from "
+                                                          << absFilePath );
     else
       GEOSX_ERROR( "Could not get the absolute path for " << path );
   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-bool isAbsolutePath( const std::string & path )
+bool
+isAbsolutePath( const std::string & path )
 {
-  return path[ 0 ] == '/';
+  return path[0] == '/';
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-std::istream & operator>>( std::istream & is, Path & p )
+std::istream &
+operator>>( std::istream & is, Path & p )
 {
-  is >> static_cast< std::string & >(p);
-  if( !isAbsolutePath( p ) && !p.pathPrefix().empty())
+  is >> static_cast< std::string & >( p );
+  if( !isAbsolutePath( p ) && !p.pathPrefix().empty() )
   {
     getAbsolutePath( p.pathPrefix() + '/' + p, p );
   }
@@ -60,7 +63,8 @@ std::istream & operator>>( std::istream & is, Path & p )
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void splitPath( std::string const & path, std::string & dirName, std::string & baseName )
+void
+splitPath( std::string const & path, std::string & dirName, std::string & baseName )
 {
   size_t pos = path.find_last_of( '/' );
 
@@ -83,11 +87,12 @@ void splitPath( std::string const & path, std::string & dirName, std::string & b
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void readDirectory( std::string const & path, std::vector< std::string > & files )
+void
+readDirectory( std::string const & path, std::vector< std::string > & files )
 {
   DIR * dirp = opendir( path.c_str() );
   struct dirent * dp;
-  while( (dp = readdir( dirp )) != nullptr )
+  while( ( dp = readdir( dirp ) ) != nullptr )
   {
     files.push_back( dp->d_name );
   }
@@ -95,9 +100,10 @@ void readDirectory( std::string const & path, std::vector< std::string > & files
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void makeDirsForPath( std::string const & path )
+void
+makeDirsForPath( std::string const & path )
 {
-  constexpr mode_t mode = 0770;     // user and group rwx permissions
+  constexpr mode_t mode = 0770;  // user and group rwx permissions
 
   std::string::size_type pos = 0;
   do
@@ -105,10 +111,9 @@ void makeDirsForPath( std::string const & path )
     pos = path.find( '/', pos + 1 );
     std::string dir_name = path.substr( 0, pos );
     int const err = mkdir( dir_name.c_str(), mode );
-    LVARRAY_ERROR_IF( err && ( errno != EEXIST ), "Failed to create a directories for " << path );
-  }
-  while (pos != std::string::npos);
-
+    LVARRAY_ERROR_IF( err && ( errno != EEXIST ),
+                      "Failed to create a directories for " << path );
+  } while( pos != std::string::npos );
 }
 
 } /* end namespace geosx */

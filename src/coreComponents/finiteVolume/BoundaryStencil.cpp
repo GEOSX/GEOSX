@@ -20,20 +20,21 @@
 
 namespace geosx
 {
-
-BoundaryStencil::BoundaryStencil():
+BoundaryStencil::BoundaryStencil() :
   StencilBase< BoundaryStencil_Traits, BoundaryStencil >()
 {}
 
-
-void BoundaryStencil::add( localIndex const numPts,
-                           localIndex const * const elementRegionIndices,
-                           localIndex const * const elementSubRegionIndices,
-                           localIndex const * const elementIndices,
-                           real64 const * const weights,
-                           localIndex const connectorIndex )
+void
+BoundaryStencil::add( localIndex const numPts,
+                      localIndex const * const elementRegionIndices,
+                      localIndex const * const elementSubRegionIndices,
+                      localIndex const * const elementIndices,
+                      real64 const * const weights,
+                      localIndex const connectorIndex )
 {
-  GEOSX_ERROR_IF_NE_MSG( numPts, 2, "Number of points in boundary stencil should be 2" );
+  GEOSX_ERROR_IF_NE_MSG( numPts,
+                         2,
+                         "Number of points in boundary stencil should be 2" );
 
   localIndex const oldSize = m_elementRegionIndices.size( 0 );
   localIndex const newSize = oldSize + 1;
@@ -52,4 +53,4 @@ void BoundaryStencil::add( localIndex const numPts,
   m_connectorIndices[connectorIndex] = oldSize;
 }
 
-} // namespace geosx
+}  // namespace geosx

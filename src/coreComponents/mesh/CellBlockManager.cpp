@@ -26,7 +26,7 @@ namespace geosx
 {
 using namespace dataRepository;
 
-CellBlockManager::CellBlockManager( string const & name, Group * const parent ):
+CellBlockManager::CellBlockManager( string const & name, Group * const parent ) :
   ObjectManagerBase( name, parent )
 {
   this->RegisterGroup< Group >( keys::cellBlocks );
@@ -37,19 +37,20 @@ CellBlockManager::~CellBlockManager()
   // TODO Auto-generated destructor stub
 }
 
-void CellBlockManager::resize( integer_array const & numElements,
-                               string_array const & regionNames,
-                               string_array const & GEOSX_UNUSED_PARAM( elementTypes ) )
+void
+CellBlockManager::resize( integer_array const & numElements,
+                          string_array const & regionNames,
+                          string_array const & GEOSX_UNUSED_PARAM( elementTypes ) )
 {
-  localIndex const numRegions = LvArray::integerConversion< localIndex >( regionNames.size());
-//  Group * elementRegions = this->GetGroup(keys::cellBlocks);
-  for( localIndex reg=0; reg<numRegions; ++reg )
+  localIndex const numRegions =
+    LvArray::integerConversion< localIndex >( regionNames.size() );
+  //  Group * elementRegions = this->GetGroup(keys::cellBlocks);
+  for( localIndex reg = 0; reg < numRegions; ++reg )
   {
     CellBlock * elemRegion = this->GetRegion( regionNames[reg] );
     elemRegion->resize( numElements[reg] );
   }
 }
-
 
 //CellBlock & CellBlockManager::CreateRegion( string const & regionName,
 //                                             string const & elementType,
@@ -59,12 +60,15 @@ void CellBlockManager::resize( integer_array const & numElements,
 ////  elemRegion->resize(numElements);
 //}
 
-Group * CellBlockManager::CreateChild( string const & GEOSX_UNUSED_PARAM( childKey ), string const & GEOSX_UNUSED_PARAM( childName ) )
+Group *
+CellBlockManager::CreateChild( string const & GEOSX_UNUSED_PARAM( childKey ),
+                               string const & GEOSX_UNUSED_PARAM( childName ) )
 {
   return nullptr;
 }
 
-
-
-REGISTER_CATALOG_ENTRY( ObjectManagerBase, CellBlockManager, string const &, Group * const )
-}
+REGISTER_CATALOG_ENTRY( ObjectManagerBase,
+                        CellBlockManager,
+                        string const &,
+                        Group * const )
+}  // namespace geosx

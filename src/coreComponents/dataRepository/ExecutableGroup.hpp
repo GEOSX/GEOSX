@@ -22,10 +22,8 @@
 #include "common/DataTypes.hpp"
 #include "Group.hpp"
 
-
 namespace geosx
 {
-
 /**
  * @class ExecutableGroup
  *
@@ -35,7 +33,6 @@ namespace geosx
 class ExecutableGroup : public dataRepository::Group
 {
 public:
-
   using dataRepository::Group::Group;
 
   /**
@@ -50,12 +47,13 @@ public:
    * If the start criteria are satisfied, then the event manager
    * will call this method.
    */
-  virtual void Execute( real64 const time_n,
-                        real64 const dt,
-                        integer const cycleNumber,
-                        integer const eventCounter,
-                        real64 const eventProgress,
-                        dataRepository::Group * domain ) = 0;
+  virtual void
+  Execute( real64 const time_n,
+           real64 const dt,
+           integer const cycleNumber,
+           integer const eventCounter,
+           real64 const eventProgress,
+           dataRepository::Group * domain ) = 0;
 
   /**
    * @brief Inform the object that it expects to execute during the next timestep.
@@ -64,10 +62,11 @@ public:
    * @param[in] cycle         global cycle number
    * @param[in,out] domain    the physical domain
    */
-  virtual void SignalToPrepareForExecution( real64 const time_n,
-                                            real64 const dt,
-                                            integer const cycle,
-                                            dataRepository::Group * domain );
+  virtual void
+  SignalToPrepareForExecution( real64 const time_n,
+                               real64 const dt,
+                               integer const cycle,
+                               dataRepository::Group * domain );
   /**
    * @brief Called as the code exits the main run loop.
    * @param[in] time_n        current time level
@@ -76,43 +75,49 @@ public:
    * @param[in] eventProgress fractional progress in current cycle
    * @param[in,out] domain    the physical domain
    */
-  virtual void Cleanup( real64 const time_n,
-                        integer const cycleNumber,
-                        integer const eventCounter,
-                        real64 const eventProgress,
-                        dataRepository::Group * domain );
+  virtual void
+  Cleanup( real64 const time_n,
+           integer const cycleNumber,
+           integer const eventCounter,
+           real64 const eventProgress,
+           dataRepository::Group * domain );
 
   /**
    * @brief Supplies the timestep request for this target to the event manager.
    * @param[in] time current time level
    * @return         desired time step size
    */
-  virtual real64 GetTimestepRequest( real64 const time )
+  virtual real64
+  GetTimestepRequest( real64 const time )
   {
     GEOSX_UNUSED_VAR( time );
     return std::numeric_limits< integer >::max();
   }
 
-
   /**
    * @brief Set the timestep behavior for a target.
    * @param[in] behavior if positive, target does time stepping
    */
-  void SetTimestepBehavior( integer const behavior ) { m_timestepType = behavior; }
+  void
+  SetTimestepBehavior( integer const behavior )
+  {
+    m_timestepType = behavior;
+  }
 
   /**
    * @brief Get the target's time step behavior.
    * @return @p >0 if target does time stepping, @p <=0 otherwise
    */
-  integer GetTimestepBehavior() { return m_timestepType; }
-
+  integer
+  GetTimestepBehavior()
+  {
+    return m_timestepType;
+  }
 
 private:
   integer m_timestepType = 0;
 };
 
-
-}
-
+}  // namespace geosx
 
 #endif /* GEOSX_DATAREPOSITORY_EXECUTABLEGROUP_HPP_ */

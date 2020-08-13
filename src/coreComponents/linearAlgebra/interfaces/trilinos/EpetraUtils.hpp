@@ -22,15 +22,15 @@
 
 namespace geosx
 {
-
 /**
  * @brief Converts a non-const array from GEOSX globalIndex type to Epetra long long
  * @param[in] index the input array
  * @return the converted array
  */
-inline long long * toEpetraLongLong( globalIndex * const index )
+inline long long *
+toEpetraLongLong( globalIndex * const index )
 {
-  return reinterpret_cast< long long * >(index);
+  return reinterpret_cast< long long * >( index );
 }
 
 /**
@@ -38,11 +38,12 @@ inline long long * toEpetraLongLong( globalIndex * const index )
  * @param[in] index the input array
  * @return the converted array
  */
-inline long long const * toEpetraLongLong( globalIndex const * const index )
+inline long long const *
+toEpetraLongLong( globalIndex const * const index )
 {
-  return reinterpret_cast< long long const * >(index);
+  return reinterpret_cast< long long const * >( index );
 }
 
-}
+}  // namespace geosx
 
-#endif //GEOSX_LINEARALGEBRA_INTERFACES_EPETRAUTILS_HPP_
+#endif  //GEOSX_LINEARALGEBRA_INTERFACES_EPETRAUTILS_HPP_

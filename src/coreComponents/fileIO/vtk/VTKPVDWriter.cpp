@@ -20,7 +20,7 @@ namespace geosx
 {
 namespace vtk
 {
-VTKPVDWriter::VTKPVDWriter( string const & fileName ):
+VTKPVDWriter::VTKPVDWriter( string const & fileName ) :
   m_fileName( fileName )
 {
   // Declaration of XML version
@@ -35,7 +35,8 @@ VTKPVDWriter::VTKPVDWriter( string const & fileName ):
   vtkFileNode.append_child( "Collection" );
 }
 
-void VTKPVDWriter::Save() const
+void
+VTKPVDWriter::Save() const
 {
   int const mpiRank = MpiWrapper::Comm_rank( MPI_COMM_GEOSX );
   if( mpiRank == 0 )
@@ -44,12 +45,13 @@ void VTKPVDWriter::Save() const
   }
 }
 
-void VTKPVDWriter::AddData( real64 time, string const & filePath ) const
+void
+VTKPVDWriter::AddData( real64 time, string const & filePath ) const
 {
   auto collectionNode = m_pvdFile.child( "VTKFile" ).child( "Collection" );
   auto dataSetNode = collectionNode.append_child( "DataSet" );
   dataSetNode.append_attribute( "timestep" ) = time;
   dataSetNode.append_attribute( "file" ) = filePath.c_str();
 }
-}
-}
+}  // namespace vtk
+}  // namespace geosx

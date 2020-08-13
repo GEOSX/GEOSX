@@ -38,14 +38,12 @@ class ElementRegionManager;
 class MeshLevel : public dataRepository::Group
 {
 public:
-
   /**
    * @brief Constructor for the MeshLevel object.
    * @param[in] name the name of the MeshLevel object in the repository
    * @param[in] parent the parent group of the MeshLevel object being constructed
    */
-  MeshLevel( string const & name,
-             Group * const parent );
+  MeshLevel( string const & name, Group * const parent );
   virtual ~MeshLevel() override;
 
   /**
@@ -57,27 +55,30 @@ public:
    * @param[out] elementAdjacencyList the elements adjacent to the input nodes of seedNodeList
    * @param[in] depth the depth of the search for adjacent quantities (first-order neighbors, neighbors of neighbors, etc)
    */
-  void GenerateAdjacencyLists( arrayView1d< localIndex const > const & seedNodeList,
-                               localIndex_array & nodeAdjacencyList,
-                               localIndex_array & edgeAdjacencyList,
-                               localIndex_array & faceAdjacencyList,
-                               ElementRegionManager::ElementViewAccessor< ReferenceWrapper< localIndex_array > > & elementAdjacencyList,
-                               integer const depth );
+  void
+  GenerateAdjacencyLists(
+    arrayView1d< localIndex const > const & seedNodeList,
+    localIndex_array & nodeAdjacencyList,
+    localIndex_array & edgeAdjacencyList,
+    localIndex_array & faceAdjacencyList,
+    ElementRegionManager::ElementViewAccessor< ReferenceWrapper< localIndex_array > > &
+      elementAdjacencyList,
+    integer const depth );
 
-
-  virtual void InitializePostInitialConditions_PostSubGroups( Group * const ) override;
+  virtual void
+  InitializePostInitialConditions_PostSubGroups( Group * const ) override;
 
   /// @cond DO_NOT_DOCUMENT
 
   struct viewStructKeys
   {
-    dataRepository::ViewKey meshLevel                = { "meshLevel" };
+    dataRepository::ViewKey meshLevel = { "meshLevel" };
   } viewKeys;
 
   struct groupStructKeys
   {
-    dataRepository::GroupKey vertexManager  = { "vertexManager" };
-    dataRepository::GroupKey cellManager    = { "cellManager" };
+    dataRepository::GroupKey vertexManager = { "vertexManager" };
+    dataRepository::GroupKey cellManager = { "cellManager" };
 
     static constexpr auto nodeManagerString = "nodeManager";
     static constexpr auto edgeManagerString = "edgeManager";
@@ -86,10 +87,10 @@ public:
     // This key is defined in problem manager:
     static constexpr auto elemManagerString = "ElementRegions";
 
-    dataRepository::GroupKey nodeManager = {nodeManagerString};
-    dataRepository::GroupKey edgeManager = {edgeManagerString};
-    dataRepository::GroupKey faceManager = {faceManagerString};
-    dataRepository::GroupKey elemManager = {elemManagerString};
+    dataRepository::GroupKey nodeManager = { nodeManagerString };
+    dataRepository::GroupKey edgeManager = { edgeManagerString };
+    dataRepository::GroupKey faceManager = { faceManagerString };
+    dataRepository::GroupKey elemManager = { elemManagerString };
   } groupKeys;
 
   /// @endcond
@@ -103,46 +104,77 @@ public:
    * @brief Get the node manager.
    * @return a pointer to the nodeManager object
    */
-  NodeManager const * getNodeManager() const { return &m_nodeManager; }
+  NodeManager const *
+  getNodeManager() const
+  {
+    return &m_nodeManager;
+  }
   /**
    * @copydoc getNodeManager() const
    */
-  NodeManager * getNodeManager()             { return &m_nodeManager; }
+  NodeManager *
+  getNodeManager()
+  {
+    return &m_nodeManager;
+  }
 
   /**
    * @brief Get the edge manager.
    * @return a pointer to the edgeManager object
    */
-  EdgeManager const * getEdgeManager() const { return &m_edgeManager; }
+  EdgeManager const *
+  getEdgeManager() const
+  {
+    return &m_edgeManager;
+  }
   /**
    * @copydoc getEdgeManager() const
    */
-  EdgeManager * getEdgeManager()             { return &m_edgeManager; }
+  EdgeManager *
+  getEdgeManager()
+  {
+    return &m_edgeManager;
+  }
 
   /**
    * @brief Get the face manager.
    * @return a pointer to the faceManager object
    */
-  FaceManager const * getFaceManager() const { return &m_faceManager; }
+  FaceManager const *
+  getFaceManager() const
+  {
+    return &m_faceManager;
+  }
   /**
    * @copydoc getFaceManager() const
    */
-  FaceManager * getFaceManager()             { return &m_faceManager; }
+  FaceManager *
+  getFaceManager()
+  {
+    return &m_faceManager;
+  }
 
   /**
    * @brief Get the element region manager.
    * @return a pointer to the elementRegionManager object
    */
-  ElementRegionManager const * getElemManager() const { return &m_elementManager; }
+  ElementRegionManager const *
+  getElemManager() const
+  {
+    return &m_elementManager;
+  }
   /**
    * @copydoc getElemManager() const
    */
-  ElementRegionManager * getElemManager()             { return &m_elementManager; }
+  ElementRegionManager *
+  getElemManager()
+  {
+    return &m_elementManager;
+  }
 
   ///@}
 
 private:
-
   /// Manager for node data
   NodeManager m_nodeManager;
   /// Manager for edge data
@@ -151,7 +183,6 @@ private:
   FaceManager m_faceManager;
   /// Manager for element data
   ElementRegionManager m_elementManager;
-
 };
 
 } /* namespace geosx */

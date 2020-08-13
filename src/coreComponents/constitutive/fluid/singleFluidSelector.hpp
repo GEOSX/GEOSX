@@ -23,26 +23,28 @@
 
 namespace geosx
 {
-
 namespace constitutive
 {
-
 template< typename LAMBDA >
-void constitutiveUpdatePassThru( SingleFluidBase const & fluid,
-                                 LAMBDA && lambda )
+void
+constitutiveUpdatePassThru( SingleFluidBase const & fluid, LAMBDA && lambda )
 {
-  ConstitutivePassThruHandler< CompressibleSinglePhaseFluid >::Execute( fluid, std::forward< LAMBDA >( lambda ) );
+  ConstitutivePassThruHandler< CompressibleSinglePhaseFluid >::Execute(
+    fluid,
+    std::forward< LAMBDA >( lambda ) );
 }
 
 template< typename LAMBDA >
-void constitutiveUpdatePassThru( SingleFluidBase & fluid,
-                                 LAMBDA && lambda )
+void
+constitutiveUpdatePassThru( SingleFluidBase & fluid, LAMBDA && lambda )
 {
-  ConstitutivePassThruHandler< CompressibleSinglePhaseFluid >::Execute( fluid, std::forward< LAMBDA >( lambda ) );
+  ConstitutivePassThruHandler< CompressibleSinglePhaseFluid >::Execute(
+    fluid,
+    std::forward< LAMBDA >( lambda ) );
 }
 
-} // namespace constitutive
+}  // namespace constitutive
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif //GEOSX_CONSTITUTIVE_FLUID_SINGLEPHASESELECTOR_HPP_
+#endif  //GEOSX_CONSTITUTIVE_FLUID_SINGLEPHASESELECTOR_HPP_

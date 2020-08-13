@@ -27,8 +27,6 @@ namespace geosx
 {
 namespace constitutive
 {
-
-
 class PoreVolumeCompressibleSolid : public ConstitutiveBase
 {
 public:
@@ -36,24 +34,37 @@ public:
 
   virtual ~PoreVolumeCompressibleSolid() override;
 
-  void DeliverClone( string const & name,
-                     Group * const parent,
-                     std::unique_ptr< ConstitutiveBase > & clone ) const override;
+  void
+  DeliverClone( string const & name,
+                Group * const parent,
+                std::unique_ptr< ConstitutiveBase > & clone ) const override;
 
-  virtual void AllocateConstitutiveData( dataRepository::Group * const parent,
-                                         localIndex const numConstitutivePointsPerParentIndex ) override;
+  virtual void
+  AllocateConstitutiveData(
+    dataRepository::Group * const parent,
+    localIndex const numConstitutivePointsPerParentIndex ) override;
 
+  static std::string
+  CatalogName()
+  {
+    return "PoreVolumeCompressibleSolid";
+  }
 
-  static std::string CatalogName() { return "PoreVolumeCompressibleSolid"; }
+  virtual string
+  GetCatalogName() override
+  {
+    return CatalogName();
+  }
 
-  virtual string GetCatalogName() override { return CatalogName(); }
+  virtual void
+  StateUpdatePointPressure( real64 const & pres,
+                            localIndex const k,
+                            localIndex const q ) override final;
 
-  virtual void StateUpdatePointPressure( real64 const & pres,
-                                         localIndex const k,
-                                         localIndex const q ) override final;
-
-  virtual void StateUpdateBatchPressure( arrayView1d< real64 const > const & pres,
-                                         arrayView1d< real64 const > const & dPres ) override final;
+  virtual void
+  StateUpdateBatchPressure(
+    arrayView1d< real64 const > const & pres,
+    arrayView1d< real64 const > const & dPres ) override final;
 
   struct viewKeyStruct : public ConstitutiveBase::viewKeyStruct
   {
@@ -62,10 +73,10 @@ public:
   } viewKeys;
 
 protected:
-  virtual void PostProcessInput() override;
+  virtual void
+  PostProcessInput() override;
 
 private:
-
   /// scalar compressibility parameter
   real64 m_compressibility;
 
@@ -78,9 +89,8 @@ private:
   ExponentialRelation< real64, ExponentApproximationType::Linear > m_poreVolumeRelation;
 };
 
-}/* namespace constitutive */
+} /* namespace constitutive */
 
 } /* namespace geosx */
 
-
-#endif //GEOSX_CONSTITUTIVE_SOLID_POREVOLUMECOMPRESSIBLESOLID_HPP_
+#endif  //GEOSX_CONSTITUTIVE_SOLID_POREVOLUMECOMPRESSIBLESOLID_HPP_

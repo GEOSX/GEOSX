@@ -24,7 +24,6 @@
 
 namespace geosx
 {
-
 /**
  * @class ReferenceWrapper
  * @tparam Type that is wrapped
@@ -48,23 +47,20 @@ template< typename T >
 class ReferenceWrapper
 {
 public:
-
   /**
    * @brief Default constructor sets m_ref to nullptr.
    */
-  ReferenceWrapper():
+  ReferenceWrapper() :
     m_ref( nullptr )
   {}
-
 
   /**
    * @brief Constructor that sets m_ref to address of input.
    * @param[in] source object to wrap
    */
-  ReferenceWrapper( T & source ) noexcept:
+  ReferenceWrapper( T & source ) noexcept :
     m_ref( &source )
   {}
-
 
   /**
    * @brief Default destructor.
@@ -75,16 +71,15 @@ public:
    * @brief Copy constructor copies the source m_ref to the new m_ref.
    * @param[in] source object to copy
    */
-  ReferenceWrapper( ReferenceWrapper const & source ):
+  ReferenceWrapper( ReferenceWrapper const & source ) :
     m_ref( source.m_ref )
   {}
-
 
   /**
    * @brief Move constructor copies the source m_ref to the new m_ref.
    * @param[in,out] source object to move from
    */
-  ReferenceWrapper( ReferenceWrapper && source ):
+  ReferenceWrapper( ReferenceWrapper && source ) :
     m_ref( source.m_ref )
   {
     source.m_ref = nullptr;
@@ -95,12 +90,12 @@ public:
    * @param[in] source object to copy
    * @return
    */
-  ReferenceWrapper & operator=( ReferenceWrapper const & source )
+  ReferenceWrapper &
+  operator=( ReferenceWrapper const & source )
   {
     m_ref = source.m_ref;
     return *this;
   }
-
 
   /**
    * @tparam T_RHS type of the rhs
@@ -112,10 +107,10 @@ public:
    * Calls m_ref->operator=() to allow for any type on the rhs
    * if m_ref->operator=() has a valid overload for T_RHS.
    */
-  template< typename T_RHS, typename U=T >
+  template< typename T_RHS, typename U = T >
   inline
-  typename std::enable_if< !std::is_const< U >::value, ReferenceWrapper & >::type
-  operator=( T_RHS const & rhs )
+    typename std::enable_if< !std::is_const< U >::value, ReferenceWrapper & >::type
+    operator=( T_RHS const & rhs )
   {
     *m_ref = rhs;
     return *this;
@@ -128,7 +123,8 @@ public:
    *
    * Sets the value that m_ref refers to to the value of the rhs.
    */
-  inline ReferenceWrapper & operator=( T && source )
+  inline ReferenceWrapper &
+  operator=( T && source )
   {
     *m_ref = std::move( source );
     return *this;
@@ -137,7 +133,8 @@ public:
   /**
    * @brief User defined conversion to <tt>T &</tt>.
    */
-  inline operator T & ()
+  inline
+  operator T &()
   {
     return *m_ref;
   }
@@ -145,7 +142,7 @@ public:
   /**
    * @brief User defined conversion to <tt>T const &</tt>
    */
-  inline operator T const & () const
+  inline operator T const &() const
   {
     return *m_ref;
   }
@@ -154,7 +151,8 @@ public:
    * @brief Set the address that m_ref points to.
    * @param[in] source reference to object that wrapper will refer to
    */
-  inline void set( T & source )
+  inline void
+  set( T & source )
   {
     m_ref = &source;
   }
@@ -163,7 +161,8 @@ public:
    * @brief Set the address that m_ref points to.
    * @param[in] source pointer to object that wrapper will refer to
    */
-  inline void set( T * source )
+  inline void
+  set( T * source )
   {
     m_ref = source;
   }
@@ -172,7 +171,8 @@ public:
    * @brief Accessor for m_ref.
    * @return reference to wrapped value
    */
-  inline T & get()
+  inline T &
+  get()
   {
     return *m_ref;
   }
@@ -181,7 +181,8 @@ public:
    * @brief Const accessor for m_ref.
    * @return const reference to wrapped value
    */
-  inline T const & get() const
+  inline T const &
+  get() const
   {
     return *m_ref;
   }
@@ -190,7 +191,8 @@ public:
    * @brief Check if reference is initialized.
    * @return @p true if the object has been initialized with a value, @p false otherwise
    */
-  inline bool isValid() const
+  inline bool
+  isValid() const
   {
     return m_ref;
   }
@@ -199,7 +201,8 @@ public:
    * @brief Const accessor for m_ref.
    * @return const reference to wrapped value
    */
-  inline T const * getPtr() const
+  inline T const *
+  getPtr() const
   {
     return m_ref;
   }
@@ -221,7 +224,7 @@ public:
   inline decltype( std::declval< U >()[1] )
   operator[]( INDEX_TYPE const i )
   {
-    return (*m_ref)[i];
+    return ( *m_ref )[i];
   }
 
   /**
@@ -234,7 +237,7 @@ public:
   inline decltype( std::declval< U const >()[1] )
   operator[]( INDEX_TYPE const i ) const
   {
-    return (*m_ref)[i];
+    return ( *m_ref )[i];
   }
 
   /// @endcond
@@ -245,11 +248,11 @@ public:
    * @param args variadic params to pass through to <tt>T::operator()</tt>
    * @return the return type of <tt>T::operator()</tt>
    */
-  template< typename ... ARGS >
-  inline typename std::result_of< T & (ARGS&&...) >::type
-  operator()( ARGS && ... args )
+  template< typename... ARGS >
+  inline typename std::result_of< T &( ARGS &&... ) >::type
+  operator()( ARGS &&... args )
   {
-    return m_ref->operator()( std::forward< ARGS >(args)... );
+    return m_ref->operator()( std::forward< ARGS >( args )... );
   }
 
   /**
@@ -258,20 +261,18 @@ public:
    * @param args variadic params to pass through to <tt>T::operator()</tt>
    * @return the return type of <tt>T::operator()</tt> const
    */
-  template< typename ... ARGS >
-  inline typename std::result_of< T const&(ARGS&&...) >::type
-  operator()( ARGS && ... args ) const
+  template< typename... ARGS >
+  inline typename std::result_of< T const &( ARGS &&... ) >::type
+  operator()(
+    ARGS &&... args ) const
   {
-    return m_ref->operator()( std::forward< ARGS >(args)... );
+    return m_ref->operator()( std::forward< ARGS >( args )... );
   }
-
 
 private:
   /// pointer to the address of the object that we would like to wrap
   T * m_ref;
 };
-
-
 
 } /* namespace geosx */
 

@@ -24,20 +24,22 @@
 
 namespace geosx
 {
-
 template< typename VECTOR >
 GMRESsolver< VECTOR >::GMRESsolver( LinearOperator< Vector > const & A,
                                     LinearOperator< Vector > const & M,
                                     real64 tolerance,
                                     localIndex maxIterations,
                                     integer verbosity,
-                                    localIndex maxRestart )
-  : KrylovSolver< VECTOR >( A, M, tolerance, maxIterations, verbosity ),
+                                    localIndex maxRestart ) :
+  KrylovSolver< VECTOR >( A, M, tolerance, maxIterations, verbosity ),
   m_maxRestart( maxRestart ),
   m_kspace( m_maxRestart + 1 ),
   m_kspaceInitialized( false )
 {
-  GEOSX_ERROR_IF_LE_MSG( m_maxRestart, 0, "GMRES: max number of restart iterations must be positive." );
+  GEOSX_ERROR_IF_LE_MSG(
+    m_maxRestart,
+    0,
+    "GMRES: max number of restart iterations must be positive." );
 }
 
 template< typename VECTOR >
@@ -45,8 +47,8 @@ GMRESsolver< VECTOR >::~GMRESsolver() = default;
 
 namespace
 {
-
-void ComputeGivensRotation( real64 const x, real64 const y, real64 & c, real64 & s )
+void
+ComputeGivensRotation( real64 const x, real64 const y, real64 & c, real64 & s )
 {
   if( isZero( y ) )
   {
@@ -67,16 +69,18 @@ void ComputeGivensRotation( real64 const x, real64 const y, real64 & c, real64 &
   }
 }
 
-void ApplyGivensRotation( real64 const c, real64 const s, real64 & dx, real64 & dy )
+void
+ApplyGivensRotation( real64 const c, real64 const s, real64 & dx, real64 & dy )
 {
   real64 const temp = c * dx + s * dy;
   dy = -s * dx + c * dy;
   dx = temp;
 }
 
-void Backsolve( localIndex const k,
-                arraySlice2d< real64 const, MatrixLayout::COL_MAJOR > const & H,
-                arraySlice1d< real64 > const & g )
+void
+Backsolve( localIndex const k,
+           arraySlice2d< real64 const, MatrixLayout::COL_MAJOR > const & H,
+           arraySlice1d< real64 > const & g )
 {
   for( localIndex j = k - 1; j >= 0; --j )
   {
@@ -86,14 +90,13 @@ void Backsolve( localIndex const k,
       g[i] -= H( i, j ) * g[j];
     }
   }
-
 }
 
-}
+}  // namespace
 
 template< typename VECTOR >
-void GMRESsolver< VECTOR >::solve( Vector const & b,
-                                   Vector & x ) const
+void
+GMRESsolver< VECTOR >::solve( Vector const & b, Vector & x ) const
 {
   // We create Krylov subspace vectors once using the size and partitioning of b.
   // It is assumed that on every repeated call to solve() input vectors will keep
@@ -133,7 +136,8 @@ void GMRESsolver< VECTOR >::solve( Vector const & b,
   localIndex k;
   real64 rnorm = 0.0;
 
-  for( k = 0; k <= m_maxIterations && m_result.status == LinearSolverResult::Status::NotConverged; )
+  for( k = 0; k <= m_maxIterations &&
+       m_result.status == LinearSolverResult::Status::NotConverged; )
   {
     // Re-initialize Krylov subspace
     g.setValues< serialPolicy >( 0.0 );
@@ -165,20 +169,20 @@ void GMRESsolver< VECTOR >::solve( Vector const & b,
         w.axpby( -H( i, j ), m_kspace[i], 1.0 );
       }
 
-      H( j+1, j ) = w.norm2();
+      H( j + 1, j ) = w.norm2();
       GEOSX_KRYLOV_BREAKDOWN_IF_ZERO( H( j + 1, j ) );
-      m_kspace[j+1].axpby( 1.0 / H( j+1, j ), w, 0.0 );
+      m_kspace[j + 1].axpby( 1.0 / H( j + 1, j ), w, 0.0 );
 
       // Apply all previous rotations to the new column
       for( localIndex i = 0; i < j; ++i )
       {
-        ApplyGivensRotation( c[i], s[i], H( i, j ), H( i+1, j ) );
+        ApplyGivensRotation( c[i], s[i], H( i, j ), H( i + 1, j ) );
       }
 
       // Compute and apply the new rotation to eliminate subdiagonal element
-      ComputeGivensRotation( H( j, j ), H( j+1, j ), c[j], s[j] );
-      ApplyGivensRotation( c[j], s[j], H( j, j ), H( j+1, j ) );
-      ApplyGivensRotation( c[j], s[j], g[j], g[j+1] );
+      ComputeGivensRotation( H( j, j ), H( j + 1, j ), c[j], s[j] );
+      ApplyGivensRotation( c[j], s[j], H( j, j ), H( j + 1, j ) );
+      ApplyGivensRotation( c[j], s[j], g[j], g[j + 1] );
     }
 
     // Regardless of how we quit out of inner loop, j is the actual size of H
@@ -221,4 +225,4 @@ template class GMRESsolver< PetscInterface::ParallelVector >;
 template class GMRESsolver< BlockVectorView< PetscInterface::ParallelVector > >;
 #endif
 
-} // namespace geosx
+}  // namespace geosx

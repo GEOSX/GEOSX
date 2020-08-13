@@ -21,18 +21,15 @@
 
 #include "finiteElement/kernelInterface/KernelBase.hpp"
 
-
 namespace geosx
 {
-
 /// Namespace to contain the solid mechanics kernels.
 namespace SolidMechanicsLagrangianFEMKernels
 {
-
-#if defined(GEOSX_USE_CUDA)
-/// Macro variable to indicate whether or not to calculate the shape function
-/// derivatives in the kernel instead of using a pre-calculated value.
-#define CALCFEMSHAPE
+#if defined( GEOSX_USE_CUDA )
+  /// Macro variable to indicate whether or not to calculate the shape function
+  /// derivatives in the kernel instead of using a pre-calculated value.
+  #define CALCFEMSHAPE
 #endif
 /// If UPDATE_STRESS is undef, uses total displacement and stress is not
 /// updated at all.
@@ -40,7 +37,6 @@ namespace SolidMechanicsLagrangianFEMKernels
 /// state to integral for nodalforces.
 /// If UPDATE_STRESS 2 then velocity*dt is used to update material stress state
 #define UPDATE_STRESS 2
-
 
 /**
  * @brief Implements kernels for solving the equations of motion using the
@@ -60,36 +56,27 @@ namespace SolidMechanicsLagrangianFEMKernels
  * The number of degrees of freedom per support point for both
  * the test and trial spaces are specified as `3`.
  */
-template< typename SUBREGION_TYPE,
-          typename CONSTITUTIVE_TYPE,
-          typename FE_TYPE >
-class ExplicitSmallStrain : public finiteElement::KernelBase< SUBREGION_TYPE,
-                                                              CONSTITUTIVE_TYPE,
-                                                              FE_TYPE,
-                                                              3,
-                                                              3 >
+template< typename SUBREGION_TYPE, typename CONSTITUTIVE_TYPE, typename FE_TYPE >
+class ExplicitSmallStrain
+  : public finiteElement::KernelBase< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE, 3, 3 >
 {
 public:
-
   /// Alias for the base class;
-  using Base = finiteElement::KernelBase< SUBREGION_TYPE,
-                                          CONSTITUTIVE_TYPE,
-                                          FE_TYPE,
-                                          3,
-                                          3 >;
+  using Base =
+    finiteElement::KernelBase< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE, 3, 3 >;
 
   /// Number of nodes per element...which is equal to the
   /// numTestSupportPointPerElem and numTrialSupportPointPerElem by definition.
   static constexpr int numNodesPerElem = Base::numTestSupportPointsPerElem;
 
+  using Base::m_constitutiveUpdate;
+  using Base::m_elemGhostRank;
+  using Base::m_elemsToNodes;
+  using Base::m_finiteElementSpace;
   using Base::numDofPerTestSupportPoint;
   using Base::numDofPerTrialSupportPoint;
-  using Base::m_elemsToNodes;
-  using Base::m_elemGhostRank;
-  using Base::m_constitutiveUpdate;
-  using Base::m_finiteElementSpace;
 
-//*****************************************************************************
+  //*****************************************************************************
   /**
    * @brief Constructor
    * @copydoc geosx::finiteElement::KernelBase::KernelBase
@@ -107,20 +94,21 @@ public:
                        FE_TYPE const & finiteElementSpace,
                        CONSTITUTIVE_TYPE * const inputConstitutiveType,
                        real64 const dt,
-                       string const & elementListName ):
-    Base( elementSubRegion,
-          finiteElementSpace,
-          inputConstitutiveType ),
-#if !defined(CALCFEMSHAPE)
+                       string const & elementListName ) :
+    Base( elementSubRegion, finiteElementSpace, inputConstitutiveType ),
+#if !defined( CALCFEMSHAPE )
     m_dNdX( elementSubRegion.dNdX() ),
     m_detJ( elementSubRegion.detJ() ),
 #endif
-    m_X( nodeManager.referencePosition()),
-    m_u( nodeManager.totalDisplacement()),
-    m_vel( nodeManager.velocity()),
+    m_X( nodeManager.referencePosition() ),
+    m_u( nodeManager.totalDisplacement() ),
+    m_vel( nodeManager.velocity() ),
     m_acc( nodeManager.acceleration() ),
     m_dt( dt ),
-    m_elementList( elementSubRegion.template getReference< SortedArray< localIndex > >( elementListName ).toViewConst() )
+    m_elementList(
+      elementSubRegion
+        .template getReference< SortedArray< localIndex > >( elementListName )
+        .toViewConst() )
   {
     GEOSX_UNUSED_VAR( edgeManager );
     GEOSX_UNUSED_VAR( faceManager );
@@ -135,37 +123,35 @@ public:
    */
   struct StackVariables : Base::StackVariables
   {
-public:
+  public:
     GEOSX_HOST_DEVICE
-    StackVariables():
+    StackVariables() :
+      // clang-format off
       fLocal{ { 0.0} },
       varLocal{ {0.0} }
-  #if defined(CALCFEMSHAPE)
-      ,
-      xLocal(),
-      dNdX(),
-      detJ()
-  #endif
+    // clang-format on
+#if defined( CALCFEMSHAPE )
+    , xLocal(), dNdX(), detJ()
+#endif
     {}
 
     /// C-array stack storage for the element local force
-    real64 fLocal[ numNodesPerElem ][ numDofPerTrialSupportPoint ];
+    real64 fLocal[numNodesPerElem][numDofPerTrialSupportPoint];
 
     /// C-array stack storage for element local primary variable values.
-    real64 varLocal[ numNodesPerElem ][ numDofPerTestSupportPoint ];
-  #if defined(CALCFEMSHAPE)
+    real64 varLocal[numNodesPerElem][numDofPerTestSupportPoint];
+#if defined( CALCFEMSHAPE )
     /// C-array stack storage for element local the nodal positions.
-    real64 xLocal[ numNodesPerElem ][ numDofPerTestSupportPoint ];
+    real64 xLocal[numNodesPerElem][numDofPerTestSupportPoint];
 
     /// C-array stack storage for shape function derivatives at a point.
-    real64 dNdX[ numNodesPerElem ][ numDofPerTestSupportPoint ];
+    real64 dNdX[numNodesPerElem][numDofPerTestSupportPoint];
 
     /// C-array stack storage for the jacobian of the parent space mapping.
     real64 detJ;
-  #endif
+#endif
   };
   //***************************************************************************
-
 
   /**
    * @copydoc geosx::finiteElement::KernelBase::setup
@@ -174,22 +160,22 @@ public:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  void setup( localIndex const k,
-              StackVariables & stack ) const
+  void
+  setup( localIndex const k, StackVariables & stack ) const
   {
-    for( localIndex a=0; a< numNodesPerElem; ++a )
+    for( localIndex a = 0; a < numNodesPerElem; ++a )
     {
       localIndex const nodeIndex = m_elemsToNodes( k, a );
-      for( int i=0; i<numDofPerTrialSupportPoint; ++i )
+      for( int i = 0; i < numDofPerTrialSupportPoint; ++i )
       {
-#if defined(CALCFEMSHAPE)
-        stack.xLocal[ a ][ i ] = m_X[ nodeIndex ][ i ];
+#if defined( CALCFEMSHAPE )
+        stack.xLocal[a][i] = m_X[nodeIndex][i];
 #endif
 
-#if UPDATE_STRESS==2
-        stack.varLocal[ a ][ i ] = m_vel[ nodeIndex ][ i ] * m_dt;
+#if UPDATE_STRESS == 2
+        stack.varLocal[a][i] = m_vel[nodeIndex][i] * m_dt;
 #else
-        stack.varLocal[ a ][ i ] = m_u[ nodeIndex ][ i ];
+        stack.varLocal[a][i] = m_u[nodeIndex][i];
 #endif
       }
     }
@@ -206,37 +192,40 @@ public:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  void quadraturePointStateUpdate( localIndex const k,
-                                   localIndex const q,
-                                   StackVariables & stack ) const
+  void
+  quadraturePointStateUpdate( localIndex const k,
+                              localIndex const q,
+                              StackVariables & stack ) const
   {
-
-#if defined(CALCFEMSHAPE)
-    real64 dNdX[ numNodesPerElem ][ 3 ];
+#if defined( CALCFEMSHAPE )
+    real64 dNdX[numNodesPerElem][3];
     real64 const detJ = FE_TYPE::shapeFunctionDerivatives( q, stack.xLocal, dNdX );
 
-    /// Macro to substitute in the shape function derivatives.
-    #define DNDX dNdX
+  /// Macro to substitute in the shape function derivatives.
+  #define DNDX dNdX
 
-    /// Macro to substitute the determinant of the jacobian transformation to the parent space.
-    #define DETJ detJ
-#else //defined(CALCFEMSHAPE)
-    /// @cond DOXYGEN_SKIP
-    #define DNDX m_dNdX[k][q]
-    #define DETJ m_detJ( k, q )
-    /// @endcond DOXYGEN_SKIP
-#endif //defined(CALCFEMSHAPE)
+  /// Macro to substitute the determinant of the jacobian transformation to the parent space.
+  #define DETJ detJ
+#else  //defined(CALCFEMSHAPE)
+  /// @cond DOXYGEN_SKIP
+  #define DNDX m_dNdX[k][q]
+  #define DETJ m_detJ( k, q )
+      /// @endcond DOXYGEN_SKIP
+#endif  //defined(CALCFEMSHAPE)
 
-    real64 stressLocal[ 6 ] = {0};
-    real64 strain[6] = {0};
+    real64 stressLocal[6] = { 0 };
+    real64 strain[6] = { 0 };
     for( localIndex a = 0; a < numNodesPerElem; ++a )
     {
-      strain[0] = strain[0] + DNDX[ a ][0] * stack.varLocal[ a ][0];
-      strain[1] = strain[1] + DNDX[ a ][1] * stack.varLocal[ a ][1];
-      strain[2] = strain[2] + DNDX[ a ][2] * stack.varLocal[ a ][2];
-      strain[3] = strain[3] + DNDX[ a ][2] * stack.varLocal[ a ][1] + DNDX[ a ][1] * stack.varLocal[ a ][2];
-      strain[4] = strain[4] + DNDX[ a ][2] * stack.varLocal[ a ][0] + DNDX[ a ][0] * stack.varLocal[ a ][2];
-      strain[5] = strain[5] + DNDX[ a ][1] * stack.varLocal[ a ][0] + DNDX[ a ][0] * stack.varLocal[ a ][1];
+      strain[0] = strain[0] + DNDX[a][0] * stack.varLocal[a][0];
+      strain[1] = strain[1] + DNDX[a][1] * stack.varLocal[a][1];
+      strain[2] = strain[2] + DNDX[a][2] * stack.varLocal[a][2];
+      strain[3] = strain[3] + DNDX[a][2] * stack.varLocal[a][1] +
+        DNDX[a][1] * stack.varLocal[a][2];
+      strain[4] = strain[4] + DNDX[a][2] * stack.varLocal[a][0] +
+        DNDX[a][0] * stack.varLocal[a][2];
+      strain[5] = strain[5] + DNDX[a][1] * stack.varLocal[a][0] +
+        DNDX[a][0] * stack.varLocal[a][1];
     }
 
 #if UPDATE_STRESS == 2
@@ -248,19 +237,23 @@ public:
     for( localIndex c = 0; c < 6; ++c )
     {
 #if UPDATE_STRESS == 2
-      stressLocal[ c ] =  m_constitutiveUpdate.m_stress( k, q, c ) * (-DETJ);
+      stressLocal[c] = m_constitutiveUpdate.m_stress( k, q, c ) * ( -DETJ );
 #elif UPDATE_STRESS == 1
-      stressLocal[ c ] = ( stressLocal[ c ] + m_constitutiveUpdate.m_stress( k, q, c ) ) *(-DETJ);
+      stressLocal[c] =
+        ( stressLocal[c] + m_constitutiveUpdate.m_stress( k, q, c ) ) * ( -DETJ );
 #else
-      stressLocal[ c ] *= -DETJ;
+      stressLocal[c] *= -DETJ;
 #endif
     }
 
-    for( localIndex a=0; a< numNodesPerElem; ++a )
+    for( localIndex a = 0; a < numNodesPerElem; ++a )
     {
-      stack.fLocal[ a ][ 0 ] = stack.fLocal[ a ][ 0 ] + stressLocal[ 0 ] * DNDX[ a ][ 0 ] + stressLocal[ 5 ] * DNDX[ a ][ 1 ] + stressLocal[ 4 ] * DNDX[ a ][ 2 ];
-      stack.fLocal[ a ][ 1 ] = stack.fLocal[ a ][ 1 ] + stressLocal[ 5 ] * DNDX[ a ][ 0 ] + stressLocal[ 1 ] * DNDX[ a ][ 1 ] + stressLocal[ 3 ] * DNDX[ a ][ 2 ];
-      stack.fLocal[ a ][ 2 ] = stack.fLocal[ a ][ 2 ] + stressLocal[ 4 ] * DNDX[ a ][ 0 ] + stressLocal[ 3 ] * DNDX[ a ][ 1 ] + stressLocal[ 2 ] * DNDX[ a ][ 2 ];
+      stack.fLocal[a][0] = stack.fLocal[a][0] + stressLocal[0] * DNDX[a][0] +
+        stressLocal[5] * DNDX[a][1] + stressLocal[4] * DNDX[a][2];
+      stack.fLocal[a][1] = stack.fLocal[a][1] + stressLocal[5] * DNDX[a][0] +
+        stressLocal[1] * DNDX[a][1] + stressLocal[3] * DNDX[a][2];
+      stack.fLocal[a][2] = stack.fLocal[a][2] + stressLocal[4] * DNDX[a][0] +
+        stressLocal[3] * DNDX[a][1] + stressLocal[2] * DNDX[a][2];
     }
   }
 
@@ -272,15 +265,16 @@ public:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  real64 complete( localIndex const k,
-                   StackVariables const & stack ) const
+  real64
+  complete( localIndex const k, StackVariables const & stack ) const
   {
     for( localIndex a = 0; a < numNodesPerElem; ++a )
     {
       localIndex const nodeIndex = m_elemsToNodes( k, a );
       for( int b = 0; b < numDofPerTestSupportPoint; ++b )
       {
-        RAJA::atomicAdd< parallelDeviceAtomic >( &m_acc( nodeIndex, b ), stack.fLocal[ a ][ b ] );
+        RAJA::atomicAdd< parallelDeviceAtomic >( &m_acc( nodeIndex, b ),
+                                                 stack.fLocal[a][b] );
       }
     }
     return 0;
@@ -293,8 +287,7 @@ public:
    * Copy of the KernelBase::kernelLaunch function without the exclusion of ghost
    * elements.
    */
-  template< typename POLICY,
-            typename KERNEL_TYPE >
+  template< typename POLICY, typename KERNEL_TYPE >
   static real64
   kernelLaunch( localIndex const numElems,
                 KERNEL_TYPE const & kernelComponent )
@@ -304,15 +297,13 @@ public:
     GEOSX_UNUSED_VAR( numElems );
 
     localIndex const numProcElems = kernelComponent.m_elementList.size();
-    forAll< POLICY >( numProcElems,
-                      [=] GEOSX_DEVICE ( localIndex const index )
-    {
-      localIndex const k = kernelComponent.m_elementList[ index ];
+    forAll< POLICY >( numProcElems, [=] GEOSX_DEVICE( localIndex const index ) {
+      localIndex const k = kernelComponent.m_elementList[index];
 
       typename KERNEL_TYPE::StackVariables stack;
 
       kernelComponent.setup( k, stack );
-      for( integer q=0; q<KERNEL_TYPE::numQuadraturePointsPerElem; ++q )
+      for( integer q = 0; q < KERNEL_TYPE::numQuadraturePointsPerElem; ++q )
       {
         kernelComponent.quadraturePointStateUpdate( k, q, stack );
 
@@ -325,14 +316,13 @@ public:
     return 0;
   }
 
-
 protected:
-  #if !defined(CALCFEMSHAPE)
+#if !defined( CALCFEMSHAPE )
   /// The shape function derivative for each quadrature point.
   arrayView4d< real64 const > const m_dNdX;
   /// The parent->physical jacobian determinant for each quadrature point.
   arrayView2d< real64 const > const m_detJ;
-  #endif
+#endif
   /// The array containing the nodal position array.
   arrayView2d< real64 const, nodes::REFERENCE_POSITION_USD > const m_X;
 
@@ -351,16 +341,14 @@ protected:
 
   /// The list of elements to process for the kernel launch.
   SortedArrayView< localIndex const > const m_elementList;
-
-
 };
 #undef CALCFEMSHAPE
 #undef DNDX
 #undef DETJ
 #undef UPDATE_STRESS
 
-} // namespace SolidMechanicsLagrangianFEMKernels
+}  // namespace SolidMechanicsLagrangianFEMKernels
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif //GEOSX_PHYSICSSOLVERS_SOLIDMECHANICS_SOLIDMECHANICSSMALLSTRAINEXPLICITNEWMARK_HPP_
+#endif  //GEOSX_PHYSICSSOLVERS_SOLIDMECHANICS_SOLIDMECHANICSSMALLSTRAINEXPLICITNEWMARK_HPP_

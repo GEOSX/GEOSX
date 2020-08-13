@@ -33,46 +33,52 @@ namespace geosx
 using namespace dataRepository;
 using namespace finiteElement;
 
-
-FiniteElementDiscretization::FiniteElementDiscretization( std::string const & name, Group * const parent ):
+FiniteElementDiscretization::FiniteElementDiscretization( std::string const & name,
+                                                          Group * const parent ) :
   Group( name, parent )
 {
   setInputFlags( InputFlags::OPTIONAL_NONUNIQUE );
 
-  registerWrapper( viewKeyStruct::orderString, &m_order )->
-    setInputFlag( InputFlags::REQUIRED )->
-    setDescription( "The order of the finite element basis." );
+  registerWrapper( viewKeyStruct::orderString, &m_order )
+    ->setInputFlag( InputFlags::REQUIRED )
+    ->setDescription( "The order of the finite element basis." );
 
-  registerWrapper( viewKeyStruct::formulationString, &m_formulation )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setApplyDefaultValue( "default" )->
-    setDescription( "Specifier to indicate any specialized formuations. "
-                    "For instance, one of the many enhanced assumed strain "
-                    "methods of the Hexahedron parent shape would be indicated "
-                    "here" );
+  registerWrapper( viewKeyStruct::formulationString, &m_formulation )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setApplyDefaultValue( "default" )
+    ->setDescription(
+      "Specifier to indicate any specialized formuations. "
+      "For instance, one of the many enhanced assumed strain "
+      "methods of the Hexahedron parent shape would be indicated "
+      "here" );
 }
 
 FiniteElementDiscretization::~FiniteElementDiscretization()
 {}
 
-
-void FiniteElementDiscretization::PostProcessInput()
+void
+FiniteElementDiscretization::PostProcessInput()
 {
-  GEOSX_ERROR_IF( m_order!=1, "Higher order finite element spaces are currently not supported." );
-  GEOSX_ERROR_IF( m_formulation!="default", "Only standard element formulations are currently supported." );
+  GEOSX_ERROR_IF(
+    m_order != 1,
+    "Higher order finite element spaces are currently not supported." );
+  GEOSX_ERROR_IF( m_formulation != "default",
+                  "Only standard element formulations are currently supported." );
 }
 
 std::unique_ptr< FiniteElementBase >
-FiniteElementDiscretization::factory( string const & parentElementShape ) const
+FiniteElementDiscretization::factory(
+  string const & parentElementShape ) const
 {
   std::unique_ptr< FiniteElementBase > rval;
-  if( m_order==1 )
+  if( m_order == 1 )
   {
-    if( parentElementShape ==  finiteElement::ParentElementTypeStrings::Hexahedron )
+    if( parentElementShape == finiteElement::ParentElementTypeStrings::Hexahedron )
     {
       rval = std::make_unique< H1_Hexahedron_Lagrange1_GaussLegendre2 >();
     }
-    else if( parentElementShape == finiteElement::ParentElementTypeStrings::Tetrahedon )
+    else if( parentElementShape ==
+             finiteElement::ParentElementTypeStrings::Tetrahedon )
     {
       rval = std::make_unique< H1_Tetrahedron_Lagrange1_Gauss1 >();
     }
@@ -84,17 +90,21 @@ FiniteElementDiscretization::factory( string const & parentElementShape ) const
     {
       rval = std::make_unique< H1_Pyramid_Lagrange1_Gauss5 >();
     }
-    else if( parentElementShape == finiteElement::ParentElementTypeStrings::Quadralateral )
+    else if( parentElementShape ==
+             finiteElement::ParentElementTypeStrings::Quadralateral )
     {
       rval = std::make_unique< H1_QuadrilateralFace_Lagrange1_GaussLegendre2 >();
     }
-    else if( parentElementShape == finiteElement::ParentElementTypeStrings::Triangle )
+    else if( parentElementShape ==
+             finiteElement::ParentElementTypeStrings::Triangle )
     {
       rval = std::make_unique< H1_TriangleFace_Lagrange1_Gauss1 >();
     }
     else
     {
-      GEOSX_ERROR( "Key value of "<<parentElementShape<<" does not have an associated element formulation." );
+      GEOSX_ERROR( "Key value of "
+                   << parentElementShape
+                   << " does not have an associated element formulation." );
     }
   }
   else
@@ -104,6 +114,9 @@ FiniteElementDiscretization::factory( string const & parentElementShape ) const
   return rval;
 }
 
-REGISTER_CATALOG_ENTRY( Group, FiniteElementDiscretization, std::string const &, Group * const )
+REGISTER_CATALOG_ENTRY( Group,
+                        FiniteElementDiscretization,
+                        std::string const &,
+                        Group * const )
 
 } /* namespace geosx */

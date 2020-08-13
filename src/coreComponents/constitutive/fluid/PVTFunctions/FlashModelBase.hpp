@@ -24,38 +24,39 @@
 
 namespace geosx
 {
-
 namespace PVTProps
 {
-
-
 class FlashModel
 {
 public:
-
   FlashModel( string const & name,
               string_array const & componentNames,
-              real64_array const & componentMolarWeight ):
+              real64_array const & componentMolarWeight ) :
     m_modelName( name ),
     m_componentNames( componentNames ),
     m_componentMolarWeight( componentMolarWeight )
   {}
 
-  virtual ~FlashModel(){}
+  virtual ~FlashModel()
+  {}
 
-  using CatalogInterface = dataRepository::CatalogInterface< FlashModel, string_array const &,
-                                                             string_array const &,
-                                                             string_array const &,
-                                                             real64_array const & >;
-  static typename CatalogInterface::CatalogType & GetCatalog()
+  using CatalogInterface =
+    dataRepository::CatalogInterface< FlashModel,
+                                      string_array const &,
+                                      string_array const &,
+                                      string_array const &,
+                                      real64_array const & >;
+  static typename CatalogInterface::CatalogType &
+  GetCatalog()
   {
     static CatalogInterface::CatalogType catalog;
     return catalog;
   }
-  virtual string GetCatalogName() = 0;
+  virtual string
+  GetCatalogName() = 0;
 
-
-  string const & FlashModelName() const
+  string const &
+  FlashModelName() const
   {
     return m_modelName;
   }
@@ -64,21 +65,22 @@ public:
   //input: P, T, totalCompFraction
   //output: phaseFraction, phaseCompFraction
 
-  virtual void Partition( EvalVarArgs const & pressure,
-                          EvalVarArgs const & temperature,
-                          arraySlice1d< EvalVarArgs const > const & compFraction,
-                          arraySlice1d< EvalVarArgs > const & phaseFraction,
-                          arraySlice2d< EvalVarArgs > const & phaseCompFraction ) const = 0;
+  virtual void
+  Partition(
+    EvalVarArgs const & pressure,
+    EvalVarArgs const & temperature,
+    arraySlice1d< EvalVarArgs const > const & compFraction,
+    arraySlice1d< EvalVarArgs > const & phaseFraction,
+    arraySlice2d< EvalVarArgs > const & phaseCompFraction ) const = 0;
 
 protected:
   string m_modelName;
   string_array m_componentNames;
   real64_array m_componentMolarWeight;
-
 };
 
-}
+}  // namespace PVTProps
 
-}
+}  // namespace geosx
 
-#endif //GEOSX_CONSTITUTIVE_FLUID_PVTFUNCTIONS_FLASHMODELBASE_HPP_
+#endif  //GEOSX_CONSTITUTIVE_FLUID_PVTFUNCTIONS_FLASHMODELBASE_HPP_

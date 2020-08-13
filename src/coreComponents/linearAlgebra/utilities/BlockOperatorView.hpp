@@ -25,7 +25,6 @@
 
 namespace geosx
 {
-
 /**
  * @brief Abstract view of a block operator.
  * @tparam VECTOR type of vector that sub-blocks of this view can operate on
@@ -38,9 +37,7 @@ namespace geosx
 template< typename VECTOR, typename OPERATOR = LinearOperator< VECTOR > >
 class BlockOperatorView : public LinearOperator< BlockVectorView< VECTOR > >
 {
-
 public:
-
   /// Alias for base type
   using Base = LinearOperator< BlockVectorView< VECTOR > >;
 
@@ -61,31 +58,34 @@ public:
    * @brief Deleted copy assignment.
    * @return not callable
    */
-  BlockOperatorView & operator=( BlockOperatorView const & ) = delete;
+  BlockOperatorView &
+  operator=( BlockOperatorView const & ) = delete;
 
   /**
    * @brief Deleted move assignment.
    * @return not callable
    */
-  BlockOperatorView & operator=( BlockOperatorView && ) = delete;
+  BlockOperatorView &
+  operator=( BlockOperatorView && ) = delete;
 
   ///@}
 
 private:
-
   HAS_MEMBER_FUNCTION( numLocalRows, localIndex, );
   HAS_MEMBER_FUNCTION( numLocalCols, localIndex, );
-  HAS_MEMBER_FUNCTION_NO_RTYPE( applyTranspose, std::declval< Vector const & >(), std::declval< Vector & >() );
+  HAS_MEMBER_FUNCTION_NO_RTYPE( applyTranspose,
+                                std::declval< Vector const & >(),
+                                std::declval< Vector & >() );
 
 public:
-
   /**
    * @name LinearOperator interface
    */
   ///@{
 
-  virtual void apply( BlockVectorView< VECTOR > const & src,
-                      BlockVectorView< VECTOR > & dst ) const override
+  virtual void
+  apply( BlockVectorView< VECTOR > const & src,
+         BlockVectorView< VECTOR > & dst ) const override
   {
     for( localIndex i = 0; i < numBlockRows(); i++ )
     {
@@ -104,8 +104,9 @@ public:
 
   template< typename OP = OPERATOR >
   std::enable_if_t< HasMemberFunction_applyTranspose< OP > >
-  applyTranspose( BlockVectorView< VECTOR > const & src,
-                  BlockVectorView< VECTOR > & dst ) const
+  applyTranspose(
+    BlockVectorView< VECTOR > const & src,
+    BlockVectorView< VECTOR > & dst ) const
   {
     for( localIndex j = 0; j < numBlockCols(); j++ )
     {
@@ -122,28 +123,34 @@ public:
     }
   }
 
-  virtual globalIndex numGlobalRows() const override
+  virtual globalIndex
+  numGlobalRows() const override
   {
-    return computeRowSize( []( OPERATOR const & block ) { return block.numGlobalRows(); } );
+    return computeRowSize(
+      []( OPERATOR const & block ) { return block.numGlobalRows(); } );
   }
 
-  virtual globalIndex numGlobalCols() const override
+  virtual globalIndex
+  numGlobalCols() const override
   {
-    return computeColSize( []( OPERATOR const & block ) { return block.numGlobalCols(); } );
+    return computeColSize(
+      []( OPERATOR const & block ) { return block.numGlobalCols(); } );
   }
 
   template< typename OP = OPERATOR >
   std::enable_if_t< HasMemberFunction_numLocalRows< OP >, localIndex >
   numLocalRows() const
   {
-    return computeRowSize( []( OPERATOR const & block ) { return block.numLocalRows(); } );
+    return computeRowSize(
+      []( OPERATOR const & block ) { return block.numLocalRows(); } );
   }
 
   template< typename OP = OPERATOR >
   std::enable_if_t< HasMemberFunction_numLocalCols< OP >, localIndex >
   numLocalCols() const
   {
-    return computeColSize( []( OPERATOR const & block ) { return block.numLocalCols(); } );
+    return computeColSize(
+      []( OPERATOR const & block ) { return block.numLocalCols(); } );
   }
 
   ///@}
@@ -157,7 +164,8 @@ public:
    * @brief Get number of block rows.
    * @return number of block rows
    */
-  localIndex numBlockRows() const
+  localIndex
+  numBlockRows() const
   {
     return m_operators.size( 0 );
   }
@@ -166,7 +174,8 @@ public:
    * @brief Get number of block columns.
    * @return number of block columns
    */
-  localIndex numBlockCols() const
+  localIndex
+  numBlockCols() const
   {
     return m_operators.size( 1 );
   }
@@ -177,7 +186,9 @@ public:
    * @param blockColIndex block column index
    * @return a reference to the sub-block
    */
-  OPERATOR const & block( localIndex const blockRowIndex, localIndex const blockColIndex ) const
+  OPERATOR const &
+  block( localIndex const blockRowIndex,
+         localIndex const blockColIndex ) const
   {
     GEOSX_LAI_ASSERT( m_operators( blockRowIndex, blockColIndex ) != nullptr );
     return *m_operators( blockRowIndex, blockColIndex );
@@ -186,7 +197,8 @@ public:
   /**
    * @copydoc block( localIndex const, localIndex const ) const
    */
-  OPERATOR & block( localIndex const blockRowIndex, localIndex const blockColIndex )
+  OPERATOR &
+  block( localIndex const blockRowIndex, localIndex const blockColIndex )
   {
     GEOSX_LAI_ASSERT( m_operators( blockRowIndex, blockColIndex ) != nullptr );
     return *m_operators( blockRowIndex, blockColIndex );
@@ -195,7 +207,9 @@ public:
   /**
    * @copydoc block( localIndex const, localIndex const ) const
    */
-  OPERATOR const & operator()( localIndex const blockRowIndex, localIndex const blockColIndex = 0 ) const
+  OPERATOR const &
+  operator()( localIndex const blockRowIndex,
+              localIndex const blockColIndex = 0 ) const
   {
     return block( blockRowIndex, blockColIndex );
   }
@@ -203,7 +217,9 @@ public:
   /**
    * @copydoc block( localIndex const, localIndex const ) const
    */
-  OPERATOR & operator()( localIndex const blockRowIndex, localIndex const blockColIndex = 0 )
+  OPERATOR &
+  operator()( localIndex const blockRowIndex,
+              localIndex const blockColIndex = 0 )
   {
     return block( blockRowIndex, blockColIndex );
   }
@@ -211,14 +227,13 @@ public:
   ///@}
 
 protected:
-
   /**
    * @brief Create an operator with given number of block rows and columns.
    * @param nRows number of block rows
    * @param nCols number of block columns
    */
-  BlockOperatorView( localIndex const nRows, localIndex const nCols )
-    : m_operators( nRows, nCols )
+  BlockOperatorView( localIndex const nRows, localIndex const nCols ) :
+    m_operators( nRows, nCols )
   {
     GEOSX_LAI_ASSERT_GT( nRows, 0 );
     GEOSX_LAI_ASSERT_GT( nCols, 0 );
@@ -242,7 +257,10 @@ protected:
    * @param blockColIndex column index of the block
    * @param op            the new pointer
    */
-  void setPointer( localIndex const blockRowIndex, localIndex const blockColIndex, OPERATOR * op )
+  void
+  setPointer( localIndex const blockRowIndex,
+              localIndex const blockColIndex,
+              OPERATOR * op )
   {
     GEOSX_LAI_ASSERT_GE( blockRowIndex, 0 );
     GEOSX_LAI_ASSERT_GT( numBlockRows(), blockRowIndex );
@@ -252,12 +270,15 @@ protected:
   }
 
 private:
+  template< typename FUNC >
+  auto
+  computeRowSize( FUNC func ) const
+    -> decltype( func( std::declval< OPERATOR const >() ) );
 
   template< typename FUNC >
-  auto computeRowSize( FUNC func ) const -> decltype( func( std::declval< OPERATOR const >() ) );
-
-  template< typename FUNC >
-  auto computeColSize( FUNC func ) const -> decltype( func( std::declval< OPERATOR const >() ) );
+  auto
+  computeColSize( FUNC func ) const
+    -> decltype( func( std::declval< OPERATOR const >() ) );
 
   /// Array of pointers to blocks
   array2d< OPERATOR * > m_operators;
@@ -265,7 +286,9 @@ private:
 
 template< typename VECTOR, typename OPERATOR >
 template< typename FUNC >
-auto BlockOperatorView< VECTOR, OPERATOR >::computeRowSize( FUNC func ) const -> decltype( func( std::declval< OPERATOR const >() ) )
+auto
+BlockOperatorView< VECTOR, OPERATOR >::computeRowSize( FUNC func ) const
+  -> decltype( func( std::declval< OPERATOR const >() ) )
 {
   using sizeType = decltype( func( std::declval< OPERATOR const >() ) );
   sizeType rowSize = 0;
@@ -285,7 +308,9 @@ auto BlockOperatorView< VECTOR, OPERATOR >::computeRowSize( FUNC func ) const ->
 
 template< typename VECTOR, typename OPERATOR >
 template< typename FUNC >
-auto BlockOperatorView< VECTOR, OPERATOR >::computeColSize( FUNC func ) const -> decltype( func( std::declval< OPERATOR const >() ) )
+auto
+BlockOperatorView< VECTOR, OPERATOR >::computeColSize( FUNC func ) const
+  -> decltype( func( std::declval< OPERATOR const >() ) )
 {
   using sizeType = decltype( func( std::declval< OPERATOR const >() ) );
   sizeType colSize = 0;
@@ -303,7 +328,6 @@ auto BlockOperatorView< VECTOR, OPERATOR >::computeColSize( FUNC func ) const ->
   return colSize;
 }
 
-}// end geosx namespace
-
+}  // namespace geosx
 
 #endif /*GEOSX_LINEARALGEBRA_UTILITIES_BLOCKOPERATORVIEW_HPP_*/

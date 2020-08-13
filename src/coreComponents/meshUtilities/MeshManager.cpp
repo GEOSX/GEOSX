@@ -12,7 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-
 #include "MeshManager.hpp"
 
 #include "mpiCommunications/SpatialPartition.hpp"
@@ -21,11 +20,9 @@
 
 namespace geosx
 {
-
 using namespace dataRepository;
 
-MeshManager::MeshManager( std::string const & name,
-                          Group * const parent ):
+MeshManager::MeshManager( std::string const & name, Group * const parent ) :
   Group( name, parent )
 {
   setInputFlags( InputFlags::REQUIRED );
@@ -34,37 +31,36 @@ MeshManager::MeshManager( std::string const & name,
 MeshManager::~MeshManager()
 {}
 
-Group * MeshManager::CreateChild( string const & childKey, string const & childName )
+Group *
+MeshManager::CreateChild( string const & childKey, string const & childName )
 {
   GEOSX_LOG_RANK_0( "Adding Mesh: " << childKey << ", " << childName );
-  std::unique_ptr< MeshGeneratorBase > solver = MeshGeneratorBase::CatalogInterface::Factory( childKey, childName, this );
+  std::unique_ptr< MeshGeneratorBase > solver =
+    MeshGeneratorBase::CatalogInterface::Factory( childKey, childName, this );
   return this->RegisterGroup< MeshGeneratorBase >( childName, std::move( solver ) );
 }
 
-
-void MeshManager::ExpandObjectCatalogs()
+void
+MeshManager::ExpandObjectCatalogs()
 {
   // During schema generation, register one of each type derived from MeshGeneratorBase here
-  for( auto & catalogIter: MeshGeneratorBase::GetCatalog())
+  for( auto & catalogIter : MeshGeneratorBase::GetCatalog() )
   {
     CreateChild( catalogIter.first, catalogIter.first );
   }
 }
 
-
-void MeshManager::GenerateMeshes( DomainPartition * const domain )
+void
+MeshManager::GenerateMeshes( DomainPartition * const domain )
 {
-  forSubGroups< MeshGeneratorBase >( [&]( MeshGeneratorBase & meshGen )
-  {
-    meshGen.GenerateMesh( domain );
-  } );
+  forSubGroups< MeshGeneratorBase >(
+    [&]( MeshGeneratorBase & meshGen ) { meshGen.GenerateMesh( domain ); } );
 }
 
-
-void MeshManager::GenerateMeshLevels( DomainPartition * const domain )
+void
+MeshManager::GenerateMeshLevels( DomainPartition * const domain )
 {
-  this->forSubGroups< MeshGeneratorBase >( [&]( MeshGeneratorBase & meshGen )
-  {
+  this->forSubGroups< MeshGeneratorBase >( [&]( MeshGeneratorBase & meshGen ) {
     string meshName = meshGen.getName();
 
     // THIS IS A HACK
@@ -74,6 +70,5 @@ void MeshManager::GenerateMeshLevels( DomainPartition * const domain )
     }
   } );
 }
-
 
 } /* namespace geosx */

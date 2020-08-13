@@ -24,7 +24,6 @@
 
 namespace geosx
 {
-
 /**
  * @enum TimeIntegrationOption
  *
@@ -32,9 +31,9 @@ namespace geosx
  */
 enum class TimeIntegrationOption : int
 {
-  QuasiStatic,    //!< QuasiStatic
-  ImplicitDynamic,//!< ImplicitDynamic
-  ExplicitDynamic //!< ExplicitDynamic
+  QuasiStatic,      //!< QuasiStatic
+  ImplicitDynamic,  //!< ImplicitDynamic
+  ExplicitDynamic   //!< ExplicitDynamic
 };
 
 /**
@@ -42,8 +41,8 @@ enum class TimeIntegrationOption : int
  * @param val int that represents the TimeIntegrationOption
  * @return The TimeIntegrationOption that corresponds to the input
  */
-inline
-TimeIntegrationOption toTimeIntegrationOption( std::string const & val )
+inline TimeIntegrationOption
+toTimeIntegrationOption( std::string const & val )
 {
   if( val == "TimeIntegrationOption::QuasiStatic" || val == "QuasiStatic" )
   {
@@ -64,8 +63,8 @@ TimeIntegrationOption toTimeIntegrationOption( std::string const & val )
   }
 }
 
-inline
-std::istream & operator>>( std::istream & is, TimeIntegrationOption & option )
+inline std::istream &
+operator>>( std::istream & is, TimeIntegrationOption & option )
 {
   std::string value;
   is >> value;
@@ -73,8 +72,9 @@ std::istream & operator>>( std::istream & is, TimeIntegrationOption & option )
   return is;
 }
 
-inline
-std::ostream & operator<<( std::ostream & os, TimeIntegrationOption const & option )
+inline std::ostream &
+operator<<( std::ostream & os,
+            TimeIntegrationOption const & option )
 {
   switch( option )
   {
@@ -95,10 +95,11 @@ std::ostream & operator<<( std::ostream & os, TimeIntegrationOption const & opti
     }
     default:
     {
-      GEOSX_ERROR( "TimeIntegrationOption " << static_cast< int >( option ) << " not recognized." );
+      GEOSX_ERROR( "TimeIntegrationOption " << static_cast< int >( option )
+                                            << " not recognized." );
       return os;
     }
   }
 }
 
-} /// namespace geosx
+}  // namespace geosx

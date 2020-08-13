@@ -24,25 +24,30 @@
 // System includes
 #include <random>
 
-
 namespace geosx
 {
 namespace dataRepository
 {
 namespace testing
 {
+template< typename T >
+void
+checkNoSizeMethod( T const & var )
+{
+  EXPECT_EQ( wrapperHelpers::size( var ), 1 );
+}
 
 template< typename T >
-void checkNoSizeMethod( T const & var )
-{ EXPECT_EQ( wrapperHelpers::size( var ), 1 ); }
-
-template< typename T >
-void checkSizeMethod( T const & var )
-{ EXPECT_EQ( wrapperHelpers::size( var ), var.size() ); }
+void
+checkSizeMethod( T const & var )
+{
+  EXPECT_EQ( wrapperHelpers::size( var ), var.size() );
+}
 
 template< typename T, int USD >
-void checkAverageOverSecondDimHelper( ArrayView< T const, 2, USD > const & input,
-                                      ArrayView< T const, 1 > const & output )
+void
+checkAverageOverSecondDimHelper( ArrayView< T const, 2, USD > const & input,
+                                 ArrayView< T const, 1 > const & output )
 {
   for( localIndex i = 0; i < input.size( 0 ); ++i )
   {
@@ -58,8 +63,9 @@ void checkAverageOverSecondDimHelper( ArrayView< T const, 2, USD > const & input
 }
 
 template< typename T, int USD >
-void checkAverageOverSecondDimHelper( ArrayView< T const, 3, USD > const & input,
-                                      ArrayView< T const, 2 > const & output )
+void
+checkAverageOverSecondDimHelper( ArrayView< T const, 3, USD > const & input,
+                                 ArrayView< T const, 2 > const & output )
 {
   for( localIndex i = 0; i < input.size( 0 ); ++i )
   {
@@ -78,8 +84,9 @@ void checkAverageOverSecondDimHelper( ArrayView< T const, 3, USD > const & input
 }
 
 template< typename T, int USD >
-void checkAverageOverSecondDimHelper( ArrayView< T const, 4, USD > const & input,
-                                      ArrayView< T const, 3 > const & output )
+void
+checkAverageOverSecondDimHelper( ArrayView< T const, 4, USD > const & input,
+                                 ArrayView< T const, 3 > const & output )
 {
   for( localIndex i = 0; i < input.size( 0 ); ++i )
   {
@@ -99,7 +106,6 @@ void checkAverageOverSecondDimHelper( ArrayView< T const, 4, USD > const & input
     }
   }
 }
-
 
 TEST( wrapperHelpers, size )
 {
@@ -126,16 +132,14 @@ TEST( wrapperHelpers, size )
 /// TODO: reserve
 /// TODO: capacity
 
-using ArrayTypes = ::testing::Types<
-  array2d< int, RAJA::PERM_IJ >
-  , array2d< double, RAJA::PERM_JI >
-  , array3d< double, RAJA::PERM_IJK >
-  , array3d< int, RAJA::PERM_KJI >
-  , array3d< R1Tensor, RAJA::PERM_JIK >
-  , array4d< int, RAJA::PERM_IJKL >
-  , array4d< int, RAJA::PERM_LKJI >
-  , array4d< int, RAJA::PERM_KJLI >
-  >;
+using ArrayTypes = ::testing::Types< array2d< int, RAJA::PERM_IJ >,
+                                     array2d< double, RAJA::PERM_JI >,
+                                     array3d< double, RAJA::PERM_IJK >,
+                                     array3d< int, RAJA::PERM_KJI >,
+                                     array3d< R1Tensor, RAJA::PERM_JIK >,
+                                     array4d< int, RAJA::PERM_IJKL >,
+                                     array4d< int, RAJA::PERM_LKJI >,
+                                     array4d< int, RAJA::PERM_KJLI > >;
 
 template< typename ARRAY >
 class PopulateMCArray : public ::testing::Test
@@ -144,7 +148,8 @@ public:
   static_assert( traits::is_array< ARRAY >, "T must be an LvArray::Array!" );
   using T = typename ARRAY::value_type;
 
-  void test()
+  void
+  test()
   {
     using ConduitType = typename conduitTypeInfo< T >::type;
     constexpr int numComponentsPerValue = conduitTypeInfo< T >::numConduitValues;
@@ -155,7 +160,8 @@ public:
     wrapperHelpers::populateMCArray( m_array.toViewConst(), node, {} );
 
     localIndex const numComponents = node.number_of_children();
-    EXPECT_EQ( numComponents, numComponentsPerValue * m_array.size() / m_array.size( 0 ) );
+    EXPECT_EQ( numComponents,
+               numComponentsPerValue * m_array.size() / m_array.size( 0 ) );
 
     std::vector< conduit::DataArray< ConduitType > > valuesFromNode;
     for( localIndex i = 0; i < numComponents; ++i )
@@ -169,15 +175,17 @@ public:
     for( localIndex i = 0; i < m_array.size( 0 ); ++i )
     {
       int curComponent = 0;
-      LvArray::forValuesInSlice( m_array[ i ], [&valuesFromNode, &curComponent, i]( T const & value )
-      {
-        for( int j = 0; j < numComponentsPerValue; ++j )
-        {
-          auto const valueOfComponent = *wrapperHelpers::internal::getPointerToComponent( value, j );
-          EXPECT_EQ( valueOfComponent, valuesFromNode[ curComponent ][ i ] );
-          ++curComponent;
-        }
-      } );
+      LvArray::forValuesInSlice(
+        m_array[i],
+        [&valuesFromNode, &curComponent, i]( T const & value ) {
+          for( int j = 0; j < numComponentsPerValue; ++j )
+          {
+            auto const valueOfComponent =
+              *wrapperHelpers::internal::getPointerToComponent( value, j );
+            EXPECT_EQ( valueOfComponent, valuesFromNode[curComponent][i] );
+            ++curComponent;
+          }
+        } );
     }
   }
 
@@ -191,7 +199,6 @@ TYPED_TEST( PopulateMCArray, test )
   this->test();
 }
 
-
 template< typename ARRAY >
 class AverageOverSecondDim : public ::testing::Test
 {
@@ -202,11 +209,13 @@ public:
   static constexpr int NDIM = ARRAY::NDIM;
   static_assert( NDIM >= 2, "Cannot average over a 1D array!" );
 
-  void test()
+  void
+  test()
   {
     fill( m_array, 20 );
 
-    std::unique_ptr< Array< T, NDIM - 1 > > const output = wrapperHelpers::averageOverSecondDim( m_array.toViewConst() );
+    std::unique_ptr< Array< T, NDIM - 1 > > const output =
+      wrapperHelpers::averageOverSecondDim( m_array.toViewConst() );
 
     ASSERT_EQ( output->size( 0 ), m_array.size( 0 ) );
 
@@ -228,11 +237,12 @@ TYPED_TEST( AverageOverSecondDim, test )
   this->test();
 }
 
-} // namespace testing
-} // namespace dataRepository
-} // end namespace geosx
+}  // namespace testing
+}  // namespace dataRepository
+}  // end namespace geosx
 
-int main( int argc, char * argv[] )
+int
+main( int argc, char * argv[] )
 {
   testing::InitGoogleTest( &argc, argv );
 

@@ -24,7 +24,6 @@
 
 namespace geosx
 {
-
 /**
  * @class SourceFluxBoundaryCondition
  * A class to manage Neumann boundary conditions
@@ -37,7 +36,8 @@ public:
    * @param name the name of the FieldSpecificationBase in the data repository
    * @param parent the parent group of this group.
    */
-  SourceFluxBoundaryCondition( string const & name, dataRepository::Group * const parent );
+  SourceFluxBoundaryCondition( string const & name,
+                               dataRepository::Group * const parent );
 
   /**
    * @brief destructor
@@ -54,19 +54,24 @@ public:
    * @param[in] rootGroup A group that is passed in to the initialization functions
    *                      in order to facilitate the initialization.
    */
-  virtual void InitializePreSubGroups( Group * const rootGroup ) override;
+  virtual void
+  InitializePreSubGroups( Group * const rootGroup ) override;
 
   /**
    * @brief Static Factory Catalog Functions
    * @return the catalog name
    */
-  static string CatalogName() { return "SourceFlux"; }
+  static string
+  CatalogName()
+  {
+    return "SourceFlux";
+  }
 
-  virtual const string getCatalogName() const override
+  virtual const string
+  getCatalogName() const override
   {
     return SourceFluxBoundaryCondition::CatalogName();
   }
-
 };
 
 } /* namespace geosx */

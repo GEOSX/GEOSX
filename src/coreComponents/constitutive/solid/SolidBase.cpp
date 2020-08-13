@@ -12,7 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-
 /**
  * @file SolidBase.cpp
  */
@@ -21,32 +20,28 @@
 
 namespace geosx
 {
-
 using namespace dataRepository;
-
 
 namespace constitutive
 {
-
-SolidBase::SolidBase( string const & name,
-                      Group * const parent ):
+SolidBase::SolidBase( string const & name, Group * const parent ) :
   ConstitutiveBase( name, parent ),
   m_defaultDensity( 0 ),
   m_density(),
   m_stress( 0, 0, 6 ),
   m_postProcessed( false )
 {
-  registerWrapper( viewKeyStruct::defaultDensityString, &m_defaultDensity )->
-    setInputFlag( InputFlags::REQUIRED )->
-    setDescription( "Default Material Density" );
+  registerWrapper( viewKeyStruct::defaultDensityString, &m_defaultDensity )
+    ->setInputFlag( InputFlags::REQUIRED )
+    ->setDescription( "Default Material Density" );
 
-  registerWrapper( viewKeyStruct::densityString, &m_density )->
-    setApplyDefaultValue( -1 )->
-    setDescription( "Material Density" );
+  registerWrapper( viewKeyStruct::densityString, &m_density )
+    ->setApplyDefaultValue( -1 )
+    ->setDescription( "Material Density" );
 
-  registerWrapper( viewKeyStruct::stressString, &m_stress )->
-    setPlotLevel( PlotLevel::LEVEL_0 )->
-    setDescription( "Material Stress" );
+  registerWrapper( viewKeyStruct::stressString, &m_stress )
+    ->setPlotLevel( PlotLevel::LEVEL_0 )
+    ->setDescription( "Material Stress" );
 }
 
 SolidBase::~SolidBase()
@@ -57,7 +52,8 @@ SolidBase::DeliverClone( string const & GEOSX_UNUSED_PARAM( name ),
                          Group * const GEOSX_UNUSED_PARAM( parent ),
                          std::unique_ptr< ConstitutiveBase > & clone ) const
 {
-  SolidBase * const newConstitutiveRelation = dynamic_cast< SolidBase * >(clone.get());
+  SolidBase * const newConstitutiveRelation =
+    dynamic_cast< SolidBase * >( clone.get() );
 
   newConstitutiveRelation->m_defaultDensity = m_defaultDensity;
   newConstitutiveRelation->m_density = m_density;
@@ -65,11 +61,13 @@ SolidBase::DeliverClone( string const & GEOSX_UNUSED_PARAM( name ),
   newConstitutiveRelation->m_stress = m_stress;
 }
 
-
-void SolidBase::AllocateConstitutiveData( dataRepository::Group * const parent,
-                                          localIndex const numConstitutivePointsPerParentIndex )
+void
+SolidBase::AllocateConstitutiveData(
+  dataRepository::Group * const parent,
+  localIndex const numConstitutivePointsPerParentIndex )
 {
-  ConstitutiveBase::AllocateConstitutiveData( parent, numConstitutivePointsPerParentIndex );
+  ConstitutiveBase::AllocateConstitutiveData( parent,
+                                              numConstitutivePointsPerParentIndex );
 
   this->resize( parent->size() );
   m_density.resize( parent->size(), numConstitutivePointsPerParentIndex );
@@ -78,5 +76,5 @@ void SolidBase::AllocateConstitutiveData( dataRepository::Group * const parent,
   m_stress.resize( parent->size(), numConstitutivePointsPerParentIndex, 6 );
 }
 
-}
+}  // namespace constitutive
 } /* namespace geosx */

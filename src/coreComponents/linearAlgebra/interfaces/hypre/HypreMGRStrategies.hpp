@@ -25,7 +25,6 @@
 
 namespace geosx
 {
-
 /**
  * @todo Add a detailed description with an example
  *
@@ -37,40 +36,47 @@ namespace geosx
  * @param numLocalDofsPerField array of local number of dofs per field
  * @return array1d of HYPRE_Int labels
  */
-inline array1d< HYPRE_Int > computeLocalDofComponentLabels( arraySlice1d< localIndex const > const & numComponentsPerField,
-                                                            arraySlice1d< localIndex const > const & numLocalDofsPerField )
+inline array1d< HYPRE_Int >
+computeLocalDofComponentLabels(
+  arraySlice1d< localIndex const > const & numComponentsPerField,
+  arraySlice1d< localIndex const > const & numLocalDofsPerField )
 {
   array1d< HYPRE_Int > ret;
-  HYPRE_Int numFields = LvArray::integerConversion< HYPRE_Int >( numLocalDofsPerField.size() );
+  HYPRE_Int numFields =
+    LvArray::integerConversion< HYPRE_Int >( numLocalDofsPerField.size() );
 
   if( numFields > 0 )
   {
     HYPRE_Int numTotalLocalDof = 0;
     for( HYPRE_Int i = 0; i < numFields; ++i )
     {
-      numTotalLocalDof += LvArray::integerConversion< HYPRE_Int >( numLocalDofsPerField[i] );
+      numTotalLocalDof +=
+        LvArray::integerConversion< HYPRE_Int >( numLocalDofsPerField[i] );
     }
 
     ret.resize( numTotalLocalDof );
 
     HYPRE_Int firstLabel = 0;
-    HYPRE_Int istr= 0;
+    HYPRE_Int istr = 0;
     HYPRE_Int iend;
     HYPRE_Int numComp;
     for( HYPRE_Int iFld = 0; iFld < numFields; ++iFld )
     {
-      numComp = LvArray::integerConversion< HYPRE_Int >( numComponentsPerField[iFld] );
+      numComp =
+        LvArray::integerConversion< HYPRE_Int >( numComponentsPerField[iFld] );
       array1d< HYPRE_Int > vectorLabels( numComp );
       for( HYPRE_Int k = 0; k < numComp; ++k )
       {
         vectorLabels[k] = k + firstLabel;
       }
-      iend = istr + LvArray::integerConversion< HYPRE_Int >( numLocalDofsPerField[iFld] );;
+      iend =
+        istr + LvArray::integerConversion< HYPRE_Int >( numLocalDofsPerField[iFld] );
+      ;
       for( localIndex i = istr; i < iend; i += numComp )
       {
         for( integer k = 0; k < numComp; ++k )
         {
-          ret[i+k] = vectorLabels[k];
+          ret[i + k] = vectorLabels[k];
         }
       }
       istr += iend;
@@ -80,6 +86,6 @@ inline array1d< HYPRE_Int > computeLocalDofComponentLabels( arraySlice1d< localI
   return ret;
 }
 
-}
+}  // namespace geosx
 
 #endif /*GEOSX_LINEARALGEBRA_INTERFACES_HYPREMGRSTRATEGIES_HPP_*/

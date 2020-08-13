@@ -31,25 +31,24 @@
 
 namespace geosx
 {
-
 HyprePreconditioner::HyprePreconditioner( LinearSolverParameters params,
-                                          DofManager const * const dofManager )
-  : Base{},
+                                          DofManager const * const dofManager ) :
+  Base {},
   m_parameters( std::move( params ) ),
-  m_precond{},
+  m_precond {},
   m_functions( std::make_unique< HyprePrecFuncs >() )
 {
   if( m_precond == nullptr )
   {
     if( m_parameters.preconditionerType == "none" )
     {
-      m_functions->setup = (HYPRE_PtrToParSolverFcn) hypre_ParKrylovIdentitySetup;
-      m_functions->apply = (HYPRE_PtrToParSolverFcn) hypre_ParKrylovIdentity;
+      m_functions->setup = (HYPRE_PtrToParSolverFcn)hypre_ParKrylovIdentitySetup;
+      m_functions->apply = (HYPRE_PtrToParSolverFcn)hypre_ParKrylovIdentity;
     }
     else if( m_parameters.preconditionerType == "jacobi" )
     {
-      m_functions->setup = (HYPRE_PtrToParSolverFcn) HYPRE_ParCSRDiagScaleSetup;
-      m_functions->apply = (HYPRE_PtrToParSolverFcn) HYPRE_ParCSRDiagScale;
+      m_functions->setup = (HYPRE_PtrToParSolverFcn)HYPRE_ParCSRDiagScaleSetup;
+      m_functions->apply = (HYPRE_PtrToParSolverFcn)HYPRE_ParCSRDiagScale;
     }
     else if( m_parameters.preconditionerType == "amg" )
     {
@@ -69,7 +68,8 @@ HyprePreconditioner::HyprePreconditioner( LinearSolverParameters params,
     }
     else
     {
-      GEOSX_ERROR( "Unsupported preconditioner type: " << m_parameters.preconditionerType );
+      GEOSX_ERROR(
+        "Unsupported preconditioner type: " << m_parameters.preconditionerType );
     }
   }
 }
@@ -81,23 +81,23 @@ HyprePreconditioner::~HyprePreconditioner()
 
 namespace
 {
-
-HYPRE_Int getHypreAMGCycleType( string const & type )
+HYPRE_Int
+getHypreAMGCycleType( string const & type )
 {
-  static std::map< string, HYPRE_Int > const typeMap =
-  {
+  static std::map< string, HYPRE_Int > const typeMap = {
     { "V", 1 },
     { "W", 2 },
   };
 
-  GEOSX_LAI_ASSERT_MSG( typeMap.count( type ) > 0, "Unsupported Hypre AMG cycle option: " << type );
+  GEOSX_LAI_ASSERT_MSG( typeMap.count( type ) > 0,
+                        "Unsupported Hypre AMG cycle option: " << type );
   return typeMap.at( type );
 }
 
-HYPRE_Int getHypreAMGRelaxationType( string const & type )
+HYPRE_Int
+getHypreAMGRelaxationType( string const & type )
 {
-  static std::map< string, HYPRE_Int > const typeMap =
-  {
+  static std::map< string, HYPRE_Int > const typeMap = {
     { "jacobi", 0 },
     { "hybridForwardGaussSeidel", 3 },
     { "hybridBackwardGaussSeidel", 4 },
@@ -108,27 +108,34 @@ HYPRE_Int getHypreAMGRelaxationType( string const & type )
     { "L1jacobi", 18 },
   };
 
-  GEOSX_LAI_ASSERT_MSG( typeMap.count( type ) > 0, "Unsupported Hypre AMG relaxation option: " << type );
+  GEOSX_LAI_ASSERT_MSG( typeMap.count( type ) > 0,
+                        "Unsupported Hypre AMG relaxation option: " << type );
   return typeMap.at( type );
 }
 
-}
+}  // namespace
 
-void HyprePreconditioner::createAMG()
+void
+HyprePreconditioner::createAMG()
 {
   GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGCreate( &m_precond ) );
-
 
   // Hypre's parameters to use BoomerAMG as a preconditioner
   GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetTol( m_precond, 0.0 ) );
   GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetMaxIter( m_precond, 1 ) );
-  GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetPrintLevel( m_precond, toHYPRE_Int( m_parameters.logLevel ) ) );;
+  GEOSX_LAI_CHECK_ERROR(
+    HYPRE_BoomerAMGSetPrintLevel( m_precond, toHYPRE_Int( m_parameters.logLevel ) ) );
+  ;
 
   // Set maximum number of multigrid levels (default 25)
-  GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetMaxLevels( m_precond, toHYPRE_Int( m_parameters.amg.maxLevels ) ) );
+  GEOSX_LAI_CHECK_ERROR(
+    HYPRE_BoomerAMGSetMaxLevels( m_precond,
+                                 toHYPRE_Int( m_parameters.amg.maxLevels ) ) );
 
   // Set type of cycle (1: V-cycle (default); 2: W-cycle)
-  GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetCycleType( m_precond, getHypreAMGCycleType( m_parameters.amg.cycleType ) ) );
+  GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetCycleType(
+    m_precond,
+    getHypreAMGCycleType( m_parameters.amg.cycleType ) ) );
 
   // Set smoother to be used (other options available, see hypre's documentation)
   // (default "gaussSeidel", i.e. local symmetric Gauss-Seidel)
@@ -143,14 +150,18 @@ void HyprePreconditioner::createAMG()
   }
   else
   {
-    GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetRelaxType( m_precond, getHypreAMGRelaxationType( m_parameters.amg.smootherType ) ) );
+    GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetRelaxType(
+      m_precond,
+      getHypreAMGRelaxationType( m_parameters.amg.smootherType ) ) );
 
     if( m_parameters.amg.smootherType == "chebyshev" )
     {
       // Set order for Chebyshev smoother valid options 1, 2 (default), 3, 4)
       if( ( 0 < m_parameters.amg.numSweeps ) && ( m_parameters.amg.numSweeps < 5 ) )
       {
-        GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetChebyOrder( m_precond, toHYPRE_Int( m_parameters.amg.numSweeps ) ) );
+        GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetChebyOrder(
+          m_precond,
+          toHYPRE_Int( m_parameters.amg.numSweeps ) ) );
       }
     }
   }
@@ -166,23 +177,32 @@ void HyprePreconditioner::createAMG()
   // Set the number of sweeps
   if( m_parameters.amg.preOrPostSmoothing == "both" )
   {
-    GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetNumSweeps( m_precond, toHYPRE_Int( m_parameters.amg.numSweeps ) ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_BoomerAMGSetNumSweeps( m_precond,
+                                   toHYPRE_Int( m_parameters.amg.numSweeps ) ) );
   }
   else if( m_parameters.amg.preOrPostSmoothing == "pre" )
   {
-    GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetCycleNumSweeps( m_precond, toHYPRE_Int( m_parameters.amg.numSweeps ), 1 ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_BoomerAMGSetCycleNumSweeps( m_precond,
+                                        toHYPRE_Int( m_parameters.amg.numSweeps ),
+                                        1 ) );
     GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetCycleNumSweeps( m_precond, 0, 2 ) );
   }
   else if( m_parameters.amg.preOrPostSmoothing == "post" )
   {
     GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetCycleNumSweeps( m_precond, 0, 1 ) );
-    GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetCycleNumSweeps( m_precond, toHYPRE_Int( m_parameters.amg.numSweeps ), 2 ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_BoomerAMGSetCycleNumSweeps( m_precond,
+                                        toHYPRE_Int( m_parameters.amg.numSweeps ),
+                                        2 ) );
   }
 
   // Set strength of connection
   if( m_parameters.amg.threshold > 0.0 )
   {
-    GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetStrongThreshold( m_precond, m_parameters.amg.threshold ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_BoomerAMGSetStrongThreshold( m_precond, m_parameters.amg.threshold ) );
   }
 
   m_functions->setup = HYPRE_BoomerAMGSetup;
@@ -190,7 +210,8 @@ void HyprePreconditioner::createAMG()
   m_functions->destroy = HYPRE_BoomerAMGDestroy;
 }
 
-void HyprePreconditioner::createILU()
+void
+HyprePreconditioner::createILU()
 {
   GEOSX_LAI_CHECK_ERROR( HYPRE_ILUCreate( &m_precond ) );
 
@@ -201,7 +222,8 @@ void HyprePreconditioner::createILU()
 
   if( m_parameters.ilu.fill >= 0 )
   {
-    GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetLevelOfFill( m_precond, toHYPRE_Int( m_parameters.ilu.fill ) ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_ILUSetLevelOfFill( m_precond, toHYPRE_Int( m_parameters.ilu.fill ) ) );
   }
 
   m_functions->setup = HYPRE_ILUSetup;
@@ -209,23 +231,26 @@ void HyprePreconditioner::createILU()
   m_functions->destroy = HYPRE_ILUDestroy;
 }
 
-void HyprePreconditioner::createMGR( DofManager const * const dofManager )
+void
+HyprePreconditioner::createMGR( DofManager const * const dofManager )
 {
-  GEOSX_ERROR_IF( dofManager == nullptr, "MGR preconditioner requires a DofManager instance" );
+  GEOSX_ERROR_IF( dofManager == nullptr,
+                  "MGR preconditioner requires a DofManager instance" );
 
   GEOSX_LAI_CHECK_ERROR( HYPRE_MGRCreate( &m_precond ) );
 
   // Hypre's parameters to use MGR as a preconditioner
   GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetTol( m_precond, 0.0 ) );
   GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetMaxIter( m_precond, 1 ) );
-  GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetPrintLevel( m_precond, toHYPRE_Int( m_parameters.logLevel ) ) );
+  GEOSX_LAI_CHECK_ERROR(
+    HYPRE_MGRSetPrintLevel( m_precond, toHYPRE_Int( m_parameters.logLevel ) ) );
 
   array1d< localIndex > numComponentsPerField = dofManager->numComponentsPerField();
   array1d< localIndex > numLocalDofsPerField = dofManager->numLocalDofsPerField();
 
   m_auxData = std::unique_ptr< HyprePrecAuxData >( new HyprePrecAuxData() );
-  m_auxData->point_marker_array = computeLocalDofComponentLabels( numComponentsPerField,
-                                                                  numLocalDofsPerField );
+  m_auxData->point_marker_array =
+    computeLocalDofComponentLabels( numComponentsPerField, numLocalDofsPerField );
 
   if( m_parameters.logLevel >= 1 )
   {
@@ -271,7 +296,7 @@ void HyprePreconditioner::createMGR( DofManager const * const dofManager )
     mgr_bsize = 4;
 
     mgr_num_cindexes.resize( mgr_nlevels );
-    mgr_num_cindexes[0] = 1; // Eliminate displacement components
+    mgr_num_cindexes[0] = 1;  // Eliminate displacement components
 
     lv_cindexes.resize( mgr_nlevels );
     lv_cindexes[0].push_back( 3 );
@@ -282,17 +307,19 @@ void HyprePreconditioner::createMGR( DofManager const * const dofManager )
       mgr_cindexes[iLevel] = lv_cindexes[iLevel].data();
     }
 
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetCpointsByPointMarkerArray( m_precond, mgr_bsize, mgr_nlevels,
-                                                                  mgr_num_cindexes.data(),
-                                                                  mgr_cindexes.data(),
-                                                                  m_auxData->point_marker_array.data() ) );
-
+    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetCpointsByPointMarkerArray(
+      m_precond,
+      mgr_bsize,
+      mgr_nlevels,
+      mgr_num_cindexes.data(),
+      mgr_cindexes.data(),
+      m_auxData->point_marker_array.data() ) );
 
     mgr_level_interp_type.resize( mgr_nlevels );
-    mgr_level_interp_type[0] = 2; //diagonal scaling (Jacobi)
+    mgr_level_interp_type[0] = 2;  //diagonal scaling (Jacobi)
 
     mgr_coarse_grid_method.resize( mgr_nlevels );
-    mgr_coarse_grid_method[0] = 1; //diagonal sparsification
+    mgr_coarse_grid_method[0] = 1;  //diagonal sparsification
 
     GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGCreate( &aux_precond ) );
     GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetPrintLevel( aux_precond, 0 ) );
@@ -300,18 +327,19 @@ void HyprePreconditioner::createMGR( DofManager const * const dofManager )
     GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetTol( aux_precond, 0.0 ) );
     GEOSX_LAI_CHECK_ERROR( HYPRE_BoomerAMGSetRelaxOrder( aux_precond, 1 ) );
 
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetFRelaxMethod( m_precond, 2 ) ); // AMG V-cycle
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetNonCpointsToFpoints( m_precond, 1 ));
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetPMaxElmts( m_precond, 0 ));
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetLevelInterpType( m_precond, mgr_level_interp_type.data() ) );
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetCoarseGridMethod( m_precond, mgr_coarse_grid_method.data() ) );
+    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetFRelaxMethod( m_precond, 2 ) );  // AMG V-cycle
+    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetNonCpointsToFpoints( m_precond, 1 ) );
+    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetPMaxElmts( m_precond, 0 ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_MGRSetLevelInterpType( m_precond, mgr_level_interp_type.data() ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_MGRSetCoarseGridMethod( m_precond, mgr_coarse_grid_method.data() ) );
     GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetMaxGlobalsmoothIters( m_precond, 0 ) );
     GEOSX_LAI_CHECK_ERROR(
       HYPRE_MGRSetCoarseSolver( m_precond,
                                 (HYPRE_PtrToParSolverFcn)HYPRE_BoomerAMGSolve,
                                 (HYPRE_PtrToParSolverFcn)HYPRE_BoomerAMGSetup,
-                                aux_precond )
-      );
+                                aux_precond ) );
 
     m_functions->aux_destroy = HYPRE_BoomerAMGDestroy;
   }
@@ -331,25 +359,27 @@ void HyprePreconditioner::createMGR( DofManager const * const dofManager )
     // TODO:
     // - Experiment with block Jacobi for F-relaxation/interpolation of the reservoir densities
     // - Explore ways to reduce onto the pressure variable and use AMG for coarse-grid solve
-    HYPRE_Int numLabels = LvArray::integerConversion< HYPRE_Int >( numComponentsPerField[0] );
+    HYPRE_Int numLabels =
+      LvArray::integerConversion< HYPRE_Int >( numComponentsPerField[0] );
 
     mgr_bsize = numLabels;
     mgr_nlevels = 2;
 
     /* options for solvers at each level */
-    HYPRE_Int mgr_gsmooth_type = 16; // ILU(0)
+    HYPRE_Int mgr_gsmooth_type = 16;  // ILU(0)
     HYPRE_Int mgr_num_gsmooth_sweeps = 1;
 
     mgr_level_frelax_method.resize( mgr_nlevels );
-    mgr_level_frelax_method[0] = 0; // Jacobi
-    mgr_level_frelax_method[1] = 2; // AMG V-cycle
+    mgr_level_frelax_method[0] = 0;  // Jacobi
+    mgr_level_frelax_method[1] = 2;  // AMG V-cycle
 
     mgr_num_cindexes.resize( mgr_nlevels );
-    mgr_num_cindexes[0] = mgr_bsize - 1; // eliminate the last density reservoir block
-    mgr_num_cindexes[1] = mgr_bsize - 2; // eliminate pressure
+    mgr_num_cindexes[0] =
+      mgr_bsize - 1;                      // eliminate the last density reservoir block
+    mgr_num_cindexes[1] = mgr_bsize - 2;  // eliminate pressure
 
     lv_cindexes.resize( mgr_nlevels );
-    for( int cid=0; cid < mgr_bsize; cid++ )
+    for( int cid = 0; cid < mgr_bsize; cid++ )
     {
       // All points except the last density
       // which corresponds to the volume constraint equation
@@ -373,28 +403,32 @@ void HyprePreconditioner::createMGR( DofManager const * const dofManager )
       mgr_cindexes[iLevel] = lv_cindexes[iLevel].data();
     }
 
-
     GEOSX_LAI_CHECK_ERROR( HYPRE_ILUCreate( &aux_precond ) );
     GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetType( aux_precond, 0 ) );
     GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetLevelOfFill( aux_precond, 0 ) );
     GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetMaxIter( aux_precond, 1 ) );
     GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetTol( aux_precond, 0.0 ) );
 
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetCpointsByPointMarkerArray( m_precond, mgr_bsize, mgr_nlevels,
-                                                                  mgr_num_cindexes.data(),
-                                                                  mgr_cindexes.data(),
-                                                                  m_auxData->point_marker_array.data() ) );
+    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetCpointsByPointMarkerArray(
+      m_precond,
+      mgr_bsize,
+      mgr_nlevels,
+      mgr_num_cindexes.data(),
+      mgr_cindexes.data(),
+      m_auxData->point_marker_array.data() ) );
 
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetLevelFRelaxMethod( m_precond, mgr_level_frelax_method.data() ) );
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetNonCpointsToFpoints( m_precond, 1 ));
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetGlobalsmoothType( m_precond, mgr_gsmooth_type ) );
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetMaxGlobalsmoothIters( m_precond, mgr_num_gsmooth_sweeps ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_MGRSetLevelFRelaxMethod( m_precond, mgr_level_frelax_method.data() ) );
+    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetNonCpointsToFpoints( m_precond, 1 ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_MGRSetGlobalsmoothType( m_precond, mgr_gsmooth_type ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_MGRSetMaxGlobalsmoothIters( m_precond, mgr_num_gsmooth_sweeps ) );
     GEOSX_LAI_CHECK_ERROR(
       HYPRE_MGRSetCoarseSolver( m_precond,
                                 (HYPRE_PtrToParSolverFcn)HYPRE_ILUSolve,
                                 (HYPRE_PtrToParSolverFcn)HYPRE_ILUSetup,
-                                aux_precond )
-      );
+                                aux_precond ) );
     m_functions->aux_destroy = HYPRE_ILUDestroy;
   }
   else if( m_parameters.mgr.strategy == "CompositionalMultiphaseReservoir" )
@@ -419,14 +453,16 @@ void HyprePreconditioner::createMGR( DofManager const * const dofManager )
     // TODO:
     // - Use block Jacobi for F-relaxation/interpolation of the reservoir densities (2nd level)
 
-    HYPRE_Int numResLabels = LvArray::integerConversion< HYPRE_Int >( numComponentsPerField[0] );
-    HYPRE_Int numWellLabels = LvArray::integerConversion< HYPRE_Int >( numComponentsPerField[1] );
+    HYPRE_Int numResLabels =
+      LvArray::integerConversion< HYPRE_Int >( numComponentsPerField[0] );
+    HYPRE_Int numWellLabels =
+      LvArray::integerConversion< HYPRE_Int >( numComponentsPerField[1] );
 
     mgr_bsize = numResLabels + numWellLabels;
     mgr_nlevels = 3;
 
     /* options for solvers at each level */
-    HYPRE_Int mgr_gsmooth_type = 16; // ILU(0)
+    HYPRE_Int mgr_gsmooth_type = 16;  // ILU(0)
     HYPRE_Int mgr_num_gsmooth_sweeps = 1;
 
     mgr_level_interp_type.resize( mgr_nlevels );
@@ -435,17 +471,19 @@ void HyprePreconditioner::createMGR( DofManager const * const dofManager )
     mgr_level_interp_type[2] = 2;
 
     mgr_level_frelax_method.resize( mgr_nlevels );
-    mgr_level_frelax_method[0] = 0; // Jacobi
-    mgr_level_frelax_method[1] = 0; // Jacobi
-    mgr_level_frelax_method[2] = 2; // AMG V-cycle
+    mgr_level_frelax_method[0] = 0;  // Jacobi
+    mgr_level_frelax_method[1] = 0;  // Jacobi
+    mgr_level_frelax_method[2] = 2;  // AMG V-cycle
 
     mgr_num_cindexes.resize( mgr_nlevels );
-    mgr_num_cindexes[0] = mgr_bsize - 1; // eliminate the last density in the reservoir block
-    mgr_num_cindexes[1] = mgr_bsize - numResLabels + 1; // eliminate all densities reservoir block
-    mgr_num_cindexes[2] = mgr_bsize - numResLabels; // eliminate reservoir block
+    mgr_num_cindexes[0] =
+      mgr_bsize - 1;  // eliminate the last density in the reservoir block
+    mgr_num_cindexes[1] =
+      mgr_bsize - numResLabels + 1;                  // eliminate all densities reservoir block
+    mgr_num_cindexes[2] = mgr_bsize - numResLabels;  // eliminate reservoir block
 
     lv_cindexes.resize( mgr_nlevels );
-    for( int cid=0; cid < mgr_bsize; cid++ )
+    for( int cid = 0; cid < mgr_bsize; cid++ )
     {
       // All points except the last reservoir density
       // which corresponds to the volume constraint equation
@@ -478,27 +516,33 @@ void HyprePreconditioner::createMGR( DofManager const * const dofManager )
     }
 
     GEOSX_LAI_CHECK_ERROR( HYPRE_ILUCreate( &aux_precond ) );
-    GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetType( aux_precond, 0 ) ); // Block Jacobi - ILU
+    GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetType( aux_precond, 0 ) );  // Block Jacobi - ILU
     GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetLevelOfFill( aux_precond, 0 ) );
     GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetMaxIter( aux_precond, 1 ) );
     GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetTol( aux_precond, 0.0 ) );
 
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetCpointsByPointMarkerArray( m_precond, mgr_bsize, mgr_nlevels,
-                                                                  mgr_num_cindexes.data(),
-                                                                  mgr_cindexes.data(),
-                                                                  m_auxData->point_marker_array.data() ) );
+    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetCpointsByPointMarkerArray(
+      m_precond,
+      mgr_bsize,
+      mgr_nlevels,
+      mgr_num_cindexes.data(),
+      mgr_cindexes.data(),
+      m_auxData->point_marker_array.data() ) );
 
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetLevelFRelaxMethod( m_precond, mgr_level_frelax_method.data() ) );
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetNonCpointsToFpoints( m_precond, 1 ));
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetLevelInterpType( m_precond, mgr_level_interp_type.data() ) );
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetGlobalsmoothType( m_precond, mgr_gsmooth_type ) );
-    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetMaxGlobalsmoothIters( m_precond, mgr_num_gsmooth_sweeps ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_MGRSetLevelFRelaxMethod( m_precond, mgr_level_frelax_method.data() ) );
+    GEOSX_LAI_CHECK_ERROR( HYPRE_MGRSetNonCpointsToFpoints( m_precond, 1 ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_MGRSetLevelInterpType( m_precond, mgr_level_interp_type.data() ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_MGRSetGlobalsmoothType( m_precond, mgr_gsmooth_type ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_MGRSetMaxGlobalsmoothIters( m_precond, mgr_num_gsmooth_sweeps ) );
     GEOSX_LAI_CHECK_ERROR(
       HYPRE_MGRSetCoarseSolver( m_precond,
                                 (HYPRE_PtrToParSolverFcn)HYPRE_ILUSolve,
                                 (HYPRE_PtrToParSolverFcn)HYPRE_ILUSetup,
-                                aux_precond )
-      );
+                                aux_precond ) );
 
     m_functions->aux_destroy = HYPRE_ILUDestroy;
   }
@@ -511,7 +555,8 @@ void HyprePreconditioner::createMGR( DofManager const * const dofManager )
   m_functions->destroy = HYPRE_MGRDestroy;
 }
 
-void HyprePreconditioner::createILUT()
+void
+HyprePreconditioner::createILUT()
 {
   GEOSX_LAI_CHECK_ERROR( HYPRE_ILUCreate( &m_precond ) );
 
@@ -521,12 +566,13 @@ void HyprePreconditioner::createILUT()
 
   if( m_parameters.ilu.fill >= 0 )
   {
-    GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetLevelOfFill( m_precond, toHYPRE_Int( m_parameters.ilu.fill ) ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_ILUSetLevelOfFill( m_precond, toHYPRE_Int( m_parameters.ilu.fill ) ) );
   }
   if( m_parameters.ilu.threshold >= 0 )
   {
-    GEOSX_LAI_CHECK_ERROR( HYPRE_ILUSetDropThreshold( m_precond,
-                                                      m_parameters.ilu.threshold ) );
+    GEOSX_LAI_CHECK_ERROR(
+      HYPRE_ILUSetDropThreshold( m_precond, m_parameters.ilu.threshold ) );
   }
 
   m_functions->setup = HYPRE_ILUSetup;
@@ -534,14 +580,16 @@ void HyprePreconditioner::createILUT()
   m_functions->destroy = HYPRE_ILUDestroy;
 }
 
-void HyprePreconditioner::compute( Matrix const & mat )
+void
+HyprePreconditioner::compute( Matrix const & mat )
 {
   PreconditionerBase::compute( mat );
-  GEOSX_LAI_CHECK_ERROR( m_functions->setup( m_precond, mat.unwrapped(), nullptr, nullptr ) );
+  GEOSX_LAI_CHECK_ERROR(
+    m_functions->setup( m_precond, mat.unwrapped(), nullptr, nullptr ) );
 }
 
-void HyprePreconditioner::apply( Vector const & src,
-                                 Vector & dst ) const
+void
+HyprePreconditioner::apply( Vector const & src, Vector & dst ) const
 {
   GEOSX_LAI_ASSERT( ready() );
   GEOSX_LAI_ASSERT( src.ready() );
@@ -549,10 +597,14 @@ void HyprePreconditioner::apply( Vector const & src,
   GEOSX_LAI_ASSERT_EQ( src.globalSize(), this->numGlobalCols() );
   GEOSX_LAI_ASSERT_EQ( dst.globalSize(), this->numGlobalRows() );
 
-  m_functions->apply( m_precond, this->matrix().unwrapped(), src.unwrapped(), dst.unwrapped() );
+  m_functions->apply( m_precond,
+                      this->matrix().unwrapped(),
+                      src.unwrapped(),
+                      dst.unwrapped() );
 }
 
-void HyprePreconditioner::clear()
+void
+HyprePreconditioner::clear()
 {
   PreconditionerBase::clear();
   if( m_precond != nullptr && m_functions && m_functions->destroy != nullptr )
@@ -566,15 +618,17 @@ void HyprePreconditioner::clear()
   m_functions.reset();
 }
 
-HYPRE_Solver const & HyprePreconditioner::unwrapped() const
+HYPRE_Solver const &
+HyprePreconditioner::unwrapped() const
 {
   return m_precond;
 }
 
-HyprePrecFuncs const & HyprePreconditioner::unwrappedFuncs() const
+HyprePrecFuncs const &
+HyprePreconditioner::unwrappedFuncs() const
 {
   GEOSX_LAI_ASSERT( m_functions );
   return *m_functions;
 }
 
-}
+}  // namespace geosx

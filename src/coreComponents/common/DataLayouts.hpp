@@ -24,10 +24,8 @@
 
 namespace geosx
 {
-
 namespace nodes
 {
-
 #if defined( GEOSX_USE_CUDA )
 
 /// Node reference position permutation when using cuda.
@@ -65,25 +63,29 @@ using ACCELERATION_PERM = RAJA::PERM_IJ;
 #endif
 
 /// Node reference position unit stride dimension.
-static constexpr int REFERENCE_POSITION_USD = LvArray::typeManipulation::getStrideOneDimension( REFERENCE_POSITION_PERM {} );
+static constexpr int REFERENCE_POSITION_USD =
+  LvArray::typeManipulation::getStrideOneDimension( REFERENCE_POSITION_PERM {} );
 
 /// Node total displacement unit stride dimension.
-static constexpr int TOTAL_DISPLACEMENT_USD = LvArray::typeManipulation::getStrideOneDimension( TOTAL_DISPLACEMENT_PERM {} );
+static constexpr int TOTAL_DISPLACEMENT_USD =
+  LvArray::typeManipulation::getStrideOneDimension( TOTAL_DISPLACEMENT_PERM {} );
 
 /// Node incremental displacement unit stride dimension.
-static constexpr int INCR_DISPLACEMENT_USD = LvArray::typeManipulation::getStrideOneDimension( INCR_DISPLACEMENT_PERM {} );
+static constexpr int INCR_DISPLACEMENT_USD =
+  LvArray::typeManipulation::getStrideOneDimension( INCR_DISPLACEMENT_PERM {} );
 
 /// Node velocity unit stride dimension.
-static constexpr int VELOCITY_USD = LvArray::typeManipulation::getStrideOneDimension( VELOCITY_PERM {} );
+static constexpr int VELOCITY_USD =
+  LvArray::typeManipulation::getStrideOneDimension( VELOCITY_PERM {} );
 
 /// Node acceleration unit stride dimension.
-static constexpr int ACCELERATION_USD = LvArray::typeManipulation::getStrideOneDimension( ACCELERATION_PERM {} );
+static constexpr int ACCELERATION_USD =
+  LvArray::typeManipulation::getStrideOneDimension( ACCELERATION_PERM {} );
 
-} // namespace nodes
+}  // namespace nodes
 
 namespace cells
 {
-
 #if defined( GEOSX_USE_CUDA )
 
 /// Cell node map permutation when using cuda.
@@ -97,13 +99,13 @@ using NODE_MAP_PERMUTATION = RAJA::PERM_IJ;
 #endif
 
 /// Cell node map unit stride dimension.
-static constexpr int NODE_MAP_USD = LvArray::typeManipulation::getStrideOneDimension( NODE_MAP_PERMUTATION {} );
+static constexpr int NODE_MAP_USD =
+  LvArray::typeManipulation::getStrideOneDimension( NODE_MAP_PERMUTATION {} );
 
-} // namespace cells
+}  // namespace cells
 
 namespace solid
 {
-
 #if defined( GEOSX_USE_CUDA )
 
 /// Constitutive model stress permutation when using cuda.
@@ -123,13 +125,15 @@ using STIFFNESS_PERMUTATION = RAJA::PERM_IJK;
 #endif
 
 /// Constitutive model stress unit stride dimension.
-static constexpr int STRESS_USD = LvArray::typeManipulation::getStrideOneDimension( STRESS_PERMUTATION {} );
+static constexpr int STRESS_USD =
+  LvArray::typeManipulation::getStrideOneDimension( STRESS_PERMUTATION {} );
 
 /// Constitutive model stiffness unit stride dimension.
-static constexpr int STIFFNESS_USD = LvArray::typeManipulation::getStrideOneDimension( STIFFNESS_PERMUTATION {} );
+static constexpr int STIFFNESS_USD =
+  LvArray::typeManipulation::getStrideOneDimension( STIFFNESS_PERMUTATION {} );
 
-} // namespace solid
+}  // namespace solid
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif // GEOSX_COMMON_DATALAYOUTS_HPP_
+#endif  // GEOSX_COMMON_DATALAYOUTS_HPP_

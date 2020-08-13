@@ -24,7 +24,6 @@
 
 namespace geosx
 {
-
 class DofManager;
 class EpetraVector;
 class EpetraMatrix;
@@ -36,7 +35,6 @@ class LinearSolverParameters;
 class TrilinosSolver
 {
 public:
-
   /**
    * @brief Solver constructor, with parameter list reference
    *
@@ -59,35 +57,33 @@ public:
    *
    * Solve Ax=b with A an EpetraMatrix, x and b EpetraVector.
    */
-  void solve( EpetraMatrix & mat,
-              EpetraVector & sol,
-              EpetraVector & rhs,
-              DofManager const * const dofManager = nullptr );
+  void
+  solve( EpetraMatrix & mat,
+         EpetraVector & sol,
+         EpetraVector & rhs,
+         DofManager const * const dofManager = nullptr );
 
   /**
    * @brief Get the result of previous solve.
    * @return struct with last solve stats
    */
-  LinearSolverResult const & result()
+  LinearSolverResult const &
+  result()
   {
     return m_result;
   }
 
 private:
-
   LinearSolverParameters m_parameters;
   LinearSolverResult m_result;
 
-  void solve_direct( EpetraMatrix & mat,
-                     EpetraVector & sol,
-                     EpetraVector & rhs );
+  void
+  solve_direct( EpetraMatrix & mat, EpetraVector & sol, EpetraVector & rhs );
 
-  void solve_krylov( EpetraMatrix & mat,
-                     EpetraVector & sol,
-                     EpetraVector & rhs );
-
+  void
+  solve_krylov( EpetraMatrix & mat, EpetraVector & sol, EpetraVector & rhs );
 };
 
-} // end geosx namespace
+}  // namespace geosx
 
 #endif /* TRILINOSSOLVER_HPP_ */

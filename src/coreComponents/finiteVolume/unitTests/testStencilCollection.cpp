@@ -30,8 +30,18 @@ using namespace geosx;
 
 struct Cell
 {
-  GEOSX_HOST_DEVICE Cell(): er( 0 ), esr( 0 ), ei( 0 ) {}
-  GEOSX_HOST_DEVICE Cell( localIndex i ): er( 0 ), esr( 0 ), ei( i ) {}
+  GEOSX_HOST_DEVICE
+  Cell() :
+    er( 0 ),
+    esr( 0 ),
+    ei( 0 )
+  {}
+  GEOSX_HOST_DEVICE
+  Cell( localIndex i ) :
+    er( 0 ),
+    esr( 0 ),
+    ei( i )
+  {}
 
   localIndex er;
   localIndex esr;
@@ -39,7 +49,8 @@ struct Cell
 };
 
 template< typename INDEX, typename T >
-void makeStencilTPFA( localIndex size, FluxStencil< INDEX, T > & stencil )
+void
+makeStencilTPFA( localIndex size, FluxStencil< INDEX, T > & stencil )
 {
   stencil.reserve( size, 2 );
 
@@ -49,9 +60,9 @@ void makeStencilTPFA( localIndex size, FluxStencil< INDEX, T > & stencil )
   for( localIndex kf = 0; kf < size; ++kf )
   {
     cells[0] = INDEX( kf );
-    cells[1] = INDEX( kf+1 );
-    weights[0] = 1.0/2.0;
-    weights[1] = 1.0/2.0;
+    cells[1] = INDEX( kf + 1 );
+    weights[0] = 1.0 / 2.0;
+    weights[1] = 1.0 / 2.0;
 
     stencil.add( 2, cells.data(), weights.data(), kf );
   }
@@ -59,7 +70,8 @@ void makeStencilTPFA( localIndex size, FluxStencil< INDEX, T > & stencil )
 }
 
 template< typename LAMBDA >
-void testStencilLoop( LAMBDA && compute )
+void
+testStencilLoop( LAMBDA && compute )
 {
   FluxStencil< Cell, double > stencil;
   makeStencilTPFA( TEST_SIZE, stencil );
@@ -68,7 +80,7 @@ void testStencilLoop( LAMBDA && compute )
   array1d< double > out( TEST_SIZE );
   for( localIndex i = 0; i < TEST_SIZE; ++i )
   {
-    in[i] = double(i);
+    in[i] = double( i );
   }
 
   auto start = std::chrono::high_resolution_clock::now();
@@ -80,20 +92,19 @@ void testStencilLoop( LAMBDA && compute )
 
   for( localIndex kf = 0; kf < TEST_SIZE; ++kf )
   {
-    EXPECT_FLOAT_EQ( out[kf], (in[kf]/2 + in[kf+1]/2) );
+    EXPECT_FLOAT_EQ( out[kf], ( in[kf] / 2 + in[kf + 1] / 2 ) );
   }
 }
 
 TEST( testStencilCollection, noAcessorIterationTPFA )
 {
-  testStencilLoop( [&] ( arrayView1d< double const > const & dataIn,
-                         arrayView1d< double > const & dataOut,
-                         FluxStencil< Cell, double > const & stencil )
-  {
-    ArrayOfArraysView< FluxStencil< Cell, double >::Entry const, true > const & connections = stencil.getConnections();
+  testStencilLoop( [&]( arrayView1d< double const > const & dataIn,
+                        arrayView1d< double > const & dataOut,
+                        FluxStencil< Cell, double > const & stencil ) {
+    ArrayOfArraysView< FluxStencil< Cell, double >::Entry const, true > const & connections =
+      stencil.getConnections();
 
-    forAll< serialPolicy >( connections.size(), [=] ( localIndex iconn )
-    {
+    forAll< serialPolicy >( connections.size(), [=]( localIndex iconn ) {
       for( localIndex i = 0; i < connections.sizeOfArray( iconn ); ++i )
       {
         FluxStencil< Cell, double >::Entry const & entry = connections( iconn, i );
@@ -103,7 +114,8 @@ TEST( testStencilCollection, noAcessorIterationTPFA )
   } );
 }
 
-int main( int argc, char * argv[] )
+int
+main( int argc, char * argv[] )
 {
   geosx::basicSetup( argc, argv );
 

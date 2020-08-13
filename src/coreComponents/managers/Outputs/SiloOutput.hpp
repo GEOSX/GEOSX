@@ -21,10 +21,8 @@
 
 #include "OutputBase.hpp"
 
-
 namespace geosx
 {
-
 /**
  * @class SiloOutput
  *
@@ -34,8 +32,7 @@ class SiloOutput : public OutputBase
 {
 public:
   /// @copydoc geosx::dataRepository::Group::Group(std::string const & name, Group * const parent)
-  SiloOutput( std::string const & name,
-              Group * const parent );
+  SiloOutput( std::string const & name, Group * const parent );
 
   /// Destructor
   virtual ~SiloOutput() override;
@@ -44,28 +41,34 @@ public:
    * @brief Catalog name interface
    * @return This type's catalog name
    */
-  static string CatalogName() { return "Silo"; }
+  static string
+  CatalogName()
+  {
+    return "Silo";
+  }
 
   /**
    * @brief Writes out a Silo plot file.
    * @copydoc EventBase::Execute()
    */
-  virtual void Execute( real64 const time_n,
-                        real64 const dt,
-                        integer const cycleNumber,
-                        integer const eventCounter,
-                        real64 const eventProgress,
-                        dataRepository::Group * domain ) override;
+  virtual void
+  Execute( real64 const time_n,
+           real64 const dt,
+           integer const cycleNumber,
+           integer const eventCounter,
+           real64 const eventProgress,
+           dataRepository::Group * domain ) override;
 
   /**
    * @brief Writes out a Silo plot file at the end of the simulation.
    * @copydoc ExecutableGroup::Cleanup()
    */
-  virtual void Cleanup( real64 const time_n,
-                        integer const cycleNumber,
-                        integer const eventCounter,
-                        real64 const eventProgress,
-                        dataRepository::Group * domain ) override
+  virtual void
+  Cleanup( real64 const time_n,
+           integer const cycleNumber,
+           integer const eventCounter,
+           real64 const eventProgress,
+           dataRepository::Group * domain ) override
   {
     Execute( time_n, 0, cycleNumber, eventCounter, eventProgress, domain );
   }
@@ -90,9 +93,7 @@ private:
   integer m_writeCellElementMesh;
   integer m_writeFaceElementMesh;
   integer m_plotLevel;
-
 };
-
 
 } /* namespace geosx */
 

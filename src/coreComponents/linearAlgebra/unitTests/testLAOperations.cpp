@@ -26,7 +26,8 @@
 
 using namespace geosx;
 
-static real64 constexpr machinePrecision = 20.0 * std::numeric_limits< real64 >::epsilon();
+static real64 constexpr machinePrecision =
+  20.0 * std::numeric_limits< real64 >::epsilon();
 
 template< typename LAI >
 class LAOperationsTest : public ::testing::Test
@@ -143,7 +144,7 @@ TYPED_TEST_P( LAOperationsTest, VectorFunctions )
   // Testing add/set single element
   x.open();
   x.set( offset, -1 );
-  x.close(); // set/add can't be interchanged
+  x.close();  // set/add can't be interchanged
   x.open();
   x.add( offset + 1, 10 );
   x.close();
@@ -200,18 +201,18 @@ TYPED_TEST_P( LAOperationsTest, VectorFunctions )
   z.set( 3.0 );
 
   real64 const dotprod = x.dot( y );
-  EXPECT_EQ( dotprod, 2 * y.globalSize() ); // sum_size 2
+  EXPECT_EQ( dotprod, 2 * y.globalSize() );  // sum_size 2
 
   y.axpy( 2.0, x );
   for( globalIndex i = y.ilower(); i < y.iupper(); ++i )
   {
-    EXPECT_EQ( y.get( i ), 4.0 ); // 2*1 + 2
+    EXPECT_EQ( y.get( i ), 4.0 );  // 2*1 + 2
   }
 
   z.axpby( 2.0, x, 3.0 );
   for( globalIndex i = z.ilower(); i < z.iupper(); ++i )
   {
-    EXPECT_EQ( z.get( i ), 11.0 ); // 2*1 + 3*3
+    EXPECT_EQ( z.get( i ), 11.0 );  // 2*1 + 3*3
   }
 
   // Testing norms
@@ -221,7 +222,7 @@ TYPED_TEST_P( LAOperationsTest, VectorFunctions )
   {
     globalIndex const inds2[2] = { 0, 1 };
     real64 const vals2[2] = { 3.0, -4.0 };
-    x.set( inds2, vals2, 2 ); // 3, -4, 0
+    x.set( inds2, vals2, 2 );  // 3, -4, 0
   }
   x.close();
   EXPECT_EQ( x.norm1(), 7.0 );
@@ -482,7 +483,9 @@ TYPED_TEST_P( LAOperationsTest, RectangularMatrixOperations )
 
   EXPECT_DOUBLE_EQ( a, static_cast< real64 >( nRows ) );
   EXPECT_DOUBLE_EQ( b, static_cast< real64 >( nCols ) );
-  EXPECT_DOUBLE_EQ( c, std::sqrt( static_cast< real64 >( nRows * ( nRows + 1 ) * ( 2 * nRows + 1 ) ) / 3.0 ) );
+  EXPECT_DOUBLE_EQ(
+    c,
+    std::sqrt( static_cast< real64 >( nRows * ( nRows + 1 ) * ( 2 * nRows + 1 ) ) / 3.0 ) );
 }
 
 REGISTER_TYPED_TEST_SUITE_P( LAOperationsTest,
@@ -504,7 +507,8 @@ INSTANTIATE_TYPED_TEST_SUITE_P( Petsc, LAOperationsTest, PetscInterface, );
 
 ///////////////////////////////////////////////////////////////////////////////////////
 
-LinearSolverParameters params_Direct()
+LinearSolverParameters
+params_Direct()
 {
   LinearSolverParameters parameters;
   parameters.solverType = "direct";
@@ -512,7 +516,8 @@ LinearSolverParameters params_Direct()
   return parameters;
 }
 
-LinearSolverParameters params_GMRES_ILU()
+LinearSolverParameters
+params_GMRES_ILU()
 {
   LinearSolverParameters parameters;
   parameters.krylov.relTolerance = 1e-8;
@@ -523,7 +528,8 @@ LinearSolverParameters params_GMRES_ILU()
   return parameters;
 }
 
-LinearSolverParameters params_GMRES_AMG()
+LinearSolverParameters
+params_GMRES_AMG()
 {
   LinearSolverParameters parameters;
   parameters.krylov.relTolerance = 1e-8;
@@ -535,7 +541,8 @@ LinearSolverParameters params_GMRES_AMG()
   return parameters;
 }
 
-LinearSolverParameters params_CG_AMG()
+LinearSolverParameters
+params_CG_AMG()
 {
   LinearSolverParameters parameters;
   parameters.krylov.relTolerance = 1e-8;
@@ -552,17 +559,16 @@ template< typename LAI >
 class SolverTestBase : public ::testing::Test
 {
 public:
-
   using Matrix = typename LAI::ParallelMatrix;
   using Vector = typename LAI::ParallelVector;
   using Solver = typename LAI::LinearSolver;
 
 protected:
-
   Matrix matrix;
   real64 cond_est = 1.0;
 
-  void test( LinearSolverParameters const & params )
+  void
+  test( LinearSolverParameters const & params )
   {
     // Create a random "true" solution vector
     Vector sol_true;
@@ -597,14 +603,13 @@ template< typename LAI >
 class SolverTestLaplace2D : public SolverTestBase< LAI >
 {
 public:
-
   using Base = SolverTestBase< LAI >;
   using Matrix = typename Base::Matrix;
   using Vector = typename Base::Vector;
 
 protected:
-
-  void SetUp() override
+  void
+  SetUp() override
   {
     globalIndex constexpr n = 100;
     compute2DLaplaceOperator( MPI_COMM_GEOSX, n, this->matrix );
@@ -631,10 +636,7 @@ TYPED_TEST_P( SolverTestLaplace2D, CG_AMG )
   this->test( params_CG_AMG() );
 }
 
-REGISTER_TYPED_TEST_SUITE_P( SolverTestLaplace2D,
-                             Direct,
-                             GMRES_ILU,
-                             CG_AMG );
+REGISTER_TYPED_TEST_SUITE_P( SolverTestLaplace2D, Direct, GMRES_ILU, CG_AMG );
 
 #ifdef GEOSX_USE_TRILINOS
 INSTANTIATE_TYPED_TEST_SUITE_P( Trilinos, SolverTestLaplace2D, TrilinosInterface, );
@@ -654,21 +656,27 @@ template< typename LAI >
 class SolverTestElasticity2D : public SolverTestBase< LAI >
 {
 public:
-
   using Base = SolverTestBase< LAI >;
   using Matrix = typename Base::Matrix;
   using Vector = typename Base::Vector;
 
 protected:
-
-  void SetUp() override
+  void
+  SetUp() override
   {
     globalIndex constexpr n = 100;
-    compute2DElasticityOperator( MPI_COMM_GEOSX, 1.0, 1.0, n, n, 10000., 0.2, this->matrix );
+    compute2DElasticityOperator( MPI_COMM_GEOSX,
+                                 1.0,
+                                 1.0,
+                                 n,
+                                 n,
+                                 10000.,
+                                 0.2,
+                                 this->matrix );
 
     // Impose Dirichlet boundary conditions: fix domain bottom (first 2*(nCellsX + 1) rows of matrix)
     this->matrix.open();
-    for( globalIndex iRow = 0; iRow < 2 * (n + 1); ++iRow )
+    for( globalIndex iRow = 0; iRow < 2 * ( n + 1 ); ++iRow )
     {
       if( this->matrix.getLocalRowID( iRow ) >= 0 )
       {
@@ -676,7 +684,8 @@ protected:
       }
     }
     this->matrix.close();
-    this->cond_est = 1e3; // not a true condition number estimate, but enough to pass tests
+    this->cond_est =
+      1e3;  // not a true condition number estimate, but enough to pass tests
   }
 };
 
@@ -695,12 +704,12 @@ TYPED_TEST_P( SolverTestElasticity2D, GMRES_AMG )
   this->test( params );
 }
 
-REGISTER_TYPED_TEST_SUITE_P( SolverTestElasticity2D,
-                             Direct,
-                             GMRES_AMG );
+REGISTER_TYPED_TEST_SUITE_P( SolverTestElasticity2D, Direct, GMRES_AMG );
 
 #ifdef GEOSX_USE_TRILINOS
-INSTANTIATE_TYPED_TEST_SUITE_P( Trilinos, SolverTestElasticity2D, TrilinosInterface, );
+INSTANTIATE_TYPED_TEST_SUITE_P( Trilinos,
+                                SolverTestElasticity2D,
+                                TrilinosInterface, );
 #endif
 
 #ifdef GEOSX_USE_HYPRE
@@ -787,7 +796,8 @@ INSTANTIATE_TYPED_TEST_SUITE_P( Petsc, SolverTestElasticity2D, PetscInterface, )
 //#endif
 ///////////////////////////////////////////////////////////////////////////////////////
 
-int main( int argc, char * * argv )
+int
+main( int argc, char ** argv )
 {
   ::testing::InitGoogleTest( &argc, argv );
 

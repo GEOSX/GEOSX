@@ -29,15 +29,17 @@ class SolverBase;
 class PhysicsSolverManager : public dataRepository::Group
 {
 public:
-  PhysicsSolverManager( std::string const & name,
-                        Group * const parent );
+  PhysicsSolverManager( std::string const & name, Group * const parent );
 
   virtual ~PhysicsSolverManager() override;
 
-  virtual Group * CreateChild( string const & childKey, string const & childName ) override;
+  virtual Group *
+  CreateChild( string const & childKey,
+               string const & childName ) override;
 
   /// This function is used to expand any catalogs in the data structure
-  virtual void ExpandObjectCatalogs() override;
+  virtual void
+  ExpandObjectCatalogs() override;
 
   struct viewKeyStruct
   {
@@ -45,10 +47,19 @@ public:
   } viewKeys;
 
   struct groupKeyStruct
-  {} groupKeys;
+  {
+  } groupKeys;
 
-  R1Tensor const & gravityVector() const { return m_gravityVector; }
-  R1Tensor & gravityVector()       { return m_gravityVector; }
+  R1Tensor const &
+  gravityVector() const
+  {
+    return m_gravityVector;
+  }
+  R1Tensor &
+  gravityVector()
+  {
+    return m_gravityVector;
+  }
 
 private:
   PhysicsSolverManager() = delete;

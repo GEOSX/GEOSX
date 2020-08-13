@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 class ElementRegionManager;
 
 /**
@@ -35,7 +34,6 @@ template< typename BASETYPE >
 class ToElementRelation
 {
 public:
-
   /// The type of the underlying relationship storage object.
   using base_type = BASETYPE;
 
@@ -50,14 +48,16 @@ public:
    * @param newdims A parameter pack of appropriate size to resize each
    *                dimension of the relationship storage.
    */
-  template< typename ... DIMS >
-  void resize( DIMS... newdims );
+  template< typename... DIMS >
+  void
+  resize( DIMS... newdims );
 
   /**
    * @brief Get the current size of the relationship storage.
    * @return The current size of the relationship storage.
    */
-  localIndex size() const
+  localIndex
+  size() const
   {
     return m_toElementRegion.size();
   }
@@ -67,7 +67,8 @@ public:
    * @param dim The dimension to get the storage size of.
    * @return The dimension size
    */
-  localIndex size( int const dim ) const
+  localIndex
+  size( int const dim ) const
   {
     return m_toElementRegion.size( dim );
   }
@@ -76,7 +77,8 @@ public:
    * @brief Set the ElementRegionManager.
    * @param input The ElementRegionManager to set.
    */
-  void setElementRegionManager( ElementRegionManager const * const input )
+  void
+  setElementRegionManager( ElementRegionManager const * const input )
   {
     m_elemRegionManager = input;
   }
@@ -85,7 +87,8 @@ public:
    * @brief Get the ElementRegionManager.
    * @return The current ElementRegionManager.
    */
-  ElementRegionManager const * getElementRegionManager() const
+  ElementRegionManager const *
+  getElementRegionManager() const
   {
     return m_elemRegionManager;
   }
@@ -103,7 +106,7 @@ public:
 
 /// @cond DO_NOT_DOCUMENT
 template< typename BASETYPE >
-ToElementRelation< BASETYPE >::ToElementRelation():
+ToElementRelation< BASETYPE >::ToElementRelation() :
   m_toElementRegion(),
   m_toElementSubRegion(),
   m_toElementIndex(),
@@ -115,12 +118,13 @@ ToElementRelation< BASETYPE >::~ToElementRelation()
 {}
 
 template< typename BASETYPE >
-template< typename ... DIMS >
-void ToElementRelation< BASETYPE >::resize( DIMS... newdims )
+template< typename... DIMS >
+void
+ToElementRelation< BASETYPE >::resize( DIMS... newdims )
 {
-  m_toElementRegion.resize( newdims ... );
-  m_toElementSubRegion.resize( newdims ... );
-  m_toElementIndex.resize( newdims ... );
+  m_toElementRegion.resize( newdims... );
+  m_toElementSubRegion.resize( newdims... );
+  m_toElementIndex.resize( newdims... );
 }
 /// @endcond
 
@@ -139,11 +143,12 @@ typedef ToElementRelation< ArrayOfArrays< localIndex > > OrderedVariableToManyEl
  * @param esr The element subregion to remove.
  * @param ei The element index to remove.
  */
-void erase( OrderedVariableToManyElementRelation & relation,
-            localIndex const firstIndex,
-            localIndex const er,
-            localIndex const esr,
-            localIndex const ei );
+void
+erase( OrderedVariableToManyElementRelation & relation,
+       localIndex const firstIndex,
+       localIndex const er,
+       localIndex const esr,
+       localIndex const ei );
 
 /**
  * @brief Insert an element relation for an object in the relation.
@@ -154,13 +159,12 @@ void erase( OrderedVariableToManyElementRelation & relation,
  * @param esr The element subregion to insert.
  * @param ei The element index to insert.
  */
-void insert( OrderedVariableToManyElementRelation & relation,
-             localIndex const firstIndex,
-             localIndex const er,
-             localIndex const esr,
-             localIndex const ei );
-
-
+void
+insert( OrderedVariableToManyElementRelation & relation,
+        localIndex const firstIndex,
+        localIndex const er,
+        localIndex const esr,
+        localIndex const ei );
 
 } /* namespace geosx */
 

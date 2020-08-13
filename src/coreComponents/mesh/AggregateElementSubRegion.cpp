@@ -12,7 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-
 #include "AggregateElementSubRegion.hpp"
 
 #include "NodeManager.hpp"
@@ -20,23 +19,25 @@
 
 namespace geosx
 {
-AggregateElementSubRegion::AggregateElementSubRegion( string const & name,
-                                                      dataRepository::Group * const parent ):
+AggregateElementSubRegion::AggregateElementSubRegion(
+  string const & name,
+  dataRepository::Group * const parent ) :
   ElementSubRegionBase( name, parent )
 {}
 
 AggregateElementSubRegion::~AggregateElementSubRegion()
 {}
 
-void AggregateElementSubRegion::CreateFromFineToCoarseMap( localIndex nbAggregates,
-                                                           array1d< localIndex > const & fineToCoarse,
-                                                           array1d< R1Tensor > const & barycenters )
+void
+AggregateElementSubRegion::CreateFromFineToCoarseMap(
+  localIndex nbAggregates,
+  array1d< localIndex > const & fineToCoarse,
+  array1d< R1Tensor > const & barycenters )
 {
   m_elementCenter.resize( barycenters.size( 0 ), barycenters.size( 1 ) );
-  LvArray::forValuesInSliceWithIndices( m_elementCenter.toSlice(), [&] ( double & value, localIndex i, localIndex j )
-  {
-    value = barycenters[ i ][ j ];
-  } );
+  LvArray::forValuesInSliceWithIndices(
+    m_elementCenter.toSlice(),
+    [&]( double & value, localIndex i, localIndex j ) { value = barycenters[i][j]; } );
 
   m_nbFineCellsPerCoarseCell.resize( nbAggregates + 1 );
   m_fineToCoarse.resize( fineToCoarse.size() );
@@ -50,7 +51,8 @@ void AggregateElementSubRegion::CreateFromFineToCoarseMap( localIndex nbAggregat
   /// Second loop to cumulate the number of fine cells
   for( localIndex coarseCell = 1; coarseCell <= nbAggregates; coarseCell++ )
   {
-    m_nbFineCellsPerCoarseCell[coarseCell] += m_nbFineCellsPerCoarseCell[coarseCell-1];
+    m_nbFineCellsPerCoarseCell[coarseCell] +=
+      m_nbFineCellsPerCoarseCell[coarseCell - 1];
   }
 
   /// Third loop to order the index of the fine cells
@@ -58,8 +60,8 @@ void AggregateElementSubRegion::CreateFromFineToCoarseMap( localIndex nbAggregat
   for( localIndex fineCell = 0; fineCell < fineToCoarse.size(); fineCell++ )
   {
     localIndex coarseCell = fineToCoarse[fineCell];
-    m_fineToCoarse[m_nbFineCellsPerCoarseCell[coarseCell] + offset[coarseCell]++] = fineCell;
-
+    m_fineToCoarse[m_nbFineCellsPerCoarseCell[coarseCell] + offset[coarseCell]++] =
+      fineCell;
   }
 }
-}
+}  // namespace geosx

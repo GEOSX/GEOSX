@@ -16,7 +16,6 @@
  * @file HaltEvent.hpp
  */
 
-
 #ifndef GEOSX_MANAGERS_EVENTS_HALTEVENT_HPP_
 #define GEOSX_MANAGERS_EVENTS_HALTEVENT_HPP_
 
@@ -24,7 +23,6 @@
 
 namespace geosx
 {
-
 /**
  * @class HaltEvent
  * An event type that is designed to look at the external clock.
@@ -38,8 +36,7 @@ public:
    * @param name The name of the object in the data repository.
    * @param parent The parent of this object in the data repository.
    **/
-  HaltEvent( const std::string & name,
-             Group * const parent );
+  HaltEvent( const std::string & name, Group * const parent );
 
   /// Destructor
   virtual ~HaltEvent() override;
@@ -48,7 +45,11 @@ public:
    * @brief Catalog name interface.
    * @return This type's catalog name.
    **/
-  static string CatalogName() { return "HaltEvent"; }
+  static string
+  CatalogName()
+  {
+    return "HaltEvent";
+  }
 
   /**
    * @copydoc EventBase::EstimateEventTiming()
@@ -56,10 +57,11 @@ public:
    * if the event is triggered it will set a flag, which will
    * instruct the code to exit.  This is useful for managing walltime
    */
-  virtual void EstimateEventTiming( real64 const time,
-                                    real64 const dt,
-                                    integer const cycle,
-                                    dataRepository::Group * domain ) override;
+  virtual void
+  EstimateEventTiming( real64 const time,
+                       real64 const dt,
+                       integer const cycle,
+                       dataRepository::Group * domain ) override;
   /// External start time
   real64 m_externalStartTime;
   /// External last time
@@ -77,7 +79,6 @@ public:
     dataRepository::ViewKey maxRuntime = { "maxRuntime" };
   } haltEventViewKeys;
   /// @endcond
-
 };
 
 } /* namespace geosx */

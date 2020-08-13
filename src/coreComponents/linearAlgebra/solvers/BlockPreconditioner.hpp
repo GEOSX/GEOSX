@@ -26,7 +26,6 @@
 
 namespace geosx
 {
-
 /**
  * @brief Type of Schur complement approximation used
  *
@@ -44,9 +43,9 @@ enum class SchurComplementOption
  */
 enum class BlockScalingOption
 {
-  None,          //!< No scaling
-  FrobeniusNorm, //!< Equilibrate Frobenius norm of the diagonal blocks
-  UserProvided   //!< User-provided scaling
+  None,           //!< No scaling
+  FrobeniusNorm,  //!< Equilibrate Frobenius norm of the diagonal blocks
+  UserProvided    //!< User-provided scaling
 };
 
 /**
@@ -54,9 +53,9 @@ enum class BlockScalingOption
  */
 enum class BlockShapeOption
 {
-  Diagonal,            //!< (D)^{-1}
-  UpperTriangular,     //!< (DU)^{-1}
-  LowerUpperTriangular //!< (LDU)^{-1}
+  Diagonal,             //!< (D)^{-1}
+  UpperTriangular,      //!< (DU)^{-1}
+  LowerUpperTriangular  //!< (LDU)^{-1}
 };
 
 /*
@@ -99,7 +98,6 @@ template< typename LAI >
 class BlockPreconditioner : public PreconditionerBase< LAI >
 {
 public:
-
   /// Alias for the base type
   using Base = PreconditionerBase< LAI >;
 
@@ -135,10 +133,11 @@ public:
    *       of the two blocks are non-overlapping and their union includes all
    *       DoF components in the monolithic system.
    */
-  void setupBlock( localIndex const blockIndex,
-                   std::vector< DofManager::SubComponent > blockDofs,
-                   std::unique_ptr< PreconditionerBase< LAI > > solver,
-                   real64 const scaling = 1.0 );
+  void
+  setupBlock( localIndex const blockIndex,
+              std::vector< DofManager::SubComponent > blockDofs,
+              std::unique_ptr< PreconditionerBase< LAI > > solver,
+              real64 const scaling = 1.0 );
 
   /**
    * @name PreconditionerBase interface methods
@@ -147,33 +146,37 @@ public:
 
   using PreconditionerBase< LAI >::compute;
 
-  virtual void compute( Matrix const & mat,
-                        DofManager const & dofManager ) override;
+  virtual void
+  compute( Matrix const & mat, DofManager const & dofManager ) override;
 
-  virtual void apply( Vector const & src, Vector & dst ) const override;
+  virtual void
+  apply( Vector const & src, Vector & dst ) const override;
 
-  virtual void clear() override;
+  virtual void
+  clear() override;
 
   ///@}
 
 private:
-
   /**
    * @brief Initialize/resize internal data structures for a new linear system.
    * @param mat the new system matrix
    * @param dofManager the new dof manager
    */
-  void reinitialize( Matrix const & mat, DofManager const & dofManager );
+  void
+  reinitialize( Matrix const & mat, DofManager const & dofManager );
 
   /**
    * @brief Apply block scaling to system blocks (which must be already extracted).
    */
-  void applyBlockScaling();
+  void
+  applyBlockScaling();
 
   /**
    * @brief Compute and apply the Schur complement to (1,1)-block.
    */
-  void computeSchurComplement();
+  void
+  computeSchurComplement();
 
   /// Shape of the block preconditioner
   BlockShapeOption m_shapeOption;
@@ -209,6 +212,6 @@ private:
   mutable BlockVector< Vector > m_sol;
 };
 
-} //namespace geosx
+}  //namespace geosx
 
-#endif //GEOSX_LINEARALGEBRA_SOLVERS_BLOCKPRECONDITIONER_HPP_
+#endif  //GEOSX_LINEARALGEBRA_SOLVERS_BLOCKPRECONDITIONER_HPP_

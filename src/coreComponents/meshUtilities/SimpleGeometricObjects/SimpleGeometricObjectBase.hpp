@@ -34,7 +34,7 @@ namespace keys
 {
 string const geometricObjects( "GeometricObjects" );
 }
-}
+}  // namespace dataRepository
 
 /**
  * @class SimpleGeometricObjectBase
@@ -43,7 +43,6 @@ string const geometricObjects( "GeometricObjects" );
 class SimpleGeometricObjectBase : public dataRepository::Group
 {
 public:
-
   /**
    * @name Constructor / Destructor
    */
@@ -73,17 +72,25 @@ public:
    * @brief Get the catalog name.
    * @return the name of this class in the catalog
    */
-  static string CatalogName() { return "SimpleGeometricObjectBase"; }
+  static string
+  CatalogName()
+  {
+    return "SimpleGeometricObjectBase";
+  }
 
   /**
    * @brief Type alias for catalog interface used by this class.
    */
-  using CatalogInterface = dataRepository::CatalogInterface< SimpleGeometricObjectBase, std::string const &, Group * const >;
+  using CatalogInterface =
+    dataRepository::CatalogInterface< SimpleGeometricObjectBase,
+                                      std::string const &,
+                                      Group * const >;
 
   /**
    * @copydoc CatalogName()
    */
-  static CatalogInterface::CatalogType & GetCatalog();
+  static CatalogInterface::CatalogType &
+  GetCatalog();
 
   ///@}
 
@@ -92,10 +99,9 @@ public:
    * @param[in] coord the coordinates to test
    * @return true if the coordinates are in the object, false otherwise
    */
-  virtual bool IsCoordInObject( const R1Tensor & coord ) const = 0;
-
+  virtual bool
+  IsCoordInObject( const R1Tensor & coord ) const = 0;
 };
 
-
-}
+}  // namespace geosx
 #endif /* SIMPLEGEOMETRICOBJECTS_H_ */

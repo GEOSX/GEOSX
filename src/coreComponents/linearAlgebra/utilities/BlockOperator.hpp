@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 /**
  * @brief Concrete representation of a block operator.
  * @tparam VECTOR type of vector that sub-blocks of this view can operate on
@@ -37,7 +36,6 @@ template< typename VECTOR, typename OPERATOR >
 class BlockOperator : public BlockOperatorView< VECTOR, OPERATOR >
 {
 public:
-
   /// Alias for base type
   using Base = BlockOperatorView< VECTOR, OPERATOR >;
 
@@ -69,23 +67,25 @@ public:
   virtual ~BlockOperator() override = default;
 
 private:
-
-  void setPointers();
+  void
+  setPointers();
 
   /// Actual storage for blocks
   array2d< OPERATOR > m_operatorStorage;
 };
 
 template< typename VECTOR, typename OPERATOR >
-BlockOperator< VECTOR, OPERATOR >::BlockOperator( localIndex const nRows, localIndex const nCols )
-  : Base( nRows, nCols ),
+BlockOperator< VECTOR, OPERATOR >::BlockOperator( localIndex const nRows,
+                                                  localIndex const nCols ) :
+  Base( nRows, nCols ),
   m_operatorStorage( nRows, nCols )
 {
   setPointers();
 }
 
 template< typename VECTOR, typename OPERATOR >
-void BlockOperator< VECTOR, OPERATOR >::setPointers()
+void
+BlockOperator< VECTOR, OPERATOR >::setPointers()
 {
   GEOSX_LAI_ASSERT_EQ( this->numBlockRows(), m_operatorStorage.size( 0 ) );
   GEOSX_LAI_ASSERT_EQ( this->numBlockCols(), m_operatorStorage.size( 1 ) );
@@ -99,21 +99,21 @@ void BlockOperator< VECTOR, OPERATOR >::setPointers()
 }
 
 template< typename VECTOR, typename OPERATOR >
-BlockOperator< VECTOR, OPERATOR >::BlockOperator( BlockOperator const & rhs )
-  : Base( rhs ),
+BlockOperator< VECTOR, OPERATOR >::BlockOperator( BlockOperator const & rhs ) :
+  Base( rhs ),
   m_operatorStorage( rhs.m_operatorStorage )
 {
   setPointers();
 }
 
 template< typename VECTOR, typename OPERATOR >
-BlockOperator< VECTOR, OPERATOR >::BlockOperator( BlockOperator && rhs )
-  : Base( std::move( rhs ) ),
+BlockOperator< VECTOR, OPERATOR >::BlockOperator( BlockOperator && rhs ) :
+  Base( std::move( rhs ) ),
   m_operatorStorage( std::move( rhs.m_operatorStorage ) )
 {
   setPointers();
 }
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif //GEOSX_LINEARALGEBRA_UTILITIES_BLOCKOPERATOR_HPP_
+#endif  //GEOSX_LINEARALGEBRA_UTILITIES_BLOCKOPERATOR_HPP_

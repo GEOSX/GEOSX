@@ -22,8 +22,7 @@
 
 namespace geosx
 {
-
-WellElementSubRegion::WellElementSubRegion( string const & name, Group * const parent ):
+WellElementSubRegion::WellElementSubRegion( string const & name, Group * const parent ) :
   ElementSubRegionBase( name, parent ),
   m_wellControlsName( "" ),
   m_toNodesRelation(),
@@ -32,12 +31,14 @@ WellElementSubRegion::WellElementSubRegion( string const & name, Group * const p
   m_topRank( -1 ),
   m_searchDepth( 10 )
 {
-
   registerWrapper( viewKeyStruct::wellControlsString, &m_wellControlsName );
   registerWrapper( viewKeyStruct::wellNodeListString, &m_toNodesRelation );
-  registerWrapper( viewKeyStruct::nextWellElementIndexString, &m_nextWellElementIndex );
-  registerWrapper( viewKeyStruct::nextWellElementIndexGlobalString, &m_nextWellElementIndexGlobal );
-  registerWrapper( viewKeyStruct::topWellElementIndexString, &m_topWellElementIndex );
+  registerWrapper( viewKeyStruct::nextWellElementIndexString,
+                   &m_nextWellElementIndex );
+  registerWrapper( viewKeyStruct::nextWellElementIndexGlobalString,
+                   &m_nextWellElementIndexGlobal );
+  registerWrapper( viewKeyStruct::topWellElementIndexString,
+                   &m_topWellElementIndex );
   registerWrapper( viewKeyStruct::topRankString, &m_topRank );
   registerWrapper( viewKeyStruct::radiusString, &m_radius );
 
@@ -49,19 +50,17 @@ WellElementSubRegion::WellElementSubRegion( string const & name, Group * const p
   m_elementTypeString = "BEAM";
 }
 
-
 WellElementSubRegion::~WellElementSubRegion()
 {}
 
-
-void WellElementSubRegion::setupRelatedObjectsInRelations( MeshLevel const * const mesh )
+void
+WellElementSubRegion::setupRelatedObjectsInRelations( MeshLevel const * const mesh )
 {
   m_toNodesRelation.SetRelatedObject( mesh->getNodeManager() );
 }
 
 namespace
 {
-
 /**
  * @brief Now that the well elements are assigned, collect the nodes and tag the boundary nodes between ranks
           The function WellElementSubRegion::AssignUnownedElements must have been called before this function
@@ -71,41 +70,47 @@ namespace
  * @param[out] boundaryNodes set of local well nodes that are at the boundary between this rank
                and another rank
  */
-void CollectLocalAndBoundaryNodes( InternalWellGenerator const & wellGeometry,
-                                   SortedArray< globalIndex >      const & localElems,
-                                   SortedArray< globalIndex > & localNodes,
-                                   SortedArray< globalIndex > & boundaryNodes )
+void
+CollectLocalAndBoundaryNodes( InternalWellGenerator const & wellGeometry,
+                              SortedArray< globalIndex > const & localElems,
+                              SortedArray< globalIndex > & localNodes,
+                              SortedArray< globalIndex > & boundaryNodes )
 {
   // get the well connectivity
-  arrayView1d< globalIndex const >                      const & nextElemIdGlobal  = wellGeometry.GetNextElemIndex();
-  arrayView1d< arrayView1d< globalIndex const > const > const & prevElemIdsGlobal = wellGeometry.GetPrevElemIndices();
-  arrayView2d< globalIndex const >                      const & elemToNodesGlobal = wellGeometry.GetElemToNodesMap();
+  arrayView1d< globalIndex const > const & nextElemIdGlobal =
+    wellGeometry.GetNextElemIndex();
+  arrayView1d< arrayView1d< globalIndex const > const > const & prevElemIdsGlobal =
+    wellGeometry.GetPrevElemIndices();
+  arrayView2d< globalIndex const > const & elemToNodesGlobal =
+    wellGeometry.GetElemToNodesMap();
 
   // loop over the local elements and collect the local and boundary nodes
   for( globalIndex currGlobal : localElems )
   {
-
     // if the element is local, its two nodes are also local
-    globalIndex const inodeTopGlobal    = elemToNodesGlobal[currGlobal][InternalWellGenerator::NodeLocation::TOP];
-    globalIndex const inodeBottomGlobal = elemToNodesGlobal[currGlobal][InternalWellGenerator::NodeLocation::BOTTOM];
+    globalIndex const inodeTopGlobal =
+      elemToNodesGlobal[currGlobal][InternalWellGenerator::NodeLocation::TOP];
+    globalIndex const inodeBottomGlobal =
+      elemToNodesGlobal[currGlobal][InternalWellGenerator::NodeLocation::BOTTOM];
     localNodes.insert( inodeTopGlobal );
     localNodes.insert( inodeBottomGlobal );
 
-    localIndex const nextGlobal =
-      LvArray::integerConversion< localIndex >( nextElemIdGlobal[ LvArray::integerConversion< localIndex >( currGlobal ) ] );
+    localIndex const nextGlobal = LvArray::integerConversion< localIndex >(
+      nextElemIdGlobal[LvArray::integerConversion< localIndex >( currGlobal )] );
 
     // if the next well elem is not local, add the node in between curr and next to boundaryNodes
-    if( nextGlobal >= 0 && !localElems.contains( nextGlobal ))
+    if( nextGlobal >= 0 && !localElems.contains( nextGlobal ) )
     {
       boundaryNodes.insert( inodeTopGlobal );
     }
 
     // if the prev well elem is not local, add the node in between curr and prev to boundaryNodes (relevant for
     // branches)
-    for( localIndex iwelem = 0; iwelem < prevElemIdsGlobal[currGlobal].size(); ++iwelem )
+    for( localIndex iwelem = 0; iwelem < prevElemIdsGlobal[currGlobal].size();
+         ++iwelem )
     {
       globalIndex const prevGlobal = prevElemIdsGlobal[currGlobal][iwelem];
-      if( prevGlobal >= 0 && !localElems.contains( prevGlobal ))
+      if( prevGlobal >= 0 && !localElems.contains( prevGlobal ) )
       {
         boundaryNodes.insert( inodeBottomGlobal );
       }
@@ -119,10 +124,11 @@ void CollectLocalAndBoundaryNodes( InternalWellGenerator const & wellGeometry,
  * @param[in] ei the index of the reservoir element
  * @return true if "location" is contained in reservoir element ei, false otherwise
  */
-bool IsPointInsideElement( NodeManager const * const nodeManager,
-                           R1Tensor const & location,
-                           CellBlock const * subRegion,
-                           localIndex ei )
+bool
+IsPointInsideElement( NodeManager const * const nodeManager,
+                      R1Tensor const & location,
+                      CellBlock const * subRegion,
+                      localIndex ei )
 {
   bool isInsideElement = false;
 
@@ -135,9 +141,10 @@ bool IsPointInsideElement( NodeManager const * const nodeManager,
   }
 
   // if the point is in the element, save the indices and stop the search
-  if( computationalGeometry::IsPointInsidePolyhedron( nodeManager->referencePosition(),
-                                                      faceNodes,
-                                                      location ))
+  if( computationalGeometry::IsPointInsidePolyhedron(
+        nodeManager->referencePosition(),
+        faceNodes,
+        location ) )
   {
     isInsideElement = true;
   }
@@ -150,9 +157,10 @@ bool IsPointInsideElement( NodeManager const * const nodeManager,
  * @param[in] ei the index of the reservoir element
  * @param[inout] nodes the nodes that have already been visited
  */
-void CollectElementNodes( CellBlock const *         subRegion,
-                          localIndex ei,
-                          SortedArray< localIndex > & nodes )
+void
+CollectElementNodes( CellBlock const * subRegion,
+                     localIndex ei,
+                     SortedArray< localIndex > & nodes )
 {
   // get all the nodes belonging to this element
   for( localIndex a = 0; a < subRegion->numNodesPerElement(); ++a )
@@ -160,7 +168,7 @@ void CollectElementNodes( CellBlock const *         subRegion,
     localIndex const inode = subRegion->nodeList( ei, a );
 
     // if not already visited, store the newly found node
-    if( !nodes.contains( inode ))
+    if( !nodes.contains( inode ) )
     {
       nodes.insert( inode );
     }
@@ -179,20 +187,24 @@ void CollectElementNodes( CellBlock const *         subRegion,
  * @param[inout] esrMatched the subregion index of the reservoir element that contains "location", if any
  * @param[inout] eiMatched the element index of the reservoir element that contains "location", if any
  */
-bool VisitNeighborElements( MeshLevel const & mesh,
-                            R1Tensor const & location,
-                            SortedArray< localIndex > & nodes,
-                            SortedArray< globalIndex > & elements,
-                            localIndex & erMatched,
-                            localIndex & esrMatched,
-                            localIndex & eiMatched )
+bool
+VisitNeighborElements( MeshLevel const & mesh,
+                       R1Tensor const & location,
+                       SortedArray< localIndex > & nodes,
+                       SortedArray< globalIndex > & elements,
+                       localIndex & erMatched,
+                       localIndex & esrMatched,
+                       localIndex & eiMatched )
 {
   ElementRegionManager const * const elemManager = mesh.getElemManager();
-  NodeManager const * const nodeManager          = mesh.getNodeManager();
+  NodeManager const * const nodeManager = mesh.getNodeManager();
 
-  ArrayOfArraysView< localIndex const > const & toElementRegionList    = nodeManager->elementRegionList();
-  ArrayOfArraysView< localIndex const > const & toElementSubRegionList = nodeManager->elementSubRegionList();
-  ArrayOfArraysView< localIndex const > const & toElementList          = nodeManager->elementList();
+  ArrayOfArraysView< localIndex const > const & toElementRegionList =
+    nodeManager->elementRegionList();
+  ArrayOfArraysView< localIndex const > const & toElementSubRegionList =
+    nodeManager->elementSubRegionList();
+  ArrayOfArraysView< localIndex const > const & toElementList =
+    nodeManager->elementList();
 
   bool matched = false;
 
@@ -212,29 +224,33 @@ bool VisitNeighborElements( MeshLevel const & mesh,
   for( localIndex currNode : currNodes )
   {
     // collect the elements that have not been visited yet
-    for( localIndex b=0; b<toElementRegionList.sizeOfArray( currNode ); ++b )
+    for( localIndex b = 0; b < toElementRegionList.sizeOfArray( currNode ); ++b )
     {
-      localIndex const er      = toElementRegionList[currNode][b];
-      localIndex const esr     = toElementSubRegionList[currNode][b];
+      localIndex const er = toElementRegionList[currNode][b];
+      localIndex const esr = toElementSubRegionList[currNode][b];
       localIndex const eiLocal = toElementList[currNode][b];
 
-      CellElementRegion const * const region    = dataRepository::Group::group_cast< CellElementRegion const * >( elemManager->GetRegion( er ));
-      CellBlock const * const subRegion = dataRepository::Group::group_cast< CellElementSubRegion const * >( region->GetSubRegion( esr ));
-      globalIndex const eiGlobal  = subRegion->localToGlobalMap()[eiLocal];
+      CellElementRegion const * const region =
+        dataRepository::Group::group_cast< CellElementRegion const * >(
+          elemManager->GetRegion( er ) );
+      CellBlock const * const subRegion =
+        dataRepository::Group::group_cast< CellElementSubRegion const * >(
+          region->GetSubRegion( esr ) );
+      globalIndex const eiGlobal = subRegion->localToGlobalMap()[eiLocal];
 
       // if this element has not been visited yet, save it
-      if( !elements.contains( eiGlobal ))
+      if( !elements.contains( eiGlobal ) )
       {
         elements.insert( eiGlobal );
 
         // perform the test to see if the point is in this reservoir element
         // if the point is in the resevoir element, save the indices and stop the search
-        if( IsPointInsideElement( nodeManager, location, subRegion, eiLocal ))
+        if( IsPointInsideElement( nodeManager, location, subRegion, eiLocal ) )
         {
-          erMatched  = er;
+          erMatched = er;
           esrMatched = esr;
-          eiMatched  = eiLocal;
-          matched    = true;
+          eiMatched = eiLocal;
+          matched = true;
           break;
         }
         // otherwise add the nodes of this element to the set of new nodes to visit
@@ -266,31 +282,32 @@ bool VisitNeighborElements( MeshLevel const & mesh,
  * @param[inout] esrInit the subregion index of the reservoir element from which we start the search
  * @param[inout] eiInit the element index of the reservoir element from which we start the search
  */
-void InitializeLocalSearch( MeshLevel const & mesh,
-                            R1Tensor const & location,
-                            localIndex & erInit,
-                            localIndex & esrInit,
-                            localIndex & eiInit )
+void
+InitializeLocalSearch( MeshLevel const & mesh,
+                       R1Tensor const & location,
+                       localIndex & erInit,
+                       localIndex & esrInit,
+                       localIndex & eiInit )
 {
-  ElementRegionManager::ElementViewAccessor< arrayView2d< real64 const > >
-  resElemCenter = mesh.getElemManager()->ConstructViewAccessor< array2d< real64 >,
-                                                                arrayView2d< real64 const > >( ElementSubRegionBase::viewKeyStruct::elementCenterString );
+  ElementRegionManager::ElementViewAccessor< arrayView2d< real64 const > > resElemCenter =
+    mesh.getElemManager()
+      ->ConstructViewAccessor< array2d< real64 >, arrayView2d< real64 const > >(
+        ElementSubRegionBase::viewKeyStruct::elementCenterString );
   // to initialize the local search for the reservoir element that contains "location",
   // we find the reservoir element that minimizes the distance from "location" to the reservoir element center
-  auto ret = minLocOverElemsInMesh( &mesh, [&] ( localIndex const er,
-                                                 localIndex const esr,
-                                                 localIndex const ei ) -> real64
-  {
-    R1Tensor v = location;
-    v -= resElemCenter[er][esr][ei];
-    return v.L2_Norm();
-  } );
+  auto ret = minLocOverElemsInMesh(
+    &mesh,
+    [&]( localIndex const er, localIndex const esr, localIndex const ei ) -> real64 {
+      R1Tensor v = location;
+      v -= resElemCenter[er][esr][ei];
+      return v.L2_Norm();
+    } );
 
   // save the region, subregion and index of the reservoir element
   // note that this reservoir element does not necessarily contains "location"
-  erInit  = std::get< 0 >( ret.second );
+  erInit = std::get< 0 >( ret.second );
   esrInit = std::get< 1 >( ret.second );
-  eiInit  = std::get< 2 >( ret.second );
+  eiInit = std::get< 2 >( ret.second );
 }
 
 /**
@@ -305,24 +322,29 @@ void InitializeLocalSearch( MeshLevel const & mesh,
  * @param[inout] esrMatched the subregion index of the reservoir element that contains "location", if any
  * @param[inout] eiMatched the element index of the reservoir element that contains "location", if any
  */
-bool SearchLocalElements( MeshLevel const & mesh,
-                          R1Tensor const & location,
-                          localIndex const & searchDepth,
-                          localIndex const & erInit,
-                          localIndex const & esrInit,
-                          localIndex const & eiInit,
-                          localIndex & erMatched,
-                          localIndex & esrMatched,
-                          localIndex & eiMatched )
+bool
+SearchLocalElements( MeshLevel const & mesh,
+                     R1Tensor const & location,
+                     localIndex const & searchDepth,
+                     localIndex const & erInit,
+                     localIndex const & esrInit,
+                     localIndex const & eiInit,
+                     localIndex & erMatched,
+                     localIndex & esrMatched,
+                     localIndex & eiMatched )
 {
   // search locally, starting from the location of the previous perforation
   // the assumption here is that perforations have been entered in order of depth
   bool resElemFound = false;
 
-  CellElementRegion const * region = dataRepository::Group::group_cast< CellElementRegion const * >( mesh.getElemManager()->GetRegion( erInit ));
-  CellBlock const * subRegion      = dataRepository::Group::group_cast< CellBlock const * >( region->GetSubRegion( esrInit ));
+  CellElementRegion const * region =
+    dataRepository::Group::group_cast< CellElementRegion const * >(
+      mesh.getElemManager()->GetRegion( erInit ) );
+  CellBlock const * subRegion =
+    dataRepository::Group::group_cast< CellBlock const * >(
+      region->GetSubRegion( esrInit ) );
 
-  SortedArray< localIndex >  nodes;
+  SortedArray< localIndex > nodes;
   SortedArray< globalIndex > elements;
 
   // here is how the search is done:
@@ -345,9 +367,14 @@ bool SearchLocalElements( MeshLevel const & mesh,
     // search the reservoir elements that can be accessed from the set "nodes"
     // stop if a reservoir element containing the perforation is found
     // if not, enlarge the set "nodes"
-    resElemFound = VisitNeighborElements( mesh, location, nodes, elements,
-                                          erMatched, esrMatched, eiMatched );
-    if( resElemFound || nNodes == nodes.size())
+    resElemFound = VisitNeighborElements( mesh,
+                                          location,
+                                          nodes,
+                                          elements,
+                                          erMatched,
+                                          esrMatched,
+                                          eiMatched );
+    if( resElemFound || nNodes == nodes.size() )
     {
       break;
     }
@@ -355,28 +382,31 @@ bool SearchLocalElements( MeshLevel const & mesh,
   return resElemFound;
 }
 
-}
+}  // namespace
 
-void WellElementSubRegion::Generate( MeshLevel & mesh,
-                                     InternalWellGenerator const & wellGeometry,
-                                     arrayView1d< integer > & elemStatusGlobal,
-                                     globalIndex nodeOffsetGlobal,
-                                     globalIndex elemOffsetGlobal )
+void
+WellElementSubRegion::Generate( MeshLevel & mesh,
+                                InternalWellGenerator const & wellGeometry,
+                                arrayView1d< integer > & elemStatusGlobal,
+                                globalIndex nodeOffsetGlobal,
+                                globalIndex elemOffsetGlobal )
 {
-
   map< integer, SortedArray< globalIndex > > elemSetsByStatus;
 
   // convert elemStatus list into sets of indices
-  for( localIndex iwelemGlobal = 0; iwelemGlobal < elemStatusGlobal.size(); ++iwelemGlobal )
+  for( localIndex iwelemGlobal = 0; iwelemGlobal < elemStatusGlobal.size();
+       ++iwelemGlobal )
   {
     elemSetsByStatus[elemStatusGlobal[iwelemGlobal]].insert( iwelemGlobal );
   }
 
   // initialize the sets using the classification of well elems
   // localElems will be enlarged once boundary elements ownership is determined
-  SortedArray< globalIndex > & localElems   = elemSetsByStatus[WellElemStatus::LOCAL];
-  SortedArray< globalIndex > & sharedElems  = elemSetsByStatus[WellElemStatus::SHARED];
-  SortedArray< globalIndex > & unownedElems = elemSetsByStatus[WellElemStatus::UNOWNED];
+  SortedArray< globalIndex > & localElems = elemSetsByStatus[WellElemStatus::LOCAL];
+  SortedArray< globalIndex > & sharedElems =
+    elemSetsByStatus[WellElemStatus::SHARED];
+  SortedArray< globalIndex > & unownedElems =
+    elemSetsByStatus[WellElemStatus::UNOWNED];
 
   // here we make sure that there are no shared elements
   // this is enforced in the InternalWellGenerator that currently merges two perforations
@@ -385,10 +415,8 @@ void WellElementSubRegion::Generate( MeshLevel & mesh,
   GEOSX_ERROR_IF( sharedElems.size() > 0,
                   "Well " << getName() << " contains shared well elements" );
 
-
   // In Steps 1 and 2 we determine the local objects on this rank (elems and nodes)
   // Once this is done, in Steps 3, 4, and 5, we update the nodeManager and wellElementSubRegion (size, maps)
-
 
   // 1) First assign the unowned elements to a rank
   // this is done in two steps
@@ -408,9 +436,7 @@ void WellElementSubRegion::Generate( MeshLevel & mesh,
   //      In this function we also check that the resulting well partitioning is valid, that is,
   //      we make sure that if two ranks are neighbors in the well, that are also neighbors in the
   //      reservoir mesh
-  CheckPartitioningValidity( wellGeometry,
-                             localElems,
-                             elemStatusGlobal );
+  CheckPartitioningValidity( wellGeometry, localElems, elemStatusGlobal );
 
   SortedArray< globalIndex > localNodes;
   SortedArray< globalIndex > boundaryNodes;
@@ -418,10 +444,7 @@ void WellElementSubRegion::Generate( MeshLevel & mesh,
   // 2) collect the local nodes and tag the boundary nodes using element info
   // now that all the elements have been assigned, we collected the local nodes
   // and tag the boundary nodes (i.e., the nodes in contact with both local and remote elems)
-  CollectLocalAndBoundaryNodes( wellGeometry,
-                                localElems,
-                                localNodes,
-                                boundaryNodes );
+  CollectLocalAndBoundaryNodes( wellGeometry, localElems, localNodes, boundaryNodes );
 
   //DebugNodeManager( mesh );
 
@@ -450,18 +473,19 @@ void WellElementSubRegion::Generate( MeshLevel & mesh,
   // This map will be used by MeshLevel::GenerateAdjacencyLists
   // this assumes that the elemToNodes maps has been filled at Step 5)
   UpdateNodeManagerNodeToElementMap( mesh );
-
 }
 
-
-void WellElementSubRegion::AssignUnownedElementsInReservoir( MeshLevel & mesh,
-                                                             InternalWellGenerator const & wellGeometry,
-                                                             SortedArray< globalIndex >      const & unownedElems,
-                                                             SortedArray< globalIndex > & localElems,
-                                                             arrayView1d< integer > & elemStatusGlobal ) const
+void
+WellElementSubRegion::AssignUnownedElementsInReservoir(
+  MeshLevel & mesh,
+  InternalWellGenerator const & wellGeometry,
+  SortedArray< globalIndex > const & unownedElems,
+  SortedArray< globalIndex > & localElems,
+  arrayView1d< integer > & elemStatusGlobal ) const
 {
   // get the well and reservoir element coordinates
-  arrayView1d< R1Tensor const > const & wellElemCoordsGlobal = wellGeometry.GetElemCoords();
+  arrayView1d< R1Tensor const > const & wellElemCoordsGlobal =
+    wellGeometry.GetElemCoords();
 
   // assign the well elements based on location wrt the reservoir elements
   // if the center of the well element falls in the domain owned by rank k
@@ -472,28 +496,33 @@ void WellElementSubRegion::AssignUnownedElementsInReservoir( MeshLevel & mesh,
 
     // this will contain the indices of the reservoir element
     // in which the center of the well element is located
-    localIndex erMatched  = -1;
+    localIndex erMatched = -1;
     localIndex esrMatched = -1;
-    localIndex eiMatched  = -1;
+    localIndex eiMatched = -1;
 
     // this will contain the indices of the reservoir element
     // from which we are going to start the search
-    localIndex erInit     = -1;
-    localIndex esrInit    = -1;
-    localIndex eiInit     = -1;
+    localIndex erInit = -1;
+    localIndex esrInit = -1;
+    localIndex eiInit = -1;
 
     // Step 1: first, we search for the reservoir element that is the *closest* from the center of well element
     //         note that this reservoir element does not necessarily contain the center of the well element
     //         this "init" reservoir element will be used in SearchLocalElements to find the reservoir element that
     //         contains the well element
-    InitializeLocalSearch( mesh, location,
-                           erInit, esrInit, eiInit );
+    InitializeLocalSearch( mesh, location, erInit, esrInit, eiInit );
 
     // Step 2: then, search for the reservoir element that contains the well element
     //         to do that, we loop over the reservoir elements that are in the neighborhood of (erInit,esrInit,eiInit)
-    bool resElemFound = SearchLocalElements( mesh, location, m_searchDepth,
-                                             erInit, esrInit, eiInit,
-                                             erMatched, esrMatched, eiMatched );
+    bool resElemFound = SearchLocalElements( mesh,
+                                             location,
+                                             m_searchDepth,
+                                             erInit,
+                                             esrInit,
+                                             eiInit,
+                                             erMatched,
+                                             esrMatched,
+                                             eiMatched );
 
     // if the element was found
     if( resElemFound )
@@ -505,29 +534,32 @@ void WellElementSubRegion::AssignUnownedElementsInReservoir( MeshLevel & mesh,
   }
 }
 
-
-void WellElementSubRegion::CheckPartitioningValidity( InternalWellGenerator const & wellGeometry,
-                                                      SortedArray< globalIndex > & localElems,
-                                                      arrayView1d< integer > & elemStatusGlobal ) const
+void
+WellElementSubRegion::CheckPartitioningValidity(
+  InternalWellGenerator const & wellGeometry,
+  SortedArray< globalIndex > & localElems,
+  arrayView1d< integer > & elemStatusGlobal ) const
 {
-  arrayView1d< arrayView1d< globalIndex const > const > const & prevElemIdsGlobal = wellGeometry.GetPrevElemIndices();
+  arrayView1d< arrayView1d< globalIndex const > const > const & prevElemIdsGlobal =
+    wellGeometry.GetPrevElemIndices();
 
   // we are going to make sure that the partitioning is good,
   // well element per well element, starting from the bottom of the well
-  for( globalIndex iwelemGlobal = wellGeometry.GetNumElements()-1; iwelemGlobal >= 0; --iwelemGlobal )
+  for( globalIndex iwelemGlobal = wellGeometry.GetNumElements() - 1;
+       iwelemGlobal >= 0;
+       --iwelemGlobal )
   {
-
     // communicate the status of this element
     array1d< integer > thisElemStatusGlobal;
-    MpiWrapper::allGather( elemStatusGlobal[iwelemGlobal],
-                           thisElemStatusGlobal );
+    MpiWrapper::allGather( elemStatusGlobal[iwelemGlobal], thisElemStatusGlobal );
     // group the ranks by well element status
     map< integer, SortedArray< globalIndex > > rankSetsByStatus;
     for( globalIndex irank = 0; irank < thisElemStatusGlobal.size(); ++irank )
     {
       rankSetsByStatus[thisElemStatusGlobal[irank]].insert( irank );
     }
-    globalIndex const numLocalRanks = rankSetsByStatus[WellElemStatus::LOCAL].size();
+    globalIndex const numLocalRanks =
+      rankSetsByStatus[WellElemStatus::LOCAL].size();
 
     // in this case, this element has not been assigned
     //    => we assign it to the rank that owns
@@ -535,7 +567,8 @@ void WellElementSubRegion::CheckPartitioningValidity( InternalWellGenerator cons
     if( numLocalRanks == 0 )
     {
       globalIndex const numBranches = prevElemIdsGlobal[iwelemGlobal].size();
-      globalIndex const prevGlobal  = prevElemIdsGlobal[iwelemGlobal][numBranches-1];
+      globalIndex const prevGlobal =
+        prevElemIdsGlobal[iwelemGlobal][numBranches - 1];
 
       GEOSX_ERROR_IF( prevGlobal <= iwelemGlobal || prevGlobal < 0,
                       "Invalid partitioning in well " << getName() );
@@ -554,7 +587,6 @@ void WellElementSubRegion::CheckPartitioningValidity( InternalWellGenerator cons
     // we just update the elemStatusGlobal array for all ranks
     else if( numLocalRanks == 1 )
     {
-
       for( globalIndex iownerRank : rankSetsByStatus[WellElemStatus::LOCAL] )
       {
         if( MpiWrapper::Comm_rank( MPI_COMM_GEOSX ) != iownerRank )
@@ -562,13 +594,11 @@ void WellElementSubRegion::CheckPartitioningValidity( InternalWellGenerator cons
           elemStatusGlobal[iwelemGlobal] = WellElemStatus::REMOTE;
         }
       }
-
     }
     // in this case, this element has been assigned to more than rank
     //    => the smallest rank keeps it
-    else // (numLocalRanks > 1)
+    else  // (numLocalRanks > 1)
     {
-
       localIndex rankCount = 0;
       for( globalIndex iownerRank : rankSetsByStatus[WellElemStatus::LOCAL] )
       {
@@ -580,7 +610,7 @@ void WellElementSubRegion::CheckPartitioningValidity( InternalWellGenerator cons
             elemStatusGlobal[iwelemGlobal] = WellElemStatus::REMOTE;
           }
         }
-        else // (rankCount > 0)
+        else  // (rankCount > 0)
         {
           // remove the duplicate elements
           if( MpiWrapper::Comm_rank( MPI_COMM_GEOSX ) == iownerRank )
@@ -590,50 +620,54 @@ void WellElementSubRegion::CheckPartitioningValidity( InternalWellGenerator cons
         }
         rankCount++;
       }
-
     }
 
     // TODO: check neighbor rank
   }
 }
 
-void WellElementSubRegion::UpdateNodeManagerSize( MeshLevel & mesh,
-                                                  InternalWellGenerator const & wellGeometry,
-                                                  SortedArray< globalIndex >      const & localNodes,
-                                                  SortedArray< globalIndex >      const & boundaryNodes,
-                                                  globalIndex nodeOffsetGlobal )
+void
+WellElementSubRegion::UpdateNodeManagerSize(
+  MeshLevel & mesh,
+  InternalWellGenerator const & wellGeometry,
+  SortedArray< globalIndex > const & localNodes,
+  SortedArray< globalIndex > const & boundaryNodes,
+  globalIndex nodeOffsetGlobal )
 {
-
   // get the node manager to compute the total number of mesh nodes
-  NodeManager * const nodeManager    = mesh.getNodeManager();
+  NodeManager * const nodeManager = mesh.getNodeManager();
   localIndex const numWellNodesLocal = localNodes.size();
-  localIndex const oldNumNodesLocal  = nodeManager->size();
+  localIndex const oldNumNodesLocal = nodeManager->size();
 
   // resize nodeManager to account for the new well nodes and update the properties
   nodeManager->resize( oldNumNodesLocal + numWellNodesLocal );
 
-  array1d< integer > &
-  isDomainBoundary = nodeManager->getReference< integer_array >( m_ObjectManagerBaseViewKeys.domainBoundaryIndicator );
+  array1d< integer > & isDomainBoundary = nodeManager->getReference< integer_array >(
+    m_ObjectManagerBaseViewKeys.domainBoundaryIndicator );
 
-  arrayView1d< globalIndex > const & nodeLocalToGlobal = nodeManager->localToGlobalMap();
+  arrayView1d< globalIndex > const & nodeLocalToGlobal =
+    nodeManager->localToGlobalMap();
 
-  arrayView1d< R1Tensor const > const & nodeCoordsGlobal = wellGeometry.GetNodeCoords();
+  arrayView1d< R1Tensor const > const & nodeCoordsGlobal =
+    wellGeometry.GetNodeCoords();
 
   // local *well* index
   localIndex iwellNodeLocal = 0;
   // loop over global *well* indices
 
-  arrayView2d< real64, nodes::REFERENCE_POSITION_USD > const & X = nodeManager->referencePosition();
+  arrayView2d< real64, nodes::REFERENCE_POSITION_USD > const & X =
+    nodeManager->referencePosition();
   for( globalIndex iwellNodeGlobal : localNodes )
   {
     // local *nodeManager* index
     localIndex const inodeLocal = oldNumNodesLocal + iwellNodeLocal;
 
     // update node manager maps and position
-    nodeLocalToGlobal[inodeLocal]  = nodeOffsetGlobal + iwellNodeGlobal; // global *nodeManager* index
+    nodeLocalToGlobal[inodeLocal] =
+      nodeOffsetGlobal + iwellNodeGlobal;  // global *nodeManager* index
     for( localIndex i = 0; i < 3; ++i )
     {
-      X( inodeLocal, i ) = nodeCoordsGlobal[ iwellNodeGlobal ][ i ];
+      X( inodeLocal, i ) = nodeCoordsGlobal[iwellNodeGlobal][i];
     }
 
     // mark the boundary nodes for ghosting in DomainPartition::SetupCommunications
@@ -655,17 +689,23 @@ void WellElementSubRegion::UpdateNodeManagerSize( MeshLevel & mesh,
   }
 }
 
-void WellElementSubRegion::ConstructSubRegionLocalElementMaps( MeshLevel & mesh,
-                                                               InternalWellGenerator const & wellGeometry,
-                                                               SortedArray< globalIndex > const & localElems,
-                                                               globalIndex nodeOffsetGlobal,
-                                                               globalIndex elemOffsetGlobal )
+void
+WellElementSubRegion::ConstructSubRegionLocalElementMaps(
+  MeshLevel & mesh,
+  InternalWellGenerator const & wellGeometry,
+  SortedArray< globalIndex > const & localElems,
+  globalIndex nodeOffsetGlobal,
+  globalIndex elemOffsetGlobal )
 {
   // get the well geometry
-  arrayView1d< globalIndex const > const & nextElemIdGlobal  = wellGeometry.GetNextElemIndex();
-  arrayView1d< R1Tensor const >    const & elemCoordsGlobal  = wellGeometry.GetElemCoords();
-  arrayView2d< globalIndex const > const & elemToNodesGlobal = wellGeometry.GetElemToNodesMap();
-  arrayView1d< real64 const >      const & elemVolumeGlobal  = wellGeometry.GetElemVolume();
+  arrayView1d< globalIndex const > const & nextElemIdGlobal =
+    wellGeometry.GetNextElemIndex();
+  arrayView1d< R1Tensor const > const & elemCoordsGlobal =
+    wellGeometry.GetElemCoords();
+  arrayView2d< globalIndex const > const & elemToNodesGlobal =
+    wellGeometry.GetElemToNodesMap();
+  arrayView1d< real64 const > const & elemVolumeGlobal =
+    wellGeometry.GetElemVolume();
 
   NodeManager const * const nodeManager = mesh.getNodeManager();
 
@@ -686,20 +726,24 @@ void WellElementSubRegion::ConstructSubRegionLocalElementMaps( MeshLevel & mesh,
   // recreate local wellbore tree by connecting locally relevant elems
   for( iwelemLocal = 0; iwelemLocal < size(); ++iwelemLocal )
   {
-    globalIndex const ielemGlobal      = m_localToGlobalMap[iwelemLocal];     // global index in elemManager ordering
-    globalIndex const iwelemGlobal     = ielemGlobal - elemOffsetGlobal;      // global index in well ordering
-    globalIndex const iwelemNextGlobal = nextElemIdGlobal[iwelemGlobal];      // global index in well ordering
-    globalIndex const ielemNextGlobal  = elemOffsetGlobal + iwelemNextGlobal; // global index in elemManager ordering
+    globalIndex const ielemGlobal =
+      m_localToGlobalMap[iwelemLocal];  // global index in elemManager ordering
+    globalIndex const iwelemGlobal =
+      ielemGlobal - elemOffsetGlobal;  // global index in well ordering
+    globalIndex const iwelemNextGlobal =
+      nextElemIdGlobal[iwelemGlobal];  // global index in well ordering
+    globalIndex const ielemNextGlobal = elemOffsetGlobal +
+      iwelemNextGlobal;  // global index in elemManager ordering
 
     if( iwelemNextGlobal < 0 )
     {
-      m_nextWellElementIndexGlobal[iwelemLocal] = -1; // wellhead
-      m_nextWellElementIndex[iwelemLocal]       = -1;
+      m_nextWellElementIndexGlobal[iwelemLocal] = -1;  // wellhead
+      m_nextWellElementIndex[iwelemLocal] = -1;
       m_topWellElementIndex = iwelemLocal;
     }
     else
     {
-      m_nextWellElementIndexGlobal[iwelemLocal] = ielemNextGlobal; // wellhead
+      m_nextWellElementIndexGlobal[iwelemLocal] = ielemNextGlobal;  // wellhead
 
       if( globalToLocalMap().count( ielemNextGlobal ) > 0 )
       {
@@ -707,14 +751,14 @@ void WellElementSubRegion::ConstructSubRegionLocalElementMaps( MeshLevel & mesh,
       }
       else
       {
-        m_nextWellElementIndex[iwelemLocal] = -2; // remote elem
+        m_nextWellElementIndex[iwelemLocal] = -2;  // remote elem
       }
     }
 
     // TODO Change to LvArray::tensorOps::copy
-    m_elementCenter[ iwelemLocal ][ 0 ] = elemCoordsGlobal[ iwelemGlobal ][ 0 ];
-    m_elementCenter[ iwelemLocal ][ 1 ] = elemCoordsGlobal[ iwelemGlobal ][ 1 ];
-    m_elementCenter[ iwelemLocal ][ 2 ] = elemCoordsGlobal[ iwelemGlobal ][ 2 ];
+    m_elementCenter[iwelemLocal][0] = elemCoordsGlobal[iwelemGlobal][0];
+    m_elementCenter[iwelemLocal][1] = elemCoordsGlobal[iwelemGlobal][1];
+    m_elementCenter[iwelemLocal][2] = elemCoordsGlobal[iwelemGlobal][2];
 
     m_elementVolume[iwelemLocal] = elemVolumeGlobal[iwelemGlobal];
     m_radius[iwelemLocal] = wellGeometry.GetElementRadius();
@@ -722,41 +766,50 @@ void WellElementSubRegion::ConstructSubRegionLocalElementMaps( MeshLevel & mesh,
     // update local well elem to node map (note: nodes are in nodeManager ordering)
 
     // first get the global node indices in nodeManager ordering
-    globalIndex const inodeTopGlobal    = nodeOffsetGlobal + elemToNodesGlobal[iwelemGlobal][InternalWellGenerator::NodeLocation::TOP];
-    globalIndex const inodeBottomGlobal = nodeOffsetGlobal + elemToNodesGlobal[iwelemGlobal][InternalWellGenerator::NodeLocation::BOTTOM];
+    globalIndex const inodeTopGlobal = nodeOffsetGlobal +
+      elemToNodesGlobal[iwelemGlobal][InternalWellGenerator::NodeLocation::TOP];
+    globalIndex const inodeBottomGlobal = nodeOffsetGlobal +
+      elemToNodesGlobal[iwelemGlobal][InternalWellGenerator::NodeLocation::BOTTOM];
 
     // then get the local node indices in nodeManager ordering
-    localIndex const inodeTopLocal    = nodeManager->globalToLocalMap( inodeTopGlobal );
-    localIndex const inodeBottomLocal = nodeManager->globalToLocalMap( inodeBottomGlobal );
+    localIndex const inodeTopLocal =
+      nodeManager->globalToLocalMap( inodeTopGlobal );
+    localIndex const inodeBottomLocal =
+      nodeManager->globalToLocalMap( inodeBottomGlobal );
 
-    m_toNodesRelation[iwelemLocal][InternalWellGenerator::NodeLocation::TOP]    = inodeTopLocal;
-    m_toNodesRelation[iwelemLocal][InternalWellGenerator::NodeLocation::BOTTOM] = inodeBottomLocal;
+    m_toNodesRelation[iwelemLocal][InternalWellGenerator::NodeLocation::TOP] =
+      inodeTopLocal;
+    m_toNodesRelation[iwelemLocal][InternalWellGenerator::NodeLocation::BOTTOM] =
+      inodeBottomLocal;
   }
-
 }
 
-void WellElementSubRegion::UpdateNodeManagerNodeToElementMap( MeshLevel & mesh )
+void
+WellElementSubRegion::UpdateNodeManagerNodeToElementMap( MeshLevel & mesh )
 {
   ElementRegionManager const * const elemManager = mesh.getElemManager();
   NodeManager * const nodeManager = mesh.getNodeManager();
 
   // at this point, NodeManager::SetElementMaps has already been called for the mesh nodes
   // we have to update the following maps for the well nodes
-  ArrayOfArrays< localIndex > & toElementRegionList    = nodeManager->elementRegionList();
-  ArrayOfArrays< localIndex > & toElementSubRegionList = nodeManager->elementSubRegionList();
-  ArrayOfArrays< localIndex > & toElementList          = nodeManager->elementList();
+  ArrayOfArrays< localIndex > & toElementRegionList =
+    nodeManager->elementRegionList();
+  ArrayOfArrays< localIndex > & toElementSubRegionList =
+    nodeManager->elementSubRegionList();
+  ArrayOfArrays< localIndex > & toElementList = nodeManager->elementList();
 
   // we get the region and subregion indices in the elemManager
-  WellElementRegion const * const elemRegion = this->getParent()->getParent()->group_cast< WellElementRegion * >();
+  WellElementRegion const * const elemRegion =
+    this->getParent()->getParent()->group_cast< WellElementRegion * >();
   string const elemRegionName = elemRegion->getName();
 
-  localIndex const iregion    = elemManager->GetRegions().getIndex( elemRegionName );
+  localIndex const iregion = elemManager->GetRegions().getIndex( elemRegionName );
   localIndex const isubRegion = elemRegion->GetSubRegions().getIndex( getName() );
 
   // for each (new) well element
   for( localIndex iwelemLocal = 0; iwelemLocal < size(); ++iwelemLocal )
   {
-    for( localIndex a=0; a < numNodesPerElement(); ++a )
+    for( localIndex a = 0; a < numNodesPerElement(); ++a )
     {
       // get the local node index (in nodeManager ordering) using the elem-to-nodes maps constructed above
       localIndex const inodeLocal = m_toNodesRelation[iwelemLocal][a];
@@ -771,27 +824,32 @@ void WellElementSubRegion::UpdateNodeManagerNodeToElementMap( MeshLevel & mesh )
   setupRelatedObjectsInRelations( &mesh );
 }
 
-void WellElementSubRegion::ConnectPerforationsToMeshElements( MeshLevel & mesh,
-                                                              InternalWellGenerator const & wellGeometry )
+void
+WellElementSubRegion::ConnectPerforationsToMeshElements(
+  MeshLevel & mesh,
+  InternalWellGenerator const & wellGeometry )
 {
-  arrayView1d< R1Tensor const > const & perfCoordsGlobal = wellGeometry.GetPerfCoords();
-  arrayView1d< real64 const >   const & perfWellTransmissibilityGlobal = wellGeometry.GetPerfTransmissibility();
+  arrayView1d< R1Tensor const > const & perfCoordsGlobal =
+    wellGeometry.GetPerfCoords();
+  arrayView1d< real64 const > const & perfWellTransmissibilityGlobal =
+    wellGeometry.GetPerfTransmissibility();
 
   m_perforationData.resize( perfCoordsGlobal.size() );
   localIndex iperfLocal = 0;
 
   // loop over all the perforations
-  for( globalIndex iperfGlobal = 0; iperfGlobal < perfCoordsGlobal.size(); ++iperfGlobal )
+  for( globalIndex iperfGlobal = 0; iperfGlobal < perfCoordsGlobal.size();
+       ++iperfGlobal )
   {
     R1Tensor const & location = perfCoordsGlobal[iperfGlobal];
 
-    localIndex erMatched  = -1;
+    localIndex erMatched = -1;
     localIndex esrMatched = -1;
-    localIndex eiMatched  = -1;
+    localIndex eiMatched = -1;
 
-    localIndex erInit     = -1;
-    localIndex esrInit    = -1;
-    localIndex eiInit     = -1;
+    localIndex erInit = -1;
+    localIndex esrInit = -1;
+    localIndex eiInit = -1;
 
     // for each perforation, we have to find the reservoir element that contains the perforation
 
@@ -799,9 +857,12 @@ void WellElementSubRegion::ConnectPerforationsToMeshElements( MeshLevel & mesh,
     {
       // get the info of the element matched with the previous perforation
       // this will be used next to search around this reservoir element
-      erInit  = m_perforationData.GetMeshElements().m_toElementRegion[iperfLocal-1];
-      esrInit = m_perforationData.GetMeshElements().m_toElementSubRegion[iperfLocal-1];
-      eiInit  = m_perforationData.GetMeshElements().m_toElementIndex[iperfLocal-1];
+      erInit =
+        m_perforationData.GetMeshElements().m_toElementRegion[iperfLocal - 1];
+      esrInit =
+        m_perforationData.GetMeshElements().m_toElementSubRegion[iperfLocal - 1];
+      eiInit =
+        m_perforationData.GetMeshElements().m_toElementIndex[iperfLocal - 1];
     }
     else
     {
@@ -809,26 +870,35 @@ void WellElementSubRegion::ConnectPerforationsToMeshElements( MeshLevel & mesh,
       //         note that this reservoir element does not necessarily contain the center of the well element
       //         this "init" reservoir element will be used in SearchLocalElements to find the reservoir element that
       //         contains the well element
-      InitializeLocalSearch( mesh, location,
-                             erInit, esrInit, eiInit );
+      InitializeLocalSearch( mesh, location, erInit, esrInit, eiInit );
     }
 
     // Step 2: then, search for the reservoir element that contains the well element
     //         to do that, we loop over the reservoir elements that are in the neighborhood of (erInit,esrInit,eiInit)
-    bool resElemFound = SearchLocalElements( mesh, location, m_searchDepth,
-                                             erInit, esrInit, eiInit,
-                                             erMatched, esrMatched, eiMatched );
+    bool resElemFound = SearchLocalElements( mesh,
+                                             location,
+                                             m_searchDepth,
+                                             erInit,
+                                             esrInit,
+                                             eiInit,
+                                             erMatched,
+                                             esrMatched,
+                                             eiMatched );
 
     // if the element was found
     if( resElemFound )
     {
       // set the indices for the matched reservoir element
-      m_perforationData.GetMeshElements().m_toElementRegion[iperfLocal] = erMatched;
-      m_perforationData.GetMeshElements().m_toElementSubRegion[iperfLocal] = esrMatched;
-      m_perforationData.GetMeshElements().m_toElementIndex[iperfLocal] = eiMatched;
+      m_perforationData.GetMeshElements().m_toElementRegion[iperfLocal] =
+        erMatched;
+      m_perforationData.GetMeshElements().m_toElementSubRegion[iperfLocal] =
+        esrMatched;
+      m_perforationData.GetMeshElements().m_toElementIndex[iperfLocal] =
+        eiMatched;
 
       // construct the local wellTransmissibility and location maps
-      m_perforationData.GetWellTransmissibility()[iperfLocal] = perfWellTransmissibilityGlobal[iperfGlobal];
+      m_perforationData.GetWellTransmissibility()[iperfLocal] =
+        perfWellTransmissibilityGlobal[iperfGlobal];
       m_perforationData.GetLocation()[iperfLocal] = location;
 
       // increment the local to global map
@@ -841,7 +911,8 @@ void WellElementSubRegion::ConnectPerforationsToMeshElements( MeshLevel & mesh,
   m_perforationData.ConstructGlobalToLocalMap();
 }
 
-void WellElementSubRegion::ReconstructLocalConnectivity()
+void
+WellElementSubRegion::ReconstructLocalConnectivity()
 {
   // here we reconstruct the array m_nextWellElementIndexGlobal
   // this is needed after the addition of ghost well elements
@@ -853,46 +924,55 @@ void WellElementSubRegion::ReconstructLocalConnectivity()
     if( nextGlobal < 0 )  // well head
     {
       m_nextWellElementIndex[iwelemLocal] = -1;
-      m_topWellElementIndex = iwelemLocal; // reset this is case top element was added as ghost
+      m_topWellElementIndex =
+        iwelemLocal;  // reset this is case top element was added as ghost
     }
     else if( globalToLocalMap().count( nextGlobal ) == 0 )  // next is remote
     {
       m_nextWellElementIndex[iwelemLocal] = -2;
     }
-    else // local
+    else  // local
     {
       m_nextWellElementIndex[iwelemLocal] = this->globalToLocalMap( nextGlobal );
     }
   }
 }
 
-
-bool WellElementSubRegion::IsLocallyOwned() const
+bool
+WellElementSubRegion::IsLocallyOwned() const
 {
   return m_topRank == MpiWrapper::Comm_rank( MPI_COMM_GEOSX );
 }
 
-void WellElementSubRegion::ViewPackingExclusionList( SortedArray< localIndex > & exclusionList ) const
+void
+WellElementSubRegion::ViewPackingExclusionList(
+  SortedArray< localIndex > & exclusionList ) const
 {
   ObjectManagerBase::ViewPackingExclusionList( exclusionList );
-  exclusionList.insert( this->getWrapperIndex( viewKeyStruct::nodeListString ));
+  exclusionList.insert( this->getWrapperIndex( viewKeyStruct::nodeListString ) );
 }
 
-localIndex WellElementSubRegion::PackUpDownMapsSize( arrayView1d< localIndex const > const & packList ) const
+localIndex
+WellElementSubRegion::PackUpDownMapsSize(
+  arrayView1d< localIndex const > const & packList ) const
 {
   buffer_unit_type * junk = nullptr;
   return PackUpDownMapsPrivate< false >( junk, packList );
 }
 
-localIndex WellElementSubRegion::PackUpDownMaps( buffer_unit_type * & buffer,
-                                                 arrayView1d< localIndex const > const & packList ) const
+localIndex
+WellElementSubRegion::PackUpDownMaps(
+  buffer_unit_type *& buffer,
+  arrayView1d< localIndex const > const & packList ) const
 {
   return PackUpDownMapsPrivate< true >( buffer, packList );
 }
 
 template< bool DOPACK >
-localIndex WellElementSubRegion::PackUpDownMapsPrivate( buffer_unit_type * & buffer,
-                                                        arrayView1d< localIndex const > const & packList ) const
+localIndex
+WellElementSubRegion::PackUpDownMapsPrivate(
+  buffer_unit_type *& buffer,
+  arrayView1d< localIndex const > const & packList ) const
 {
   localIndex packedSize = 0;
 
@@ -906,10 +986,12 @@ localIndex WellElementSubRegion::PackUpDownMapsPrivate( buffer_unit_type * & buf
   return packedSize;
 }
 
-localIndex WellElementSubRegion::UnpackUpDownMaps( buffer_unit_type const * & buffer,
-                                                   localIndex_array & packList,
-                                                   bool const GEOSX_UNUSED_PARAM( overwriteUpMaps ),
-                                                   bool const GEOSX_UNUSED_PARAM( overwriteDownMaps ) )
+localIndex
+WellElementSubRegion::UnpackUpDownMaps(
+  buffer_unit_type const *& buffer,
+  localIndex_array & packList,
+  bool const GEOSX_UNUSED_PARAM( overwriteUpMaps ),
+  bool const GEOSX_UNUSED_PARAM( overwriteDownMaps ) )
 {
   localIndex unPackedSize = 0;
 
@@ -923,14 +1005,16 @@ localIndex WellElementSubRegion::UnpackUpDownMaps( buffer_unit_type const * & bu
   return unPackedSize;
 }
 
-void WellElementSubRegion::FixUpDownMaps( bool const clearIfUnmapped )
+void
+WellElementSubRegion::FixUpDownMaps( bool const clearIfUnmapped )
 {
   ObjectManagerBase::FixUpDownMaps( nodeList(),
                                     m_unmappedGlobalIndicesInNodelist,
                                     clearIfUnmapped );
 }
 
-void WellElementSubRegion::DebugNodeManager( MeshLevel const & mesh ) const
+void
+WellElementSubRegion::DebugNodeManager( MeshLevel const & mesh ) const
 {
   NodeManager const * const nodeManager = mesh.getNodeManager();
   // arrayView2d< real64 const > const & X = nodeManager->referencePosition();
@@ -950,14 +1034,19 @@ void WellElementSubRegion::DebugNodeManager( MeshLevel const & mesh ) const
     return;
   }
 
-  arrayView1d< globalIndex const > const & nodeLocalToGlobal = nodeManager->localToGlobalMap();
+  arrayView1d< globalIndex const > const & nodeLocalToGlobal =
+    nodeManager->localToGlobalMap();
   for( localIndex inodeLocal = 0; inodeLocal < nodeManager->size(); ++inodeLocal )
   {
-    std::cout << "nodeManager->localToGlobalMap["    << inodeLocal << "] = " << nodeLocalToGlobal[inodeLocal]  << std::endl;
+    std::cout << "nodeManager->localToGlobalMap[" << inodeLocal
+              << "] = " << nodeLocalToGlobal[inodeLocal] << std::endl;
   }
 }
 
-void WellElementSubRegion::DebugWellElementSubRegions( arrayView1d< integer const > const & elemStatusGlobal, globalIndex elemOffsetGlobal ) const
+void
+WellElementSubRegion::DebugWellElementSubRegions(
+  arrayView1d< integer const > const & elemStatusGlobal,
+  globalIndex elemOffsetGlobal ) const
 {
   if( size() == 0 )
   {
@@ -980,12 +1069,14 @@ void WellElementSubRegion::DebugWellElementSubRegions( arrayView1d< integer cons
     GEOSX_LOG_RANK_VAR( m_nextWellElementIndexGlobal[iwelem] );
     GEOSX_LOG_RANK_VAR( m_elementCenter[iwelem] );
     GEOSX_LOG_RANK_VAR( m_localToGlobalMap[iwelem] );
-    GEOSX_LOG_RANK_VAR( elemStatusGlobal[m_localToGlobalMap[iwelem] - elemOffsetGlobal] );
+    GEOSX_LOG_RANK_VAR(
+      elemStatusGlobal[m_localToGlobalMap[iwelem] - elemOffsetGlobal] );
     GEOSX_LOG_RANK_VAR( m_topWellElementIndex );
   }
 }
 
-void WellElementSubRegion::DebugWellElementSubRegionsAfterSetupCommunications() const
+void
+WellElementSubRegion::DebugWellElementSubRegionsAfterSetupCommunications() const
 {
   if( size() == 0 )
   {
@@ -1014,4 +1105,4 @@ void WellElementSubRegion::DebugWellElementSubRegionsAfterSetupCommunications() 
   }
 }
 
-}
+}  // namespace geosx

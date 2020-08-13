@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 /**
  * @brief OpEqual Operator that sets a value
  */
@@ -38,8 +37,8 @@ struct OpEqual
    * @return none
    */
   template< typename T, typename U >
-  GEOSX_HOST_DEVICE static inline
-  void apply( T & lhs, U const & rhs )
+  GEOSX_HOST_DEVICE static inline void
+  apply( T & lhs, U const & rhs )
   {
     lhs = static_cast< T >( rhs );
   }
@@ -59,8 +58,8 @@ struct OpAdd
    * @return none
    */
   template< typename T, typename U >
-  GEOSX_HOST_DEVICE static inline
-  void apply( T & lhs, U const & rhs )
+  GEOSX_HOST_DEVICE static inline void
+  apply( T & lhs, U const & rhs )
   {
     lhs += static_cast< T >( rhs );
   }
@@ -87,12 +86,12 @@ struct FieldSpecificationOp
    * This function performs field[index] (+)= value.
    */
   template< typename T >
-  GEOSX_HOST_DEVICE
-  static inline typename std::enable_if< !traits::is_tensorT< T >, void >::type
-  SpecifyFieldValue( arrayView1d< T > const & field,
-                     localIndex const index,
-                     integer const component,
-                     real64 const value )
+  GEOSX_HOST_DEVICE static inline
+    typename std::enable_if< !traits::is_tensorT< T >, void >::type
+    SpecifyFieldValue( arrayView1d< T > const & field,
+                       localIndex const index,
+                       integer const component,
+                       real64 const value )
   {
     GEOSX_UNUSED_VAR( component );
     OP::template apply( field( index ), value );
@@ -111,12 +110,12 @@ struct FieldSpecificationOp
    * This function performs field[index][component] (+)= value.
    */
   template< typename T >
-  GEOSX_HOST_DEVICE
-  static inline typename std::enable_if< traits::is_tensorT< T >, void >::type
-  SpecifyFieldValue( arrayView1d< T > const & field,
-                     localIndex const index,
-                     integer const component,
-                     real64 const value )
+  GEOSX_HOST_DEVICE static inline
+    typename std::enable_if< traits::is_tensorT< T >, void >::type
+    SpecifyFieldValue( arrayView1d< T > const & field,
+                       localIndex const index,
+                       integer const component,
+                       real64 const value )
   {
     OP::template apply( field( index ).Data()[component], value );
   }
@@ -133,12 +132,12 @@ struct FieldSpecificationOp
    * This function performs value (+)= field[index].
    */
   template< typename T >
-  GEOSX_HOST_DEVICE
-  static inline typename std::enable_if< !traits::is_tensorT< T >, void >::type
-  ReadFieldValue( arrayView1d< T const > const & field,
-                  localIndex const index,
-                  integer const component,
-                  real64 & value )
+  GEOSX_HOST_DEVICE static inline
+    typename std::enable_if< !traits::is_tensorT< T >, void >::type
+    ReadFieldValue( arrayView1d< T const > const & field,
+                    localIndex const index,
+                    integer const component,
+                    real64 & value )
   {
     GEOSX_UNUSED_VAR( component );
     OP::template apply( value, field( index ) );
@@ -156,12 +155,12 @@ struct FieldSpecificationOp
    * This function performs value (+)= field[index][component].
    */
   template< typename T >
-  GEOSX_HOST_DEVICE
-  static inline typename std::enable_if< traits::is_tensorT< T >, void >::type
-  ReadFieldValue( arrayView1d< T const > const & field,
-                  localIndex const index,
-                  integer const component,
-                  real64 & value )
+  GEOSX_HOST_DEVICE static inline
+    typename std::enable_if< traits::is_tensorT< T >, void >::type
+    ReadFieldValue( arrayView1d< T const > const & field,
+                    localIndex const index,
+                    integer const component,
+                    real64 & value )
   {
     OP::template apply( value, field( index ).Data()[component] );
   }
@@ -179,12 +178,12 @@ struct FieldSpecificationOp
    * This function performs field[index][component] (+)= value.
    */
   template< typename T, int USD >
-  GEOSX_HOST_DEVICE
-  static inline typename std::enable_if< !traits::is_tensorT< T >, void >::type
-  SpecifyFieldValue( arrayView2d< T, USD > const & field,
-                     localIndex const index,
-                     integer const component,
-                     real64 const value )
+  GEOSX_HOST_DEVICE static inline
+    typename std::enable_if< !traits::is_tensorT< T >, void >::type
+    SpecifyFieldValue( arrayView2d< T, USD > const & field,
+                       localIndex const index,
+                       integer const component,
+                       real64 const value )
   {
     if( component >= 0 )
     {
@@ -213,12 +212,12 @@ struct FieldSpecificationOp
    * This function performs field[index][component] (+)= value for all values of field[index].
    */
   template< typename T, int USD >
-  GEOSX_HOST_DEVICE
-  static inline typename std::enable_if< traits::is_tensorT< T >, void >::type
-  SpecifyFieldValue( arrayView2d< T, USD > const & field,
-                     localIndex const index,
-                     integer const component,
-                     real64 const value )
+  GEOSX_HOST_DEVICE static inline
+    typename std::enable_if< traits::is_tensorT< T >, void >::type
+    SpecifyFieldValue( arrayView2d< T, USD > const & field,
+                       localIndex const index,
+                       integer const component,
+                       real64 const value )
   {
     if( component >= 0 )
     {
@@ -252,12 +251,12 @@ struct FieldSpecificationOp
    * This function performs value (+)= field[index][component].
    */
   template< typename T, int USD >
-  GEOSX_HOST_DEVICE
-  static inline typename std::enable_if< !traits::is_tensorT< T >, void >::type
-  ReadFieldValue( arrayView2d< T const, USD > const & field,
-                  localIndex const index,
-                  integer const component,
-                  real64 & value )
+  GEOSX_HOST_DEVICE static inline
+    typename std::enable_if< !traits::is_tensorT< T >, void >::type
+    ReadFieldValue( arrayView2d< T const, USD > const & field,
+                    localIndex const index,
+                    integer const component,
+                    real64 & value )
   {
     GEOSX_ASSERT( component >= 0 );
     OP::template apply( value, field( index, component ) );
@@ -274,12 +273,12 @@ struct FieldSpecificationOp
    * @return type of the input field value.
    */
   template< typename T, int USD >
-  GEOSX_HOST_DEVICE
-  static inline typename std::enable_if< traits::is_tensorT< T >, void >::type
-  ReadFieldValue( arrayView2d< T const, USD > const & field,
-                  localIndex const index,
-                  integer const component,
-                  real64 & value )
+  GEOSX_HOST_DEVICE static inline
+    typename std::enable_if< traits::is_tensorT< T >, void >::type
+    ReadFieldValue( arrayView2d< T const, USD > const & field,
+                    localIndex const index,
+                    integer const component,
+                    real64 & value )
   {
     GEOSX_UNUSED_VAR( field );
     GEOSX_UNUSED_VAR( index );
@@ -301,12 +300,12 @@ struct FieldSpecificationOp
    * This function performs field[index] (+)= value for all values of field[index].
    */
   template< typename T, int USD >
-  GEOSX_HOST_DEVICE
-  static inline typename std::enable_if< !traits::is_tensorT< T >, void >::type
-  SpecifyFieldValue( arrayView3d< T, USD > const & field,
-                     localIndex const index,
-                     integer const component,
-                     real64 const value )
+  GEOSX_HOST_DEVICE static inline
+    typename std::enable_if< !traits::is_tensorT< T >, void >::type
+    SpecifyFieldValue( arrayView3d< T, USD > const & field,
+                       localIndex const index,
+                       integer const component,
+                       real64 const value )
   {
     if( component >= 0 )
     {
@@ -341,12 +340,12 @@ struct FieldSpecificationOp
    * This function performs field[index][component] (+)= value for all values of field[index].
    */
   template< typename T, int USD >
-  GEOSX_HOST_DEVICE
-  static inline typename std::enable_if< traits::is_tensorT< T >, void >::type
-  SpecifyFieldValue( arrayView3d< T, USD > const & field,
-                     localIndex const index,
-                     integer const component,
-                     real64 const value )
+  GEOSX_HOST_DEVICE static inline
+    typename std::enable_if< traits::is_tensorT< T >, void >::type
+    SpecifyFieldValue( arrayView3d< T, USD > const & field,
+                       localIndex const index,
+                       integer const component,
+                       real64 const value )
   {
     if( component >= 0 )
     {
@@ -384,12 +383,12 @@ struct FieldSpecificationOp
    * @return type of the input field value.
    */
   template< typename T, int USD >
-  GEOSX_HOST_DEVICE
-  static inline void
-  ReadFieldValue( arrayView3d< T const, USD > const & field,
-                  localIndex const index,
-                  integer const component,
-                  real64 & value )
+  GEOSX_HOST_DEVICE static inline void
+  ReadFieldValue(
+    arrayView3d< T const, USD > const & field,
+    localIndex const index,
+    integer const component,
+    real64 & value )
   {
     GEOSX_UNUSED_VAR( field );
     GEOSX_UNUSED_VAR( index );
@@ -397,7 +396,6 @@ struct FieldSpecificationOp
     GEOSX_UNUSED_VAR( value );
     GEOSX_ERROR( "ReadFieldValue: unsupported operation" );
   }
-
 };
 
 /**
@@ -429,16 +427,17 @@ struct FieldSpecificationEqual : public FieldSpecificationOp< OpEqual >
    * update for the field. For a linear problem, this may lead to unexpected results.
    */
   template< typename LAI >
-  static inline void SpecifyFieldValue( globalIndex const dof,
-                                        typename LAI::ParallelMatrix & matrix,
-                                        real64 & rhs,
-                                        real64 const bcValue,
-                                        real64 const fieldValue )
+  static inline void
+  SpecifyFieldValue( globalIndex const dof,
+                     typename LAI::ParallelMatrix & matrix,
+                     real64 & rhs,
+                     real64 const bcValue,
+                     real64 const fieldValue )
   {
     if( matrix.getLocalRowID( dof ) >= 0 )
     {
       real64 const diag = matrix.clearRow( dof, true );
-      rhs = -diag * (bcValue - fieldValue);
+      rhs = -diag * ( bcValue - fieldValue );
     }
     else
     {
@@ -482,13 +481,17 @@ struct FieldSpecificationEqual : public FieldSpecificationOp< OpEqual >
       real64 diagonal = 0;
       for( localIndex j = 0; j < numEntries; ++j )
       {
-        if( columns[ j ] == dof )
-        { diagonal = entries[ j ]; }
+        if( columns[j] == dof )
+        {
+          diagonal = entries[j];
+        }
         else
-        { entries[ j ] = 0; }
+        {
+          entries[j] = 0;
+        }
       }
 
-      rhs = -diagonal * (bcValue - fieldValue);
+      rhs = -diagonal * ( bcValue - fieldValue );
     }
     else
     {
@@ -504,10 +507,11 @@ struct FieldSpecificationEqual : public FieldSpecificationOp< OpEqual >
    * @param values A pointer to the values corresponding to \p dof that will be added to \p rhs.
    */
   template< typename LAI >
-  static inline void PrescribeRhsValues( typename LAI::ParallelVector & rhs,
-                                         localIndex const num,
-                                         globalIndex * const dof,
-                                         real64 * const values )
+  static inline void
+  PrescribeRhsValues( typename LAI::ParallelVector & rhs,
+                      localIndex const num,
+                      globalIndex * const dof,
+                      real64 * const values )
   {
     for( localIndex a = 0; a < num; ++a )
     {
@@ -527,18 +531,22 @@ struct FieldSpecificationEqual : public FieldSpecificationOp< OpEqual >
    * @param values a list of values corresponding to \p dof that will be added to \p rhs.
    */
   template< typename POLICY >
-  static inline void PrescribeRhsValues( arrayView1d< real64 > const & rhs,
-                                         arrayView1d< globalIndex const > const & dof,
-                                         globalIndex const dofRankOffset,
-                                         arrayView1d< real64 const > const & values )
+  static inline void
+  PrescribeRhsValues( arrayView1d< real64 > const & rhs,
+                      arrayView1d< globalIndex const > const & dof,
+                      globalIndex const dofRankOffset,
+                      arrayView1d< real64 const > const & values )
   {
     GEOSX_ASSERT_EQ( dof.size(), values.size() );
-    forAll< POLICY >( dof.size(), [rhs, dof, dofRankOffset, values] GEOSX_HOST_DEVICE ( localIndex const a )
-    {
-      globalIndex const localRow = dof[ a ] - dofRankOffset;
-      if( localRow >= 0 && localRow < rhs.size() )
-      { rhs[ localRow ] = values[ a ]; }
-    } );
+    forAll< POLICY >(
+      dof.size(),
+      [rhs, dof, dofRankOffset, values] GEOSX_HOST_DEVICE( localIndex const a ) {
+        globalIndex const localRow = dof[a] - dofRankOffset;
+        if( localRow >= 0 && localRow < rhs.size() )
+        {
+          rhs[localRow] = values[a];
+        }
+      } );
   }
 };
 
@@ -564,12 +572,14 @@ struct FieldSpecificationAdd : public FieldSpecificationOp< OpAdd >
    *
    */
   GEOSX_HOST_DEVICE
-  static inline void SpecifyFieldValue( globalIndex const dof,
-                                        globalIndex const dofRankOffset,
-                                        CRSMatrixView< real64, globalIndex const > const & matrix,
-                                        real64 & rhs,
-                                        real64 const bcValue,
-                                        real64 const fieldValue )
+  static inline void
+  SpecifyFieldValue(
+    globalIndex const dof,
+    globalIndex const dofRankOffset,
+    CRSMatrixView< real64, globalIndex const > const & matrix,
+    real64 & rhs,
+    real64 const bcValue,
+    real64 const fieldValue )
   {
     GEOSX_UNUSED_VAR( dof );
     GEOSX_UNUSED_VAR( dofRankOffset );
@@ -586,10 +596,11 @@ struct FieldSpecificationAdd : public FieldSpecificationOp< OpAdd >
    * @param values A pointer to the values corresponding to \p dof that will be added to \p rhs.
    */
   template< typename LAI >
-  static inline void PrescribeRhsValues( typename LAI::ParallelVector & rhs,
-                                         localIndex const num,
-                                         globalIndex * const dof,
-                                         real64 * const values )
+  static inline void
+  PrescribeRhsValues( typename LAI::ParallelVector & rhs,
+                      localIndex const num,
+                      globalIndex * const dof,
+                      real64 * const values )
   {
     rhs.add( dof, values, num );
   }
@@ -603,22 +614,25 @@ struct FieldSpecificationAdd : public FieldSpecificationOp< OpAdd >
    * @param values a list of values corresponding to \p dof that will be added to \p rhs.
    */
   template< typename POLICY >
-  static inline void PrescribeRhsValues( arrayView1d< real64 > const & rhs,
-                                         arrayView1d< globalIndex const > const & dof,
-                                         globalIndex const dofRankOffset,
-                                         arrayView1d< real64 const > const & values )
+  static inline void
+  PrescribeRhsValues( arrayView1d< real64 > const & rhs,
+                      arrayView1d< globalIndex const > const & dof,
+                      globalIndex const dofRankOffset,
+                      arrayView1d< real64 const > const & values )
   {
     GEOSX_ASSERT_EQ( dof.size(), values.size() );
-    forAll< POLICY >( dof.size(), [rhs, dof, dofRankOffset, values] GEOSX_HOST_DEVICE ( localIndex const a )
-    {
-      globalIndex const localRow = dof[ a ] - dofRankOffset;
-      if( localRow >= 0 && localRow < rhs.size() )
-      { rhs[ localRow ] += values[ a ]; }
-    } );
+    forAll< POLICY >(
+      dof.size(),
+      [rhs, dof, dofRankOffset, values] GEOSX_HOST_DEVICE( localIndex const a ) {
+        globalIndex const localRow = dof[a] - dofRankOffset;
+        if( localRow >= 0 && localRow < rhs.size() )
+        {
+          rhs[localRow] += values[a];
+        }
+      } );
   }
-
 };
 
-} //namespace geosx
+}  //namespace geosx
 
-#endif //GEOSX_MANAGERS_FIELDSPECIFICATION_FIELDSPECIFICATIONOPS_HPP
+#endif  //GEOSX_MANAGERS_FIELDSPECIFICATION_FIELDSPECIFICATIONOPS_HPP

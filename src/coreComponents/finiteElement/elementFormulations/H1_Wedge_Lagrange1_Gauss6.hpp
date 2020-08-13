@@ -21,12 +21,10 @@
 
 #include "FiniteElementBase.hpp"
 
-
 namespace geosx
 {
 namespace finiteElement
 {
-
 /**
  * This class contains the kernel accessible functions specific to the
  * H1-conforming nodal bilinear wedge finite element with a 6-point Gaussian
@@ -62,12 +60,14 @@ public:
   virtual ~H1_Wedge_Lagrange1_Gauss6() override
   {}
 
-  virtual localIndex getNumQuadraturePoints() const override
+  virtual localIndex
+  getNumQuadraturePoints() const override
   {
     return numQuadraturePoints;
   }
 
-  virtual localIndex getNumSupportPoints() const override
+  virtual localIndex
+  getNumSupportPoints() const override
   {
     return numNodes;
   }
@@ -80,8 +80,8 @@ public:
    *
    */
   GEOSX_HOST_DEVICE
-  static void shapeFunctionValues( localIndex const q,
-                                   real64 ( &N )[numNodes] );
+  static void
+  shapeFunctionValues( localIndex const q, real64 ( &N )[numNodes] );
 
   /**
    * @brief Calculate the shape functions derivatives wrt the physical
@@ -93,10 +93,10 @@ public:
    * @return The determinant of the parent/physical transformation matrix.
    */
   GEOSX_HOST_DEVICE
-  static real64 shapeFunctionDerivatives( localIndex const q,
-                                          real64 const (&X)[numNodes][3],
-                                          real64 ( &dNdX )[numNodes][3] );
-
+  static real64
+  shapeFunctionDerivatives( localIndex const q,
+                            real64 const ( &X )[numNodes][3],
+                            real64 ( &dNdX )[numNodes][3] );
 
   /**
    * @brief Calculate the integration weights for a quadrature point.
@@ -106,8 +106,9 @@ public:
    *   the parent/physical transformation matrix.
    */
   GEOSX_HOST_DEVICE
-  static real64 transformedQuadratureWeight( localIndex const q,
-                                             real64 const (&X)[numNodes][3] );
+  static real64
+  transformedQuadratureWeight( localIndex const q,
+                               real64 const ( &X )[numNodes][3] );
 
 private:
   /// The volume of the element in the parent configuration.
@@ -123,7 +124,8 @@ private:
   /// The scaling factor specifying the location of the quadrature points
   /// relative to the origin and the outer extent of the element in the
   /// parent space.
-  constexpr static real64 quadratureLongitudinalCoord = 1.0 / 1.732050807568877293528;
+  constexpr static real64 quadratureLongitudinalCoord =
+    1.0 / 1.732050807568877293528;
 
   /**
    * @brief Calculates the index for support/quadrature points from the
@@ -133,9 +135,9 @@ private:
    * @return The linear index of the support/quadrature point (0-5)
    */
   template< typename T >
-  GEOSX_HOST_DEVICE
-  GEOSX_FORCE_INLINE
-  constexpr static T linearMap( T const indexT, T const indexL )
+  GEOSX_HOST_DEVICE GEOSX_FORCE_INLINE constexpr static T
+  linearMap( T const indexT,
+             T const indexL )
   {
     return 2 * indexT + indexL;
   }
@@ -148,7 +150,8 @@ private:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  constexpr static real64 parentCoords0( localIndex const a )
+  constexpr static real64
+  parentCoords0( localIndex const a )
   {
     return 0.5 * ( a & 2 );
   }
@@ -161,7 +164,8 @@ private:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  constexpr static real64 parentCoords1( localIndex const a )
+  constexpr static real64
+  parentCoords1( localIndex const a )
   {
     return 0.25 * ( a & 4 );
   }
@@ -174,7 +178,8 @@ private:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  constexpr static real64 parentCoords2( localIndex const a )
+  constexpr static real64
+  parentCoords2( localIndex const a )
   {
     return -1.0 + 2 * ( a & 1 );
   }
@@ -187,9 +192,10 @@ private:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  constexpr static real64 quadratureParentCoords0( localIndex const q )
+  constexpr static real64
+  quadratureParentCoords0( localIndex const q )
   {
-    return quadratureCrossSectionCoord + 0.5  * parentCoords0( q );
+    return quadratureCrossSectionCoord + 0.5 * parentCoords0( q );
   }
 
   /**
@@ -200,9 +206,10 @@ private:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  constexpr static real64 quadratureParentCoords1( localIndex const q )
+  constexpr static real64
+  quadratureParentCoords1( localIndex const q )
   {
-    return quadratureCrossSectionCoord + 0.5  * parentCoords1( q );
+    return quadratureCrossSectionCoord + 0.5 * parentCoords1( q );
   }
 
   /**
@@ -213,7 +220,8 @@ private:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  constexpr static real64 quadratureParentCoords2( localIndex const q )
+  constexpr static real64
+  quadratureParentCoords2( localIndex const q )
   {
     return parentCoords2( q ) * quadratureLongitudinalCoord;
   }
@@ -225,9 +233,10 @@ private:
    * @param J Array to store the Jacobian matrix
    */
   GEOSX_HOST_DEVICE
-  static void jacobianTransformation( int const q,
-                                      real64 const (&X)[numNodes][3],
-                                      real64 ( &J )[3][3] );
+  static void
+  jacobianTransformation( int const q,
+                          real64 const ( &X )[numNodes][3],
+                          real64 ( &J )[3][3] );
 
   /**
    * @brief Apply a Jacobian transformation matrix from the parent space to the
@@ -240,32 +249,32 @@ private:
    */
   GEOSX_HOST_DEVICE
   static void
-    applyJacobianTransformationToShapeFunctionsDerivatives( int const q,
-                                                            real64 const ( &invJ )[3][3],
-                                                            real64 ( &dNdX )[numNodes][3] );
-
+  applyJacobianTransformationToShapeFunctionsDerivatives(
+    int const q,
+    real64 const ( &invJ )[3][3],
+    real64 ( &dNdX )[numNodes][3] );
 };
 
 GEOSX_HOST_DEVICE
 GEOSX_FORCE_INLINE
 void
-H1_Wedge_Lagrange1_Gauss6::
-  jacobianTransformation( int const q,
-                          real64 const (&X)[numNodes][3],
-                          real64 ( & J )[3][3] )
+H1_Wedge_Lagrange1_Gauss6::jacobianTransformation(
+  int const q,
+  real64 const ( &X )[numNodes][3],
+  real64 ( &J )[3][3] )
 {
-  real64 const r  = quadratureParentCoords0( q );
-  real64 const s  = quadratureParentCoords1( q );
+  real64 const r = quadratureParentCoords0( q );
+  real64 const s = quadratureParentCoords1( q );
   real64 const xi = quadratureParentCoords2( q );
 
   real64 const psiTRI[3] = { 1.0 - r - s, r, s };
-  real64 const psiLIN[2] = { 0.5 - 0.5*xi, 0.5 + 0.5*xi };
+  real64 const psiLIN[2] = { 0.5 - 0.5 * xi, 0.5 + 0.5 * xi };
   constexpr real64 dpsiTRI[2][3] = { { -1.0, 1.0, 0.0 }, { -1.0, 0.0, 1.0 } };
   constexpr real64 dpsiLIN[2] = { -0.5, 0.5 };
 
-  for( localIndex a=0; a<3; ++a )
+  for( localIndex a = 0; a < 3; ++a )
   {
-    for( localIndex b=0; b<2; ++b )
+    for( localIndex b = 0; b < 2; ++b )
     {
       real64 const dNdXi[3] = { dpsiTRI[0][a] * psiLIN[b],
                                 dpsiTRI[1][a] * psiLIN[b],
@@ -275,7 +284,7 @@ H1_Wedge_Lagrange1_Gauss6::
       {
         for( int j = 0; j < 3; ++j )
         {
-          J[i][j] = J[i][j] + dNdXi[ j ] * X[nodeIndex][i];
+          J[i][j] = J[i][j] + dNdXi[j] * X[nodeIndex][i];
         }
       }
     }
@@ -287,23 +296,23 @@ H1_Wedge_Lagrange1_Gauss6::
 GEOSX_HOST_DEVICE
 GEOSX_FORCE_INLINE
 void
-H1_Wedge_Lagrange1_Gauss6::
-  applyJacobianTransformationToShapeFunctionsDerivatives( int const q,
-                                                          real64 const ( &invJ )[3][3],
-                                                          real64 (& dNdX)[numNodes][3] )
+H1_Wedge_Lagrange1_Gauss6::applyJacobianTransformationToShapeFunctionsDerivatives(
+  int const q,
+  real64 const ( &invJ )[3][3],
+  real64 ( &dNdX )[numNodes][3] )
 {
-  real64 const r  = quadratureParentCoords0( q );
-  real64 const s  = quadratureParentCoords1( q );
+  real64 const r = quadratureParentCoords0( q );
+  real64 const s = quadratureParentCoords1( q );
   real64 const xi = quadratureParentCoords2( q );
 
   real64 const psiTRI[3] = { 1.0 - r - s, r, s };
-  real64 const psiLIN[2] = { 0.5 - 0.5*xi, 0.5 + 0.5*xi };
+  real64 const psiLIN[2] = { 0.5 - 0.5 * xi, 0.5 + 0.5 * xi };
   constexpr real64 dpsiTRI[2][3] = { { -1.0, 1.0, 0.0 }, { -1.0, 0.0, 1.0 } };
   constexpr real64 dpsiLIN[2] = { -0.5, 0.5 };
 
-  for( localIndex a=0; a<3; ++a )
+  for( localIndex a = 0; a < 3; ++a )
   {
-    for( localIndex b=0; b<2; ++b )
+    for( localIndex b = 0; b < 2; ++b )
     {
       real64 const dNdXi[3] = { dpsiTRI[0][a] * psiLIN[b],
                                 dpsiTRI[1][a] * psiLIN[b],
@@ -314,7 +323,7 @@ H1_Wedge_Lagrange1_Gauss6::
         dNdX[nodeIndex][i] = 0.0;
         for( int j = 0; j < 3; ++j )
         {
-          dNdX[nodeIndex][i] = dNdX[nodeIndex][i] + dNdXi[ j ] * invJ[j][i];
+          dNdX[nodeIndex][i] = dNdX[nodeIndex][i] + dNdXi[j] * invJ[j][i];
         }
       }
     }
@@ -326,20 +335,19 @@ H1_Wedge_Lagrange1_Gauss6::
 GEOSX_HOST_DEVICE
 GEOSX_FORCE_INLINE
 void
-H1_Wedge_Lagrange1_Gauss6::
-  shapeFunctionValues( localIndex const q,
-                       real64 (& N)[numNodes] )
+H1_Wedge_Lagrange1_Gauss6::shapeFunctionValues( localIndex const q,
+                                                real64 ( &N )[numNodes] )
 {
-  real64 const r  = quadratureParentCoords0( q );
-  real64 const s  = quadratureParentCoords1( q );
+  real64 const r = quadratureParentCoords0( q );
+  real64 const s = quadratureParentCoords1( q );
   real64 const xi = quadratureParentCoords2( q );
 
-  N[0] = 0.5*( 1.0 - r - s ) * ( 1.0 - xi );
-  N[1] = 0.5*( 1.0 - r - s ) * ( 1.0 + xi );
-  N[2] = 0.5* r * ( 1.0 - xi );
-  N[3] = 0.5* r * ( 1.0 + xi );
-  N[4] = 0.5* s * ( 1.0 - xi );
-  N[5] = 0.5* s * ( 1.0 + xi );
+  N[0] = 0.5 * ( 1.0 - r - s ) * ( 1.0 - xi );
+  N[1] = 0.5 * ( 1.0 - r - s ) * ( 1.0 + xi );
+  N[2] = 0.5 * r * ( 1.0 - xi );
+  N[3] = 0.5 * r * ( 1.0 + xi );
+  N[4] = 0.5 * s * ( 1.0 - xi );
+  N[5] = 0.5 * s * ( 1.0 + xi );
 }
 
 //*************************************************************************************************
@@ -347,12 +355,12 @@ H1_Wedge_Lagrange1_Gauss6::
 GEOSX_HOST_DEVICE
 GEOSX_FORCE_INLINE
 real64
-H1_Wedge_Lagrange1_Gauss6::
-  shapeFunctionDerivatives( localIndex const q,
-                            real64 const (&X)[numNodes][3],
-                            real64 (& dNdX)[numNodes][3] )
+H1_Wedge_Lagrange1_Gauss6::shapeFunctionDerivatives(
+  localIndex const q,
+  real64 const ( &X )[numNodes][3],
+  real64 ( &dNdX )[numNodes][3] )
 {
-  real64 J[3][3] = {{0}};
+  real64 J[3][3] = { { 0 } };
 
   jacobianTransformation( q, X, J );
 
@@ -368,18 +376,18 @@ H1_Wedge_Lagrange1_Gauss6::
 GEOSX_HOST_DEVICE
 GEOSX_FORCE_INLINE
 real64
-H1_Wedge_Lagrange1_Gauss6::
-  transformedQuadratureWeight( localIndex const q,
-                               real64 const (&X)[numNodes][3] )
+H1_Wedge_Lagrange1_Gauss6::transformedQuadratureWeight(
+  localIndex const q,
+  real64 const ( &X )[numNodes][3] )
 {
-  real64 J[3][3] = {{0}};
+  real64 J[3][3] = { { 0 } };
 
   jacobianTransformation( q, X, J );
 
   return detJ( J ) * weight;
 }
 
-}
-}
+}  // namespace finiteElement
+}  // namespace geosx
 
-#endif //GEOSX_CORE_FINITEELEMENT_H1WEDGELAGRANGE1GAUSS6
+#endif  //GEOSX_CORE_FINITEELEMENT_H1WEDGELAGRANGE1GAUSS6

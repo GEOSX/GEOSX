@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 /**
  * @struct CellElementStencilTPFA_Traits
  * Struct to predeclare the types and constexpr values of CellElementStencilTPFA so that they may be used in
@@ -49,7 +48,6 @@ struct CellElementStencilTPFA_Traits
   /// The array view to const type for the stencil weights
   using WeightContainerViewConstType = arrayView2d< real64 const >;
 
-
   /// Number of points the flux is between (always 2 for TPFA)
   static constexpr localIndex NUM_POINT_IN_FLUX = 2;
 
@@ -62,41 +60,45 @@ struct CellElementStencilTPFA_Traits
  *
  * Provides management of the interior stencil points when using Two-Point flux approximation.
  */
-class CellElementStencilTPFA : public StencilBase< CellElementStencilTPFA_Traits, CellElementStencilTPFA >,
-  public CellElementStencilTPFA_Traits
+class CellElementStencilTPFA
+  : public StencilBase< CellElementStencilTPFA_Traits, CellElementStencilTPFA >,
+    public CellElementStencilTPFA_Traits
 {
 public:
-
   /**
    * @brief Default constructor.
    */
   CellElementStencilTPFA();
 
-  virtual void add( localIndex const numPts,
-                    localIndex const * const elementRegionIndices,
-                    localIndex const * const elementSubRegionIndices,
-                    localIndex const * const elementIndices,
-                    real64 const * const weights,
-                    localIndex const connectorIndex ) override final;
+  virtual void
+  add( localIndex const numPts,
+       localIndex const * const elementRegionIndices,
+       localIndex const * const elementSubRegionIndices,
+       localIndex const * const elementIndices,
+       real64 const * const weights,
+       localIndex const connectorIndex ) override final;
 
   /**
    * @brief Return the stencil size.
    * @return the stencil size
    */
-  virtual localIndex size() const override final
-  { return m_elementRegionIndices.size( 0 ); }
+  virtual localIndex
+  size() const override final
+  {
+    return m_elementRegionIndices.size( 0 );
+  }
 
   /**
    * @brief Give the number of points in a stencil entry.
    * @param[in] index of the stencil entry for which to query the size
    * @return the size of a stencil entry
    */
-  constexpr localIndex stencilSize( localIndex index ) const
+  constexpr localIndex
+  stencilSize( localIndex index ) const
   {
     GEOSX_UNUSED_VAR( index );
     return MAX_STENCIL_SIZE;
   }
-
 };
 
 } /* namespace geosx */

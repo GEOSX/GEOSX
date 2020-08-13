@@ -23,16 +23,15 @@
 
 namespace geosx
 {
-
 namespace constitutive
 {
-
 /**
  * @brief Struct to help in dynamic dispatch based on type of contitutive model.
  * @tparam TYPES pack of derived constitutive types to handle
  */
-template< typename ... TYPES >
-struct ConstitutivePassThruHandler {};
+template< typename... TYPES >
+struct ConstitutivePassThruHandler
+{};
 
 /**
  * @brief Specialization for an empty type pack (always errors)
@@ -41,12 +40,15 @@ template<>
 struct ConstitutivePassThruHandler<>
 {
   template< typename BASE, typename LAMBDA >
-  static void Execute( BASE & relation, LAMBDA lambda )
+  static void
+  Execute( BASE & relation, LAMBDA lambda )
   {
     GEOSX_UNUSED_VAR( relation )
     GEOSX_UNUSED_VAR( lambda )
-    GEOSX_ERROR( "The constitutive model " << relation.getName() << " was not dispatched." <<
-                 "The model type does not match the list of supported types." );
+    GEOSX_ERROR(
+      "The constitutive model "
+      << relation.getName() << " was not dispatched."
+      << "The model type does not match the list of supported types." );
   }
 };
 
@@ -55,11 +57,12 @@ struct ConstitutivePassThruHandler<>
  * @tparam TYPE first type to handle
  * @tparam TYPES rest of the type list
  */
-template< typename TYPE, typename ... TYPES >
+template< typename TYPE, typename... TYPES >
 struct ConstitutivePassThruHandler< TYPE, TYPES... >
 {
   template< typename BASE, typename LAMBDA >
-  static void Execute( BASE & relation, LAMBDA && lambda )
+  static void
+  Execute( BASE & relation, LAMBDA && lambda )
   {
     using Derived = add_const_if_t< TYPE, std::is_const< BASE >::value >;
 
@@ -69,13 +72,15 @@ struct ConstitutivePassThruHandler< TYPE, TYPES... >
     }
     else
     {
-      ConstitutivePassThruHandler< TYPES... >::Execute( relation, std::forward< LAMBDA >( lambda ) );
+      ConstitutivePassThruHandler< TYPES... >::Execute(
+        relation,
+        std::forward< LAMBDA >( lambda ) );
     }
   }
 };
 
-}//namespace constitutive
+}  //namespace constitutive
 
-} //namespace geosx
+}  //namespace geosx
 
-#endif //GEOSX_CONSTITUTIVEPASSTHRUHANDLER_HPP
+#endif  //GEOSX_CONSTITUTIVEPASSTHRUHANDLER_HPP

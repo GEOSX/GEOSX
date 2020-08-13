@@ -17,7 +17,6 @@
  *
  */
 
-
 #include "CGsolver.hpp"
 
 #include "common/Stopwatch.hpp"
@@ -28,7 +27,6 @@
 
 namespace geosx
 {
-
 // BEGIN_RST_NARRATIVE CGsolver.rst
 // ==============================
 // CG Solver
@@ -37,7 +35,6 @@ namespace geosx
 // The notation is consistent with "Iterative Methods for
 // Linear and Non-Linear Equations" from C.T. Kelley (1995)
 // and "Iterative Methods for Sparse Linear Systems" from Y. Saad (2003).
-
 
 // ----------------------------
 // Constructor
@@ -48,8 +45,8 @@ CGsolver< VECTOR >::CGsolver( LinearOperator< Vector > const & A,
                               LinearOperator< Vector > const & M,
                               real64 const tolerance,
                               localIndex const maxIterations,
-                              integer const verbosity )
-  : KrylovSolver< VECTOR >( A, M, tolerance, maxIterations, verbosity )
+                              integer const verbosity ) :
+  KrylovSolver< VECTOR >( A, M, tolerance, maxIterations, verbosity )
 {}
 
 // ----------------------------
@@ -62,7 +59,8 @@ CGsolver< VECTOR >::~CGsolver() = default;
 // Monolithic CG solver
 // ----------------------------
 template< typename VECTOR >
-void CGsolver< VECTOR >::solve( Vector const & b, Vector & x ) const
+void
+CGsolver< VECTOR >::solve( Vector const & b, Vector & x ) const
 
 {
   Stopwatch watch;
@@ -162,4 +160,4 @@ template class CGsolver< PetscInterface::ParallelVector >;
 template class CGsolver< BlockVectorView< PetscInterface::ParallelVector > >;
 #endif
 
-} //namespace geosx
+}  //namespace geosx

@@ -24,20 +24,19 @@
 
 namespace geosx
 {
-
-
-PetscPreconditioner::PetscPreconditioner( LinearSolverParameters params )
-  : Base{},
+PetscPreconditioner::PetscPreconditioner( LinearSolverParameters params ) :
+  Base {},
   m_parameters( std::move( params ) ),
-  m_precond{}
-{ }
+  m_precond {}
+{}
 
 PetscPreconditioner::~PetscPreconditioner()
 {
   clear();
 }
 
-void CreatePetscAMG( LinearSolverParameters const & params, PC precond )
+void
+CreatePetscAMG( LinearSolverParameters const & params, PC precond )
 {
   // Default options only for the moment
   GEOSX_LAI_CHECK_ERROR( PCSetType( precond, PCGAMG ) );
@@ -148,20 +147,22 @@ void CreatePetscAMG( LinearSolverParameters const & params, PC precond )
 #endif
 }
 
-PCType getPetscSmootherType( string const & type )
+PCType
+getPetscSmootherType( string const & type )
 {
-  static std::map< string, PCType > const typeMap =
-  {
+  static std::map< string, PCType > const typeMap = {
     { "iluk", PCILU },
     { "icc", PCICC },
     { "jacobi", PCJACOBI },
   };
 
-  GEOSX_LAI_ASSERT_MSG( typeMap.count( type ) > 0, "Unsupported Petsc smoother option: " << type );
+  GEOSX_LAI_ASSERT_MSG( typeMap.count( type ) > 0,
+                        "Unsupported Petsc smoother option: " << type );
   return typeMap.at( type );
 }
 
-void CreatePetscSmoother( LinearSolverParameters const & params, PC precond )
+void
+CreatePetscSmoother( LinearSolverParameters const & params, PC precond )
 {
   // Set up additive Schwartz outer preconditioner
   GEOSX_LAI_CHECK_ERROR( PCSetType( precond, PCASM ) );
@@ -172,18 +173,21 @@ void CreatePetscSmoother( LinearSolverParameters const & params, PC precond )
   // Get local preconditioning context
   KSP * ksp_local;
   PetscInt n_local, first_local;
-  GEOSX_LAI_CHECK_ERROR( PCASMGetSubKSP( precond, &n_local, &first_local, &ksp_local ) );
+  GEOSX_LAI_CHECK_ERROR(
+    PCASMGetSubKSP( precond, &n_local, &first_local, &ksp_local ) );
   GEOSX_LAI_ASSERT_EQ( n_local, 1 );
 
   // Set up local block ILU preconditioner
   PC prec_local;
   GEOSX_LAI_CHECK_ERROR( KSPSetType( ksp_local[0], KSPPREONLY ) );
   GEOSX_LAI_CHECK_ERROR( KSPGetPC( ksp_local[0], &prec_local ) );
-  GEOSX_LAI_CHECK_ERROR( PCSetType( prec_local, getPetscSmootherType( params.preconditionerType ) ) );
+  GEOSX_LAI_CHECK_ERROR(
+    PCSetType( prec_local, getPetscSmootherType( params.preconditionerType ) ) );
   GEOSX_LAI_CHECK_ERROR( PCFactorSetLevels( prec_local, params.ilu.fill ) );
 }
 
-void PetscPreconditioner::compute( PetscMatrix const & mat )
+void
+PetscPreconditioner::compute( PetscMatrix const & mat )
 {
   Base::compute( mat );
 
@@ -194,7 +198,8 @@ void PetscPreconditioner::compute( PetscMatrix const & mat )
   {
     GEOSX_LAI_CHECK_ERROR( PCCreate( mat.getComm(), &m_precond ) );
   }
-  GEOSX_LAI_CHECK_ERROR( PCSetOperators( m_precond, mat.unwrapped(), mat.unwrapped() ) );
+  GEOSX_LAI_CHECK_ERROR(
+    PCSetOperators( m_precond, mat.unwrapped(), mat.unwrapped() ) );
 
   // Add specifics
   if( create )
@@ -213,7 +218,8 @@ void PetscPreconditioner::compute( PetscMatrix const & mat )
     }
     else if( m_parameters.preconditionerType == "mgr" )
     {
-      GEOSX_ERROR( "MGR preconditioner available only through the hypre interface" );
+      GEOSX_ERROR(
+        "MGR preconditioner available only through the hypre interface" );
     }
     else if( m_parameters.preconditionerType == "iluk" ||
              m_parameters.preconditionerType == "icc" )
@@ -222,7 +228,8 @@ void PetscPreconditioner::compute( PetscMatrix const & mat )
     }
     else
     {
-      GEOSX_ERROR( "Preconditioner type not available: " << m_parameters.preconditionerType );
+      GEOSX_ERROR( "Preconditioner type not available: "
+                   << m_parameters.preconditionerType );
     }
   }
 
@@ -230,8 +237,8 @@ void PetscPreconditioner::compute( PetscMatrix const & mat )
   GEOSX_LAI_CHECK_ERROR( PCSetUpOnBlocks( m_precond ) );
 }
 
-void PetscPreconditioner::apply( PetscVector const & src,
-                                 PetscVector & dst ) const
+void
+PetscPreconditioner::apply( PetscVector const & src, PetscVector & dst ) const
 {
   GEOSX_LAI_ASSERT( ready() );
   GEOSX_LAI_ASSERT( src.ready() );
@@ -242,7 +249,8 @@ void PetscPreconditioner::apply( PetscVector const & src,
   GEOSX_LAI_CHECK_ERROR( PCApply( m_precond, src.unwrapped(), dst.unwrapped() ) );
 }
 
-void PetscPreconditioner::clear()
+void
+PetscPreconditioner::clear()
 {
   PreconditionerBase::clear();
   if( m_precond != nullptr )
@@ -251,9 +259,10 @@ void PetscPreconditioner::clear()
   }
 }
 
-PC const & PetscPreconditioner::unwrapped() const
+PC const &
+PetscPreconditioner::unwrapped() const
 {
   return m_precond;
 }
 
-}
+}  // namespace geosx

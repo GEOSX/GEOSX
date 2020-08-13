@@ -21,20 +21,35 @@
 
 namespace StructuredGrid
 {
-
 /**
  * @brief Given n, compute n^d, where d is the spatial dimension.
  * @param[in] n the input integer whose power is computed here
  * @return the power of n
  */
 template< int dim >
-int dimpower( int n );
+int
+dimpower( int n );
 
 /// @cond DO_NOT_DOCUMENT
 
-template<> inline int dimpower< 1 >( int n ) { return n; }
-template<> inline int dimpower< 2 >( int n ) { return n*n; }
-template<> inline int dimpower< 3 >( int n ) { return n*n*n; }
+template<>
+inline int
+dimpower< 1 >( int n )
+{
+  return n;
+}
+template<>
+inline int
+dimpower< 2 >( int n )
+{
+  return n * n;
+}
+template<>
+inline int
+dimpower< 3 >( int n )
+{
+  return n * n * n;
+}
 
 /// @endcond
 
@@ -48,17 +63,14 @@ template<> inline int dimpower< 3 >( int n ) { return n*n*n; }
  * @param[out] indices the original (i,j,k) indices of the point
  */
 template< int dim >
-void map_index( const int index,
-                const int nnx,
-                std::vector< int > & indices );
+void
+map_index( const int index, const int nnx, std::vector< int > & indices );
 
 /// @cond DO_NOT_DOCUMENT
 
 template<>
-inline
-void map_index< 1 >( const int index,
-                     const int nnx,
-                     std::vector< int > & indices )
+inline void
+map_index< 1 >( const int index, const int nnx, std::vector< int > & indices )
 {
   GEOSX_ASSERT_GT( nnx, index );
   GEOSX_DEBUG_VAR( nnx );
@@ -66,30 +78,26 @@ void map_index< 1 >( const int index,
 }
 
 template<>
-inline
-void map_index< 2 >( const int index,
-                     const int nnx,
-                     std::vector< int > & indices )
+inline void
+map_index< 2 >( const int index, const int nnx, std::vector< int > & indices )
 {
-  GEOSX_ASSERT_GT( nnx*nnx, index );
+  GEOSX_ASSERT_GT( nnx * nnx, index );
   indices[0] = index % nnx;
   indices[1] = index / nnx;
 }
 
 template<>
-inline
-void map_index< 3 >( const int index,
-                     const int nnx,
-                     std::vector< int > & indices )
+inline void
+map_index< 3 >( const int index, const int nnx, std::vector< int > & indices )
 {
-  GEOSX_ASSERT_GT( nnx*nnx*nnx, index );
+  GEOSX_ASSERT_GT( nnx * nnx * nnx, index );
   indices[0] = index % nnx;
-  indices[1] = (index / nnx) % nnx;
-  indices[2] = index / (nnx*nnx);
+  indices[1] = ( index / nnx ) % nnx;
+  indices[2] = index / ( nnx * nnx );
 }
 
 /// @endcond
 
-} // end namespace
+}  // namespace StructuredGrid
 
 #endif

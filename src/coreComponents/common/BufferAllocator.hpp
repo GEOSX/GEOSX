@@ -22,8 +22,8 @@
 #include "common/GeosxConfig.hpp"
 
 #ifdef GEOSX_USE_CHAI
-#include <umpire/ResourceManager.hpp>
-#include <umpire/TypedAllocator.hpp>
+  #include <umpire/ResourceManager.hpp>
+  #include <umpire/TypedAllocator.hpp>
 
 namespace geosx
 {
@@ -32,14 +32,16 @@ namespace geosx
  * @param p Whether or not BufferAllocators should be instantiated
  *          with a preference for using pinned memory.
  */
-void setPreferPinned( bool p );
+void
+setPreferPinned( bool p );
 
 /**
  * @brief Get the current desired behaviour of the BufferAllocator
  * @return Whether or not BufferAllocators should be instantiated
  *         with a preference for using pinned memory.
  */
-bool getPreferPinned( );
+bool
+getPreferPinned();
 
 /**
  * @brief Wrapper class for umpire allocator, only used to determine which umpire allocator to use based on
@@ -61,30 +63,36 @@ class BufferAllocator
 public:
   // The type used to instantiate the class, and the underlying umpire allocator.
   using value_type = T;
+
 private:
   // An umpire allocator allocating the type for which this class is instantiated.
   umpire::TypedAllocator< value_type > m_alloc;
   bool m_prefer_pinned_l;
+
 public:
   /**
    * @brief Default behavior is to allocate host memory, if there is a pinned memory allocator
    *        provided by umpire for the target platform, and getPreferPinned returns true,
    *        use that instead.
    */
-  BufferAllocator()
-    : m_alloc( umpire::TypedAllocator< T >( umpire::ResourceManager::getInstance().getAllocator( umpire::resource::Host )))
-    , m_prefer_pinned_l( getPreferPinned( ) )
+  BufferAllocator() :
+    m_alloc( umpire::TypedAllocator< T >(
+      umpire::ResourceManager::getInstance().getAllocator(
+        umpire::resource::Host ) ) ),
+    m_prefer_pinned_l( getPreferPinned() )
   {
     auto & rm = umpire::ResourceManager::getInstance();
     if( rm.isAllocator( "PINNED" ) && m_prefer_pinned_l )
-      m_alloc = umpire::TypedAllocator< T >( rm.getAllocator( umpire::resource::Pinned ));
+      m_alloc =
+        umpire::TypedAllocator< T >( rm.getAllocator( umpire::resource::Pinned ) );
   }
   /**
    * @brief Allocate a buffer.
    * @param sz The number of elements of type value_type to allocate a buffer for.
    * @return A pointer to the allocated buffer.
    */
-  value_type * allocate( size_t sz )
+  value_type *
+  allocate( size_t sz )
   {
     return m_alloc.allocate( sz );
   }
@@ -93,10 +101,10 @@ public:
    * @param buffer A pointer to the buffer to deallocate
    * @param sz The size of the buffer to deallocate.
    */
-  void deallocate( value_type * buffer, size_t sz )
+  void
+  deallocate( value_type * buffer, size_t sz )
   {
-    if( buffer != nullptr )
-      m_alloc.deallocate( buffer, sz );
+    if( buffer != nullptr ) m_alloc.deallocate( buffer, sz );
   }
   /**
    * @brief Inequality operator.
@@ -104,7 +112,8 @@ public:
    * @return Always false. Since the actual umpire allocator is a singleton, so any properly-typed
    *         buffer can be deallocated from any properly-typed BufferAllocator.
    */
-  bool operator!=( const BufferAllocator & )
+  bool
+  operator!=( const BufferAllocator & )
   {
     return false;
   }
@@ -114,13 +123,14 @@ public:
    * return Always true. Since the actual umpire allocator is a singleton, so any properly-typed
    *        buffer can be deallocated from any properly-typed BufferAllocator.
    */
-  bool operator==( const BufferAllocator & other )
+  bool
+  operator==( const BufferAllocator & other )
   {
     return !operator!=( other );
   }
 };
 
-}
+}  // namespace geosx
 #endif
 
 #endif

@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 /**
  * @brief Abstract view of a block vector.
  * @tparam VECTOR type of sub-vectors
@@ -35,7 +34,6 @@ template< typename VECTOR >
 class BlockVectorView
 {
 public:
-
   /// Alias for sub-vector type
   using Vector = VECTOR;
 
@@ -47,14 +45,16 @@ public:
    * @param rhs the block vector to copy
    * @return reference to @p this object
    */
-  BlockVectorView & operator=( BlockVectorView const & rhs ) = delete;
+  BlockVectorView &
+  operator=( BlockVectorView const & rhs ) = delete;
 
   /**
    * @brief Deleted move assignment.
    * @param rhs the block vector to move from
    * @return reference to @p this object
    */
-  BlockVectorView & operator=( BlockVectorView && rhs ) noexcept = delete;
+  BlockVectorView &
+  operator=( BlockVectorView && rhs ) noexcept = delete;
 
   /**
    * @brief Destructor.
@@ -70,7 +70,8 @@ public:
    * @brief Update vector <tt>y</tt> as <tt>y</tt> = <tt>x</tt>.
    * @param src the vector to copy
    */
-  void copy( BlockVectorView const & src );
+  void
+  copy( BlockVectorView const & src );
 
   ///@}
 
@@ -81,37 +82,43 @@ public:
    * @brief Scale the block vector with <tt>factor</tt>.
    * @param factor multiplication factor
    */
-  void scale( real64 const factor );
+  void
+  scale( real64 const factor );
 
   /**
    * @brief Set the vector to zero
    */
-  void zero();
+  void
+  zero();
 
   /**
    * @brief Set vector elements to random entries.
    * @param seed the random seed to use
    */
-  void rand( unsigned const seed = 1984 );
+  void
+  rand( unsigned const seed = 1984 );
 
   /**
    * @brief Dot product.
    * @param x the block vector to compute product with
    * @return the dot product
    */
-  real64 dot( BlockVectorView const & x ) const;
+  real64
+  dot( BlockVectorView const & x ) const;
 
   /**
    * @brief 2-norm of the block vector.
    * @return 2-norm of the block vector
    */
-  real64 norm2() const;
+  real64
+  norm2() const;
 
   /**
    * @brief Inf-norm of the block vector.
    * @return inf-norm of the block vector
    */
-  real64 normInf() const;
+  real64
+  normInf() const;
 
   /**
    * @brief Update vector <tt>y</tt> as <tt>y = alpha*x + y</tt>.
@@ -119,8 +126,8 @@ public:
    * @param alpha scaling factor for added vector
    * @param x     vector to add
    */
-  void axpy( real64 const alpha,
-             BlockVectorView const & x );
+  void
+  axpy( real64 const alpha, BlockVectorView const & x );
 
   /**
    * @brief Update vector <tt>y</tt> as <tt>y = alpha*x + beta*y</tt>.
@@ -130,9 +137,8 @@ public:
    * @param x     vector to add
    * @param beta  scaling factor for self vector
    */
-  void axpby( real64 const alpha,
-              BlockVectorView const & x,
-              real64 const beta );
+  void
+  axpby( real64 const alpha, BlockVectorView const & x, real64 const beta );
 
   ///@}
 
@@ -143,32 +149,37 @@ public:
    * @brief Get block size.
    * @return The block size.
    */
-  localIndex blockSize() const;
+  localIndex
+  blockSize() const;
 
   /**
    * @brief Get global size.
    * @return The global size.
    */
-  globalIndex globalSize() const;
+  globalIndex
+  globalSize() const;
 
   /**
    * @brief Get local size.
    * @return The local size.
    */
-  localIndex localSize() const;
+  localIndex
+  localSize() const;
 
   /**
    * @brief Print the block vector.
    * @param os the stream to print to
    */
-  void print( std::ostream & os = std::cout ) const;
+  void
+  print( std::ostream & os = std::cout ) const;
 
   /**
    * @brief Get a reference to the vector corresponding to block @p blockRowIndex.
    * @param blockIndex index of the block to return
    * @return a reference to the sub-block
    */
-  VECTOR const & block( localIndex const blockIndex ) const
+  VECTOR const &
+  block( localIndex const blockIndex ) const
   {
     GEOSX_LAI_ASSERT( m_vectors[blockIndex] != nullptr );
     return *m_vectors[blockIndex];
@@ -177,7 +188,8 @@ public:
   /**
    * @copydoc block(localIndex const) const
    */
-  VECTOR & block( localIndex const blockIndex )
+  VECTOR &
+  block( localIndex const blockIndex )
   {
     GEOSX_LAI_ASSERT( m_vectors[blockIndex] != nullptr );
     return *m_vectors[blockIndex];
@@ -186,7 +198,8 @@ public:
   /**
    * @copydoc block(localIndex const) const
    */
-  VECTOR const & operator()( localIndex const blockIndex ) const
+  VECTOR const &
+  operator()( localIndex const blockIndex ) const
   {
     return block( blockIndex );
   }
@@ -194,7 +207,8 @@ public:
   /**
    * @copydoc block(localIndex const) const
    */
-  VECTOR & operator()( localIndex const blockIndex )
+  VECTOR &
+  operator()( localIndex const blockIndex )
   {
     return block( blockIndex );
   }
@@ -202,7 +216,6 @@ public:
   ///@}
 
 protected:
-
   /**
    * @name Constructor/assignment Methods
    *
@@ -215,9 +228,9 @@ protected:
    * @brief Create a vector of @p nBlocks blocks.
    * @param nBlocks number of blocks
    */
-  explicit BlockVectorView( localIndex const nBlocks )
-    : m_vectors( nBlocks )
-  { }
+  explicit BlockVectorView( localIndex const nBlocks ) :
+    m_vectors( nBlocks )
+  {}
 
   /**
    * @brief Copy constructor.
@@ -235,7 +248,8 @@ protected:
    * @brief Resize to a new number of blocks.
    * @param size the new size
    */
-  void resize( localIndex const size )
+  void
+  resize( localIndex const size )
   {
     m_vectors.resize( size );
   }
@@ -245,19 +259,20 @@ protected:
    * @param i   index of vector
    * @param vec new pointer to vector
    */
-  void setPointer( localIndex i, VECTOR * vec )
+  void
+  setPointer( localIndex i, VECTOR * vec )
   {
     m_vectors( i ) = vec;
   }
 
 private:
-
   /// Resizable array of pointers to GEOSX vectors.
   array1d< VECTOR * > m_vectors;
 };
 
 template< typename VECTOR >
-void BlockVectorView< VECTOR >::copy( BlockVectorView const & src )
+void
+BlockVectorView< VECTOR >::copy( BlockVectorView const & src )
 {
   GEOSX_LAI_ASSERT_EQ( blockSize(), src.blockSize() );
   for( localIndex i = 0; i < blockSize(); i++ )
@@ -267,7 +282,8 @@ void BlockVectorView< VECTOR >::copy( BlockVectorView const & src )
 }
 
 template< typename VECTOR >
-void BlockVectorView< VECTOR >::scale( real64 const factor )
+void
+BlockVectorView< VECTOR >::scale( real64 const factor )
 {
   for( localIndex i = 0; i < blockSize(); i++ )
   {
@@ -276,7 +292,8 @@ void BlockVectorView< VECTOR >::scale( real64 const factor )
 }
 
 template< typename VECTOR >
-void BlockVectorView< VECTOR >::zero()
+void
+BlockVectorView< VECTOR >::zero()
 {
   for( localIndex i = 0; i < blockSize(); i++ )
   {
@@ -285,7 +302,8 @@ void BlockVectorView< VECTOR >::zero()
 }
 
 template< typename VECTOR >
-void BlockVectorView< VECTOR >::rand( unsigned const seed )
+void
+BlockVectorView< VECTOR >::rand( unsigned const seed )
 {
   for( localIndex i = 0; i < blockSize(); i++ )
   {
@@ -294,7 +312,8 @@ void BlockVectorView< VECTOR >::rand( unsigned const seed )
 }
 
 template< typename VECTOR >
-real64 BlockVectorView< VECTOR >::dot( BlockVectorView const & src ) const
+real64
+BlockVectorView< VECTOR >::dot( BlockVectorView const & src ) const
 {
   GEOSX_LAI_ASSERT_EQ( blockSize(), src.blockSize() );
   real64 accum = 0;
@@ -306,7 +325,8 @@ real64 BlockVectorView< VECTOR >::dot( BlockVectorView const & src ) const
 }
 
 template< typename VECTOR >
-real64 BlockVectorView< VECTOR >::norm2() const
+real64
+BlockVectorView< VECTOR >::norm2() const
 {
   real64 accum = 0;
   for( localIndex i = 0; i < blockSize(); i++ )
@@ -318,7 +338,8 @@ real64 BlockVectorView< VECTOR >::norm2() const
 }
 
 template< typename VECTOR >
-real64 BlockVectorView< VECTOR >::normInf() const
+real64
+BlockVectorView< VECTOR >::normInf() const
 {
   real64 result = 0.0;
   for( localIndex i = 0; i < blockSize(); i++ )
@@ -329,8 +350,8 @@ real64 BlockVectorView< VECTOR >::normInf() const
 }
 
 template< typename VECTOR >
-void BlockVectorView< VECTOR >::axpy( real64 const alpha,
-                                      BlockVectorView const & x )
+void
+BlockVectorView< VECTOR >::axpy( real64 const alpha, BlockVectorView const & x )
 {
   GEOSX_LAI_ASSERT_EQ( blockSize(), x.blockSize() );
   for( localIndex i = 0; i < blockSize(); i++ )
@@ -340,9 +361,10 @@ void BlockVectorView< VECTOR >::axpy( real64 const alpha,
 }
 
 template< typename VECTOR >
-void BlockVectorView< VECTOR >::axpby( real64 const alpha,
-                                       BlockVectorView const & x,
-                                       real64 const beta )
+void
+BlockVectorView< VECTOR >::axpby( real64 const alpha,
+                                  BlockVectorView const & x,
+                                  real64 const beta )
 {
   GEOSX_LAI_ASSERT_EQ( blockSize(), x.blockSize() );
   for( localIndex i = 0; i < blockSize(); i++ )
@@ -352,13 +374,15 @@ void BlockVectorView< VECTOR >::axpby( real64 const alpha,
 }
 
 template< typename VECTOR >
-localIndex BlockVectorView< VECTOR >::blockSize() const
+localIndex
+BlockVectorView< VECTOR >::blockSize() const
 {
   return m_vectors.size();
 }
 
 template< typename VECTOR >
-globalIndex BlockVectorView< VECTOR >::globalSize() const
+globalIndex
+BlockVectorView< VECTOR >::globalSize() const
 {
   globalIndex size = 0;
   for( localIndex i = 0; i < blockSize(); i++ )
@@ -369,7 +393,8 @@ globalIndex BlockVectorView< VECTOR >::globalSize() const
 }
 
 template< typename VECTOR >
-localIndex BlockVectorView< VECTOR >::localSize() const
+localIndex
+BlockVectorView< VECTOR >::localSize() const
 {
   localIndex size = 0;
   for( localIndex i = 0; i < blockSize(); i++ )
@@ -380,7 +405,8 @@ localIndex BlockVectorView< VECTOR >::localSize() const
 }
 
 template< typename VECTOR >
-void BlockVectorView< VECTOR >::print( std::ostream & os ) const
+void
+BlockVectorView< VECTOR >::print( std::ostream & os ) const
 {
   for( localIndex i = 0; i < m_vectors.size(); i++ )
   {
@@ -397,14 +423,13 @@ void BlockVectorView< VECTOR >::print( std::ostream & os ) const
  * @return reference to the output stream
  */
 template< typename VECTOR >
-std::ostream & operator<<( std::ostream & os,
-                           BlockVectorView< VECTOR > const & vec )
+std::ostream &
+operator<<( std::ostream & os, BlockVectorView< VECTOR > const & vec )
 {
   vec.print( os );
   return os;
 }
 
-} // end geosx namespace
-
+}  // namespace geosx
 
 #endif /* GEOSX_LINEARALGEBRA_UTILITIES_BLOCKVECTORVIEW_HPP_ */

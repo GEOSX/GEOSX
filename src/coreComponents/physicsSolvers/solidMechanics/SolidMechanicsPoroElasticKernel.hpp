@@ -23,10 +23,8 @@
 
 namespace geosx
 {
-
 namespace SolidMechanicsLagrangianFEMKernels
 {
-
 /**
  * @brief Implements kernels for solving quasi-static equilibrium.
  * @copydoc QuasiStatic
@@ -46,18 +44,13 @@ namespace SolidMechanicsLagrangianFEMKernels
 template< typename SUBREGION_TYPE,
           typename CONSTITUTIVE_TYPE,
           typename FE_TYPE,
-          template< typename,
-                    typename,
-                    typename > class BASE >
-class PoroElastic : public BASE< SUBREGION_TYPE,
-                                 CONSTITUTIVE_TYPE,
-                                 FE_TYPE >
+          template< typename, typename, typename >
+          class BASE >
+class PoroElastic : public BASE< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE >
 {
 public:
   /// Alias for the base class.
-  using Base = BASE< SUBREGION_TYPE,
-                     CONSTITUTIVE_TYPE,
-                     FE_TYPE >;
+  using Base = BASE< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE >;
 
   using Base::m_constitutiveUpdate;
   using typename Base::StackVariables;
@@ -77,7 +70,7 @@ public:
                globalIndex const rankOffset,
                CRSMatrixView< real64, globalIndex const > const & inputMatrix,
                arrayView1d< real64 > const & inputRhs,
-               real64 const (&inputGravityVector)[3] ):
+               real64 const ( &inputGravityVector )[3] ) :
     Base( nodeManager,
           edgeManager,
           faceManager,
@@ -89,11 +82,11 @@ public:
           inputMatrix,
           inputRhs,
           inputGravityVector ),
-    m_fluidPressure( elementSubRegion.template getReference< array1d< real64 > >( "pressure" ) ),
-    m_deltaFluidPressure( elementSubRegion.template getReference< array1d< real64 > >( "deltaPressure" ) )
+    m_fluidPressure(
+      elementSubRegion.template getReference< array1d< real64 > >( "pressure" ) ),
+    m_deltaFluidPressure( elementSubRegion.template getReference< array1d< real64 > >(
+      "deltaPressure" ) )
   {}
-
-
 
   /**
    * @copydoc geosx::finiteElement::KernelBase::quadraturePointResidualContribution
@@ -103,20 +96,24 @@ public:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  void quadraturePointResidualContribution( localIndex const k,
-                                            localIndex const q,
-                                            StackVariables & stack ) const
+  void
+  quadraturePointResidualContribution( localIndex const k,
+                                       localIndex const q,
+                                       StackVariables & stack ) const
   {
     real64 const biotCoefficient = m_constitutiveUpdate.getBiotCoefficient();
-    Base::quadraturePointResidualContribution( k, q, stack, [=] GEOSX_HOST_DEVICE ( real64 (& stress)[6] )
-    {
-      real64 const pressure = biotCoefficient * ( m_fluidPressure[k] + m_deltaFluidPressure[k] );
-      stress[0] -= pressure;
-      stress[1] -= pressure;
-      stress[2] -= pressure;
-    } );
+    Base::quadraturePointResidualContribution(
+      k,
+      q,
+      stack,
+      [=] GEOSX_HOST_DEVICE( real64( &stress )[6] ) {
+        real64 const pressure =
+          biotCoefficient * ( m_fluidPressure[k] + m_deltaFluidPressure[k] );
+        stress[0] -= pressure;
+        stress[1] -= pressure;
+        stress[2] -= pressure;
+      } );
   }
-
 
 protected:
   /// The rank-global fluid pressure array.
@@ -129,18 +126,14 @@ protected:
 /**
  * Alias for the PoroElastic kernel with the QuasiStatic base class.
  */
-template< typename SUBREGION_TYPE,
-          typename CONSTITUTIVE_TYPE,
-          typename FE_TYPE >
-using QuasiStaticPoroElastic = PoroElastic< SUBREGION_TYPE,
-                                            CONSTITUTIVE_TYPE,
-                                            FE_TYPE,
-                                            QuasiStatic >;
+template< typename SUBREGION_TYPE, typename CONSTITUTIVE_TYPE, typename FE_TYPE >
+using QuasiStaticPoroElastic =
+  PoroElastic< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE, QuasiStatic >;
 
-} // namespace SolidMechanicsLagrangianFEMKernels
+}  // namespace SolidMechanicsLagrangianFEMKernels
 
-} // namespace geosx
+}  // namespace geosx
 
 #include "finiteElement/kernelInterface/SparsityKernelBase.hpp"
 
-#endif // GEOSX_PHYSICSSOLVERS_SOLIDMECHANICS_SOLIDMECHANICSPOROELASTICKERNEL_HPP_
+#endif  // GEOSX_PHYSICSSOLVERS_SOLIDMECHANICS_SOLIDMECHANICSPOROELASTICKERNEL_HPP_

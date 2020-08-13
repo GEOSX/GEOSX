@@ -23,12 +23,11 @@
 
 namespace geosx
 {
-
 template< typename LAI >
-SeparateComponentPreconditioner< LAI >::
-SeparateComponentPreconditioner( localIndex const numComp,
-                                 std::unique_ptr< PreconditionerBase< LAI > > precond )
-  : Base(),
+SeparateComponentPreconditioner< LAI >::SeparateComponentPreconditioner(
+  localIndex const numComp,
+  std::unique_ptr< PreconditionerBase< LAI > > precond ) :
+  Base(),
   m_numComp( numComp ),
   m_precond( std::move( precond ) )
 {
@@ -40,8 +39,9 @@ template< typename LAI >
 SeparateComponentPreconditioner< LAI >::~SeparateComponentPreconditioner() = default;
 
 template< typename LAI >
-void SeparateComponentPreconditioner< LAI >::compute( Matrix const & mat,
-                                                      DofManager const & dofManager )
+void
+SeparateComponentPreconditioner< LAI >::compute( Matrix const & mat,
+                                                 DofManager const & dofManager )
 {
   Base::compute( mat, dofManager );
 
@@ -51,14 +51,16 @@ void SeparateComponentPreconditioner< LAI >::compute( Matrix const & mat,
 }
 
 template< typename LAI >
-void SeparateComponentPreconditioner< LAI >::apply( Vector const & src,
-                                                    Vector & dst ) const
+void
+SeparateComponentPreconditioner< LAI >::apply( Vector const & src,
+                                               Vector & dst ) const
 {
   m_precond->apply( src, dst );
 }
 
 template< typename LAI >
-void SeparateComponentPreconditioner< LAI >::clear()
+void
+SeparateComponentPreconditioner< LAI >::clear()
 {
   Base::clear();
   m_precond->clear();
@@ -80,4 +82,4 @@ template class SeparateComponentPreconditioner< HypreInterface >;
 template class SeparateComponentPreconditioner< PetscInterface >;
 #endif
 
-}
+}  // namespace geosx

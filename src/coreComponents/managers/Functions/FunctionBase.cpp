@@ -21,46 +21,44 @@
 
 namespace geosx
 {
-
 using namespace dataRepository;
 
-
-
-FunctionBase::FunctionBase( const std::string & name,
-                            Group * const parent ):
+FunctionBase::FunctionBase( const std::string & name, Group * const parent ) :
   Group( name, parent ),
   m_inputVarNames()
 {
   setInputFlags( InputFlags::OPTIONAL_NONUNIQUE );
 
-  registerWrapper( keys::inputVarNames, &m_inputVarNames )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setSizedFromParent( 0 )->
-    setDescription( "Name of fields are input to function." );
+  registerWrapper( keys::inputVarNames, &m_inputVarNames )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setSizedFromParent( 0 )
+    ->setDescription( "Name of fields are input to function." );
 }
-
 
 FunctionBase::~FunctionBase()
 {}
 
-integer FunctionBase::isFunctionOfTime() const
+integer
+FunctionBase::isFunctionOfTime() const
 {
-  integer rval=0;
-  arrayView1d< string const > const & inputVarNames = this->getReference< string_array >( dataRepository::keys::inputVarNames );
-  localIndex numVars = LvArray::integerConversion< localIndex >( inputVarNames.size());
+  integer rval = 0;
+  arrayView1d< string const > const & inputVarNames =
+    this->getReference< string_array >( dataRepository::keys::inputVarNames );
+  localIndex numVars =
+    LvArray::integerConversion< localIndex >( inputVarNames.size() );
 
-  if( numVars==1 )
+  if( numVars == 1 )
   {
-    if( inputVarNames[0]=="time" )
+    if( inputVarNames[0] == "time" )
     {
       rval = 2;
     }
   }
   else
   {
-    for( auto varIndex=0; varIndex<numVars; ++varIndex )
+    for( auto varIndex = 0; varIndex < numVars; ++varIndex )
     {
-      if( inputVarNames[varIndex]=="time" )
+      if( inputVarNames[varIndex] == "time" )
       {
         rval = 1;
         break;
@@ -70,10 +68,10 @@ integer FunctionBase::isFunctionOfTime() const
   return rval;
 }
 
-
-real64_array FunctionBase::EvaluateStats( dataRepository::Group const * const group,
-                                          real64 const time,
-                                          SortedArray< localIndex > const & set ) const
+real64_array
+FunctionBase::EvaluateStats( dataRepository::Group const * const group,
+                             real64 const time,
+                             SortedArray< localIndex > const & set ) const
 {
   localIndex N = set.size();
   real64_array sub( N );
@@ -83,7 +81,7 @@ real64_array FunctionBase::EvaluateStats( dataRepository::Group const * const gr
   result[0] = 1e10;   // min
   result[1] = 0.0;    // avg
   result[2] = -1e10;  // max
-  for( localIndex ii=0; ii<N; ii++ )
+  for( localIndex ii = 0; ii < N; ii++ )
   {
     result[0] = std::min( result[0], sub[ii] );
     result[1] += sub[ii];
@@ -94,5 +92,4 @@ real64_array FunctionBase::EvaluateStats( dataRepository::Group const * const gr
   return result;
 }
 
-
-} /* namespace ANST */
+}  // namespace geosx

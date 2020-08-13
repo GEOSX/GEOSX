@@ -23,19 +23,19 @@
 using namespace geosx;
 using namespace geosx::SinglePhaseFVMKernels;
 
-
 template< localIndex stencilSize >
-void computeFlux( arraySlice1d< real64 const > const & weight,
-                  real64 const * pres,
-                  real64 const * dPres,
-                  real64 const * gravCoef,
-                  real64 const * mob,
-                  real64 const * dMob_dPres,
-                  real64 const * dens,
-                  real64 const * dDens_dPres,
-                  real64 const dt,
-                  real64 & flux,
-                  real64 (& dFlux_dP)[stencilSize] )
+void
+computeFlux( arraySlice1d< real64 const > const & weight,
+             real64 const * pres,
+             real64 const * dPres,
+             real64 const * gravCoef,
+             real64 const * mob,
+             real64 const * dMob_dPres,
+             real64 const * dens,
+             real64 const * dDens_dPres,
+             real64 const dt,
+             real64 & flux,
+             real64 ( &dFlux_dP )[stencilSize] )
 {
   localIndex constexpr numElems = 2;
 
@@ -50,10 +50,10 @@ void computeFlux( arraySlice1d< real64 const > const & weight,
   real64 sumWeightGrav = 0;
   for( localIndex i = 0; i < stencilSize; ++i )
   {
-    potDif += weight[i] * (pres[i] + dPres[i] - densMean * gravCoef[i]);
+    potDif += weight[i] * ( pres[i] + dPres[i] - densMean * gravCoef[i] );
     sumWeightGrav += weight[i] * gravCoef[i];
   }
-  localIndex const k_up = (potDif >= 0) ? 0 : 1;
+  localIndex const k_up = ( potDif >= 0 ) ? 0 : 1;
   flux = dt * potDif * mob[k_up];
   for( localIndex i = 0; i < stencilSize; ++i )
   {
@@ -63,65 +63,75 @@ void computeFlux( arraySlice1d< real64 const > const & weight,
 }
 
 template< bool FULL, localIndex stencilSize >
-void testFluxKernel( CellElementStencilTPFA const & stencil,
-                     real64 const * pres,
-                     real64 const * dPres,
-                     real64 const * gravCoef,
-                     real64 const * mob,
-                     real64 const * dMob_dPres,
-                     real64 const * dens,
-                     real64 const * dDens_dPres,
-                     real64 const dt )
+void
+testFluxKernel( CellElementStencilTPFA const & stencil,
+                real64 const * pres,
+                real64 const * dPres,
+                real64 const * gravCoef,
+                real64 const * mob,
+                real64 const * dMob_dPres,
+                real64 const * dens,
+                real64 const * dDens_dPres,
+                real64 const dt )
 {
   localIndex constexpr numElems = CellElementStencilTPFA::NUM_POINT_IN_FLUX;
 
-  typename CellElementStencilTPFA::IndexContainerViewConstType const & seri = stencil.getElementRegionIndices();
-  typename CellElementStencilTPFA::IndexContainerViewConstType const & sesri = stencil.getElementSubRegionIndices();
-  typename CellElementStencilTPFA::IndexContainerViewConstType const & sei = stencil.getElementIndices();
-  typename CellElementStencilTPFA::WeightContainerViewConstType const & weights = stencil.getWeights();
+  typename CellElementStencilTPFA::IndexContainerViewConstType const & seri =
+    stencil.getElementRegionIndices();
+  typename CellElementStencilTPFA::IndexContainerViewConstType const & sesri =
+    stencil.getElementSubRegionIndices();
+  typename CellElementStencilTPFA::IndexContainerViewConstType const & sei =
+    stencil.getElementIndices();
+  typename CellElementStencilTPFA::WeightContainerViewConstType const & weights =
+    stencil.getWeights();
 
-  auto presView        = AccessorHelper< FULL >::template makeElementAccessor< 1 >( pres,
-                                                                                    stencilSize,
-                                                                                    seri[0],
-                                                                                    sesri[0],
-                                                                                    sei[0] );
-  auto dPresView       = AccessorHelper< FULL >::template makeElementAccessor< 1 >( dPres,
-                                                                                    stencilSize,
-                                                                                    seri[0],
-                                                                                    sesri[0],
-                                                                                    sei[0] );
-  auto gravCoefView    = AccessorHelper< FULL >::template makeElementAccessor< 1 >( gravCoef,
-                                                                                    stencilSize,
-                                                                                    seri[0],
-                                                                                    sesri[0],
-                                                                                    sei[0] );
-  auto mobView         = AccessorHelper< FULL >::template makeElementAccessor< 1 >( mob,
-                                                                                    stencilSize,
-                                                                                    seri[0],
-                                                                                    sesri[0],
-                                                                                    sei[0] );
-  auto dMob_dPresView  = AccessorHelper< FULL >::template makeElementAccessor< 1 >( dMob_dPres,
-                                                                                    stencilSize,
-                                                                                    seri[0],
-                                                                                    sesri[0],
-                                                                                    sei[0] );
-  auto densView        = AccessorHelper< FULL >::template makeElementAccessor< 2 >( dens,
-                                                                                    stencilSize,
-                                                                                    seri[0],
-                                                                                    sesri[0],
-                                                                                    sei[0],
-                                                                                    1 );
-  auto dDens_dPresView = AccessorHelper< FULL >::template makeElementAccessor< 2 >( dDens_dPres,
-                                                                                    stencilSize,
-                                                                                    seri[0],
-                                                                                    sesri[0],
-                                                                                    sei[0],
-                                                                                    1 );
+  auto presView =
+    AccessorHelper< FULL >::template makeElementAccessor< 1 >( pres,
+                                                               stencilSize,
+                                                               seri[0],
+                                                               sesri[0],
+                                                               sei[0] );
+  auto dPresView =
+    AccessorHelper< FULL >::template makeElementAccessor< 1 >( dPres,
+                                                               stencilSize,
+                                                               seri[0],
+                                                               sesri[0],
+                                                               sei[0] );
+  auto gravCoefView =
+    AccessorHelper< FULL >::template makeElementAccessor< 1 >( gravCoef,
+                                                               stencilSize,
+                                                               seri[0],
+                                                               sesri[0],
+                                                               sei[0] );
+  auto mobView =
+    AccessorHelper< FULL >::template makeElementAccessor< 1 >( mob,
+                                                               stencilSize,
+                                                               seri[0],
+                                                               sesri[0],
+                                                               sei[0] );
+  auto dMob_dPresView =
+    AccessorHelper< FULL >::template makeElementAccessor< 1 >( dMob_dPres,
+                                                               stencilSize,
+                                                               seri[0],
+                                                               sesri[0],
+                                                               sei[0] );
+  auto densView =
+    AccessorHelper< FULL >::template makeElementAccessor< 2 >( dens,
+                                                               stencilSize,
+                                                               seri[0],
+                                                               sesri[0],
+                                                               sei[0],
+                                                               1 );
+  auto dDens_dPresView =
+    AccessorHelper< FULL >::template makeElementAccessor< 2 >( dDens_dPres,
+                                                               stencilSize,
+                                                               seri[0],
+                                                               sesri[0],
+                                                               sei[0],
+                                                               1 );
 
   array1d< real64 > flux( numElems );
   array2d< real64 > fluxJacobian( numElems, stencilSize );
-
-
 
   FluxKernel::Compute( stencilSize,
                        seri[0],
@@ -168,47 +178,39 @@ TEST( SinglePhaseFVMKernels, fluxFull )
 {
   localIndex constexpr stencilSize = 2;
 
-
   CellElementStencilTPFA stencil;
 
-  localIndex elemReg[2] = {0, 1};
-  localIndex elemSubReg[2] = {0, 0};
-  localIndex elemIndex[2] = {1, 0};
+  localIndex elemReg[2] = { 0, 1 };
+  localIndex elemSubReg[2] = { 0, 0 };
+  localIndex elemIndex[2] = { 1, 0 };
   real64 weight[] = { 1e-12, -1e-12 };
-  stencil.add( stencilSize,
-               elemReg,
-               elemSubReg,
-               elemIndex,
-               weight,
-               0 );
-
+  stencil.add( stencilSize, elemReg, elemSubReg, elemIndex, weight, 0 );
 
   int constexpr NTEST = 3;
 
   // we keep these around for easy aggregate initialization
-  real64 const presData[NTEST][stencilSize] = {
-    { 1e+6, 2e+6 }, { 2e+6, 2e+6 }, { 2e+6, 2e+6 }
-  };
-  real64 const dPresData[NTEST][stencilSize] = {
-    { 1e+5, 1e+5 }, { 1e+5, 2e+5 }, { 1e+5, 1e+5 }
-  };
-  real64 const gravCoefData[NTEST][stencilSize] = {
-    { 1e+3, 5e+2 }, { 1e+3, 1e+3 }, { 0.0, 1e+3 }
-  };
-  real64 const mobData[NTEST][stencilSize] = {
-    { 1e+6, 2e+6 }, { 2e+6, 1e+6 }, { 2e+6, 5e+6 }
-  };
-  real64 const dMob_dPresData[NTEST][stencilSize] = {
-    { 1e-6, 2e-6 }, { 1e-6, 2e-6 }, { 1e-6, 2e-6 }
-  };
-  real64 const densData[NTEST][stencilSize] = {
-    { 1e+3, 2e+3 }, { 2e+3, 3e+3 }, { 2e+3, 1e+3 }
-  };
-  real64 const dDens_dPresData[NTEST][stencilSize] = {
-    { 1e-6, 2e-6 }, { 2e-6, 3e-6 }, { 2e-6, 2e-6 }
-  };
+  real64 const presData[NTEST][stencilSize] = { { 1e+6, 2e+6 },
+                                                { 2e+6, 2e+6 },
+                                                { 2e+6, 2e+6 } };
+  real64 const dPresData[NTEST][stencilSize] = { { 1e+5, 1e+5 },
+                                                 { 1e+5, 2e+5 },
+                                                 { 1e+5, 1e+5 } };
+  real64 const gravCoefData[NTEST][stencilSize] = { { 1e+3, 5e+2 },
+                                                    { 1e+3, 1e+3 },
+                                                    { 0.0, 1e+3 } };
+  real64 const mobData[NTEST][stencilSize] = { { 1e+6, 2e+6 },
+                                               { 2e+6, 1e+6 },
+                                               { 2e+6, 5e+6 } };
+  real64 const dMob_dPresData[NTEST][stencilSize] = { { 1e-6, 2e-6 },
+                                                      { 1e-6, 2e-6 },
+                                                      { 1e-6, 2e-6 } };
+  real64 const densData[NTEST][stencilSize] = { { 1e+3, 2e+3 },
+                                                { 2e+3, 3e+3 },
+                                                { 2e+3, 1e+3 } };
+  real64 const dDens_dPresData[NTEST][stencilSize] = { { 1e-6, 2e-6 },
+                                                       { 2e-6, 3e-6 },
+                                                       { 2e-6, 2e-6 } };
   real64 const dt[NTEST] = { 1.0, 1e+5, 1e+8 };
-
 
   for( int i = 0; i < NTEST; ++i )
   {
@@ -223,7 +225,6 @@ TEST( SinglePhaseFVMKernels, fluxFull )
                                densData[i],
                                dDens_dPresData[i],
                                dt[i] );
-
   }
 }
 
@@ -232,43 +233,37 @@ TEST( SinglePhaseFVMKernels, fluxRegion )
   localIndex constexpr stencilSize = 2;
   CellElementStencilTPFA stencil;
 
-  localIndex elemReg[2] = {0, 0};
-  localIndex elemSubReg[2] = {0, 0};
-  localIndex elemIndex[2] = {1, 0};
+  localIndex elemReg[2] = { 0, 0 };
+  localIndex elemSubReg[2] = { 0, 0 };
+  localIndex elemIndex[2] = { 1, 0 };
   real64 weight[] = { 1e-12, -1e-12 };
-  stencil.add( stencilSize,
-               elemReg,
-               elemSubReg,
-               elemIndex,
-               weight,
-               0 );
+  stencil.add( stencilSize, elemReg, elemSubReg, elemIndex, weight, 0 );
 
   int constexpr NTEST = 3;
 
   // we keep these around for easy aggregate initialization
-  real64 const presData[NTEST][stencilSize] = {
-    { 1e+6, 2e+6 }, { 2e+6, 2e+6 }, { 2e+6, 2e+6 }
-  };
-  real64 const dPresData[NTEST][stencilSize] = {
-    { 1e+5, 1e+5 }, { 1e+5, 2e+5 }, { 1e+5, 1e+5 }
-  };
-  real64 const gravCoefData[NTEST][stencilSize] = {
-    { 1e+3, 5e+2 }, { 1e+3, 1e+3 }, { 0.0, 1e+3 }
-  };
-  real64 const mobData[NTEST][stencilSize] = {
-    { 1e+6, 2e+6 }, { 2e+6, 1e+6 }, { 2e+6, 5e+6 }
-  };
-  real64 const dMob_dPresData[NTEST][stencilSize] = {
-    { 1e-6, 2e-6 }, { 1e-6, 2e-6 }, { 1e-6, 2e-6 }
-  };
-  real64 const densData[NTEST][stencilSize] = {
-    { 1e+3, 2e+3 }, { 2e+3, 3e+3 }, { 2e+3, 1e+3 }
-  };
-  real64 const dDens_dPresData[NTEST][stencilSize] = {
-    { 1e-6, 2e-6 }, { 2e-6, 3e-6 }, { 2e-6, 2e-6 }
-  };
+  real64 const presData[NTEST][stencilSize] = { { 1e+6, 2e+6 },
+                                                { 2e+6, 2e+6 },
+                                                { 2e+6, 2e+6 } };
+  real64 const dPresData[NTEST][stencilSize] = { { 1e+5, 1e+5 },
+                                                 { 1e+5, 2e+5 },
+                                                 { 1e+5, 1e+5 } };
+  real64 const gravCoefData[NTEST][stencilSize] = { { 1e+3, 5e+2 },
+                                                    { 1e+3, 1e+3 },
+                                                    { 0.0, 1e+3 } };
+  real64 const mobData[NTEST][stencilSize] = { { 1e+6, 2e+6 },
+                                               { 2e+6, 1e+6 },
+                                               { 2e+6, 5e+6 } };
+  real64 const dMob_dPresData[NTEST][stencilSize] = { { 1e-6, 2e-6 },
+                                                      { 1e-6, 2e-6 },
+                                                      { 1e-6, 2e-6 } };
+  real64 const densData[NTEST][stencilSize] = { { 1e+3, 2e+3 },
+                                                { 2e+3, 3e+3 },
+                                                { 2e+3, 1e+3 } };
+  real64 const dDens_dPresData[NTEST][stencilSize] = { { 1e-6, 2e-6 },
+                                                       { 2e-6, 3e-6 },
+                                                       { 2e-6, 2e-6 } };
   real64 const dt[NTEST] = { 1.0, 1e+5, 1e+8 };
-
 
   for( int i = 0; i < NTEST; ++i )
   {
@@ -283,11 +278,11 @@ TEST( SinglePhaseFVMKernels, fluxRegion )
                                 densData[i],
                                 dDens_dPresData[i],
                                 dt[i] );
-
   }
 }
 
-int main( int argc, char * * argv )
+int
+main( int argc, char ** argv )
 {
   ::testing::InitGoogleTest( &argc, argv );
 

@@ -27,7 +27,6 @@
 using namespace geosx;
 using namespace dataRepository;
 
-
 TEST( testDefaultValue, testScalar )
 {
   // The comparison with true is to avoid a linker error because has_default_value is constexpr.

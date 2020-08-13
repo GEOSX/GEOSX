@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 /**
  * @class ThickPlane
  * @brief Class to represent a geometric thick plane  in GEOSX.
@@ -31,7 +30,6 @@ namespace geosx
 class ThickPlane : public SimpleGeometricObjectBase
 {
 public:
-
   /**
    * @name Constructor / Destructor
    */
@@ -42,8 +40,7 @@ public:
    * @param name name of the object in the data hierarchy.
    * @param parent pointer to the parent group in the data hierarchy.
    */
-  ThickPlane( const std::string & name,
-              Group * const parent );
+  ThickPlane( const std::string & name, Group * const parent );
 
   /**
    * @brief Default destructor.
@@ -61,11 +58,16 @@ public:
    * @brief Get the catalog name.
    * @return the name of this class in the catalog
    */
-  static string CatalogName() { return "ThickPlane"; }
+  static string
+  CatalogName()
+  {
+    return "ThickPlane";
+  }
 
   ///@}
 
-  bool IsCoordInObject( const R1Tensor & coord ) const override final;
+  bool
+  IsCoordInObject( const R1Tensor & coord ) const override final;
 
   /**
    * @name Getters
@@ -76,34 +78,49 @@ public:
    * @brief Get the normal to the plane.
    * @return the normal vector
    */
-  R1Tensor & getNormal() {return m_normal;}
+  R1Tensor &
+  getNormal()
+  {
+    return m_normal;
+  }
 
   /**
    * @copydoc getNormal()
    */
-  R1Tensor const & getNormal() const {return m_normal;}
+  R1Tensor const &
+  getNormal() const
+  {
+    return m_normal;
+  }
 
   /**
    * @brief Get the origin of the plane.
    * @return the origin of the plane
    */
-  R1Tensor & getCenter() {return m_origin;}
+  R1Tensor &
+  getCenter()
+  {
+    return m_origin;
+  }
 
   /**
    * @copydoc getCenter()
    */
-  R1Tensor const & getCenter() const {return m_origin;}
+  R1Tensor const &
+  getCenter() const
+  {
+    return m_origin;
+  }
 
 protected:
-
   /**
    * @brief This function provides capability to post process input values prior to
    * any other initialization operations.
    */
-  virtual void PostProcessInput() override final;
+  virtual void
+  PostProcessInput() override final;
 
 private:
-
   /// Origin point (x,y,z) of the plane (basically, any point on the plane)
   R1Tensor m_origin;
   /// Normal (n_x,n_y,n_z) to the plane (will be normalized automatically)
@@ -121,7 +138,6 @@ private:
   };
 
   /// @endcond
-
 };
 } /* namespace geosx */
 

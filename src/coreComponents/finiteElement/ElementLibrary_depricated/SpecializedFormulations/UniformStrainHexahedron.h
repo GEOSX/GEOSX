@@ -19,7 +19,7 @@
 #include "legacy/ElementLibrary/FiniteElement.h"
 
 #ifndef UNIFORMSTRAINHEXAHEDRON_H_
-#define UNIFORMSTRAINHEXAHEDRON_H_
+  #define UNIFORMSTRAINHEXAHEDRON_H_
 
 class UniformStrainHexahedron : public FiniteElement< 3 >
 {
@@ -27,20 +27,21 @@ public:
   UniformStrainHexahedron();
   virtual ~UniformStrainHexahedron();
 
-  void reinit( const std::vector< R1TensorT< 3 > > & mapped_support_points );
+  void
+  reinit( const std::vector< R1TensorT< 3 > > & mapped_support_points );
 
-  void zero_energy_mode_control( const array1d< R1Tensor > & dNdx,
-                                 const realT & volume,
-                                 const array1d< R1Tensor > & x,
-                                 const array1d< R1Tensor > & vel,
-                                 const realT & dampcoef,
-                                 const realT & stiffcoef,
-                                 const realT & rho,
-                                 const realT & modulus,
-                                 const realT & dt,
-                                 array1d< R1Tensor > & Qstiffness,
-                                 array1d< R1Tensor > & force );
-
+  void
+  zero_energy_mode_control( const array1d< R1Tensor > & dNdx,
+                            const realT & volume,
+                            const array1d< R1Tensor > & x,
+                            const array1d< R1Tensor > & vel,
+                            const realT & dampcoef,
+                            const realT & stiffcoef,
+                            const realT & rho,
+                            const realT & modulus,
+                            const realT & dt,
+                            array1d< R1Tensor > & Qstiffness,
+                            array1d< R1Tensor > & force );
 };
 
 #endif /* UNIFORMSTRAINHEXAHEDRON_H_ */

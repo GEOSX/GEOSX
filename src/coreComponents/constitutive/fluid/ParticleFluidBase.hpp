@@ -23,33 +23,37 @@
 
 namespace geosx
 {
-
 namespace constitutive
 {
-
 /**
  * @brief Base class for particle fluid model kernel wrappers.
  */
 class ParticleFluidBaseUpdate
 {
 public:
-
   /**
    * @brief Get number of elements in this wrapper.
    * @return number of elements
    */
   GEOSX_HOST_DEVICE
-  localIndex numElems() const { return m_settlingFactor.size( 0 ); }
+  localIndex
+  numElems() const
+  {
+    return m_settlingFactor.size( 0 );
+  }
 
   /**
    * @brief Get number of gauss points per element.
    * @return number of gauss points per element
    */
   GEOSX_HOST_DEVICE
-  localIndex numGauss() const { return m_settlingFactor.size( 1 ); };
+  localIndex
+  numGauss() const
+  {
+    return m_settlingFactor.size( 1 );
+  };
 
 protected:
-
   /**
    * @brief Constructor.
    * @param density     fluid density
@@ -57,23 +61,27 @@ protected:
    * @param viscosity   fluid viscosity
    * @param dVisc_dPres derivative of viscosity w.r.t. pressure
    */
-  ParticleFluidBaseUpdate( bool const isCollisionalSlip,
-                           real64 const maxProppantConcentration,
-                           arrayView1d< real64 > const & settlingFactor,
-                           arrayView1d< real64 > const & dSettlingFactor_dPressure,
-                           arrayView1d< real64 > const & dSettlingFactor_dProppantConcentration,
-                           arrayView2d< real64 > const & dSettlingFactor_dComponentConcentration,
-                           arrayView1d< real64 > const & collisionFactor,
-                           arrayView1d< real64 > const & dCollisionFactor_dProppantConcentration,
-                           arrayView1d< real64 > const & proppantPackPermeability )
-    : m_isCollisionalSlip( isCollisionalSlip ),
+  ParticleFluidBaseUpdate(
+    bool const isCollisionalSlip,
+    real64 const maxProppantConcentration,
+    arrayView1d< real64 > const & settlingFactor,
+    arrayView1d< real64 > const & dSettlingFactor_dPressure,
+    arrayView1d< real64 > const & dSettlingFactor_dProppantConcentration,
+    arrayView2d< real64 > const & dSettlingFactor_dComponentConcentration,
+    arrayView1d< real64 > const & collisionFactor,
+    arrayView1d< real64 > const & dCollisionFactor_dProppantConcentration,
+    arrayView1d< real64 > const & proppantPackPermeability ) :
+    m_isCollisionalSlip( isCollisionalSlip ),
     m_maxProppantConcentration( maxProppantConcentration ),
     m_settlingFactor( settlingFactor ),
     m_dSettlingFactor_dPressure( dSettlingFactor_dPressure ),
-    m_dSettlingFactor_dProppantConcentration( dSettlingFactor_dProppantConcentration ),
-    m_dSettlingFactor_dComponentConcentration( dSettlingFactor_dComponentConcentration ),
+    m_dSettlingFactor_dProppantConcentration(
+      dSettlingFactor_dProppantConcentration ),
+    m_dSettlingFactor_dComponentConcentration(
+      dSettlingFactor_dComponentConcentration ),
     m_collisionFactor( collisionFactor ),
-    m_dCollisionFactor_dProppantConcentration( dCollisionFactor_dProppantConcentration ),
+    m_dCollisionFactor_dProppantConcentration(
+      dCollisionFactor_dProppantConcentration ),
     m_proppantPackPermeability( proppantPackPermeability )
   {}
 
@@ -91,13 +99,15 @@ protected:
    * @brief Deleted copy assignment operator
    * @return reference to this object
    */
-  ParticleFluidBaseUpdate & operator=( ParticleFluidBaseUpdate const & ) = delete;
+  ParticleFluidBaseUpdate &
+  operator=( ParticleFluidBaseUpdate const & ) = delete;
 
   /**
    * @brief Deleted move assignment operator
    * @return reference to this object
    */
-  ParticleFluidBaseUpdate & operator=( ParticleFluidBaseUpdate && ) = delete;
+  ParticleFluidBaseUpdate &
+  operator=( ParticleFluidBaseUpdate && ) = delete;
 
   bool m_isCollisionalSlip;
 
@@ -114,7 +124,6 @@ protected:
   arrayView1d< real64 > m_proppantPackPermeability;
 
 private:
-
   /**
    * @brief Perform a single point constitutive update.
    * @param[in] k first constitutive index (e.g. elem index)
@@ -127,14 +136,17 @@ private:
    * @param[in] dFluidViscosity_dComponentConcentration derivatives of the fluid viscosity wrt the composition
    */
   GEOSX_HOST_DEVICE
-  virtual void Update( localIndex const k,
-                       real64 const proppantConcentration,
-                       real64 const fluidDensity,
-                       real64 const dFluidDensity_dPressure,
-                       arraySlice1d< real64 const > const & dFluidDensity_dComponentConcentration,
-                       real64 const fluidViscosity,
-                       real64 const dFluidViscosity_dPressure,
-                       arraySlice1d< real64 const > const & dFluidViscosity_dComponentConcentration ) const = 0;
+  virtual void
+  Update(
+    localIndex const k,
+    real64 const proppantConcentration,
+    real64 const fluidDensity,
+    real64 const dFluidDensity_dPressure,
+    arraySlice1d< real64 const > const & dFluidDensity_dComponentConcentration,
+    real64 const fluidViscosity,
+    real64 const dFluidViscosity_dPressure,
+    arraySlice1d< real64 const > const & dFluidViscosity_dComponentConcentration )
+    const = 0;
 };
 
 /**
@@ -143,19 +155,22 @@ private:
 class ParticleFluidBase : public ConstitutiveBase
 {
 public:
-
   ParticleFluidBase( std::string const & name, Group * const parent );
 
   virtual ~ParticleFluidBase() override;
 
   // *** ConstitutiveBase interface
 
-  virtual void DeliverClone( string const & name,
-                             Group * const parent,
-                             std::unique_ptr< ConstitutiveBase > & clone ) const override = 0;
+  virtual void
+  DeliverClone(
+    string const & name,
+    Group * const parent,
+    std::unique_ptr< ConstitutiveBase > & clone ) const override = 0;
 
-  virtual void AllocateConstitutiveData( dataRepository::Group * const parent,
-                                         localIndex const numConstitutivePointsPerParentIndex ) override;
+  virtual void
+  AllocateConstitutiveData(
+    dataRepository::Group * const parent,
+    localIndex const numConstitutivePointsPerParentIndex ) override;
 
   static constexpr localIndex MAX_NUM_COMPONENTS = 4;
 
@@ -163,25 +178,30 @@ public:
 
   struct viewKeyStruct
   {
+    static constexpr auto settlingFactorString = "settlingFactor";
+    static constexpr auto dSettlingFactor_dPressureString =
+      "dSettlingFactor_dPressure";
+    static constexpr auto dSettlingFactor_dProppantConcentrationString =
+      "dSettlingFactor_dProppantConcentration";
+    static constexpr auto dSettlingFactor_dComponentConcentrationString =
+      "dSettlingFactor_dComponentConcentration";
 
-    static constexpr auto settlingFactorString    = "settlingFactor";
-    static constexpr auto dSettlingFactor_dPressureString  = "dSettlingFactor_dPressure";
-    static constexpr auto dSettlingFactor_dProppantConcentrationString  = "dSettlingFactor_dProppantConcentration";
-    static constexpr auto dSettlingFactor_dComponentConcentrationString  = "dSettlingFactor_dComponentConcentration";
+    static constexpr auto collisionFactorString = "collisionFactor";
+    static constexpr auto dCollisionFactor_dProppantConcentrationString =
+      "dCollisionFactor_dProppantConcentration";
 
-    static constexpr auto collisionFactorString    = "collisionFactor";
-    static constexpr auto dCollisionFactor_dProppantConcentrationString  = "dCollisionFactor_dProppantConcentration";
+    static constexpr auto maxProppantConcentrationString =
+      "maxProppantConcentration";
 
-    static constexpr auto maxProppantConcentrationString    = "maxProppantConcentration";
+    static constexpr auto isCollisionalSlipString = "isCollisionalSlip";
 
-    static constexpr auto isCollisionalSlipString    = "isCollisionalSlip";
-
-    static constexpr auto proppantPackPermeabilityString    = "proppantPackPermeability";
+    static constexpr auto proppantPackPermeabilityString =
+      "proppantPackPermeability";
   } viewKeysParticleFluidBase;
 
 protected:
-
-  virtual void PostProcessInput() override;
+  virtual void
+  PostProcessInput() override;
 
   array1d< real64 > m_settlingFactor;
   array1d< real64 > m_dSettlingFactor_dPressure;
@@ -196,11 +216,10 @@ protected:
   integer m_isCollisionalSlip;
 
   real64 m_maxProppantConcentration;
-
 };
 
-} //namespace constitutive
+}  //namespace constitutive
 
-} //namespace geosx
+}  //namespace geosx
 
-#endif //GEOSX_CONSTITUTIVE_FLUID_PARTICLEFLUIDBASE_HPP_
+#endif  //GEOSX_CONSTITUTIVE_FLUID_PARTICLEFLUIDBASE_HPP_

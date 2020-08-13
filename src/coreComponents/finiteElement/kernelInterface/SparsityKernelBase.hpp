@@ -19,16 +19,12 @@
  */
 
 #ifndef GEOSX_FINITEELEMENT_SPARSITYKERNELBASE_HPP_
-#define GEOSX_FINITEELEMENT_SPARSITYKERNELBASE_HPP_
-
-
+  #define GEOSX_FINITEELEMENT_SPARSITYKERNELBASE_HPP_
 
 namespace geosx
 {
-
 namespace finiteElement
 {
-
 //*****************************************************************************
 //*****************************************************************************
 //*****************************************************************************
@@ -45,23 +41,16 @@ template< typename SUBREGION_TYPE,
           typename FE_TYPE,
           int NUM_DOF_PER_TEST_SP,
           int NUM_DOF_PER_TRIAL_SP >
-class SparsityKernelBase : public ImplicitKernelBase< SUBREGION_TYPE,
-                                                      CONSTITUTIVE_TYPE,
-                                                      FE_TYPE,
-                                                      NUM_DOF_PER_TEST_SP,
-                                                      NUM_DOF_PER_TRIAL_SP >
+class SparsityKernelBase
+  : public ImplicitKernelBase< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE, NUM_DOF_PER_TEST_SP, NUM_DOF_PER_TRIAL_SP >
 {
 public:
   /// Alias for the base class. (i.e. #geosx::finiteElement::ImplicitKernelBase)
-  using Base = ImplicitKernelBase< SUBREGION_TYPE,
-                                   CONSTITUTIVE_TYPE,
-                                   FE_TYPE,
-                                   NUM_DOF_PER_TEST_SP,
-                                   NUM_DOF_PER_TRIAL_SP >;
+  using Base =
+    ImplicitKernelBase< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE, NUM_DOF_PER_TEST_SP, NUM_DOF_PER_TRIAL_SP >;
 
-
-  using typename Base::StackVariables;
   using Base::m_dofRankOffset;
+  using typename Base::StackVariables;
 
   using Base::setup;
 
@@ -85,7 +74,7 @@ public:
                       arrayView1d< globalIndex const > const & inputDofNumber,
                       globalIndex const rankOffset,
                       SparsityPattern< globalIndex > & inputSparsity,
-                      arrayView1d< localIndex > const & rowSizes ):
+                      arrayView1d< localIndex > const & rowSizes ) :
     Base( nodeManager,
           edgeManager,
           faceManager,
@@ -100,7 +89,6 @@ public:
     m_rowSizes( rowSizes )
   {}
 
-
   /**
    * @copydoc geosx::finiteElement::KernelBase::complete
    *
@@ -108,29 +96,28 @@ public:
    * implementation appropriate for generating the sparsity pattern.
    */
   GEOSX_FORCE_INLINE
-  real64 complete( localIndex const k,
-                   StackVariables & stack ) const
+  real64
+  complete( localIndex const k, StackVariables & stack ) const
   {
     GEOSX_UNUSED_VAR( k );
 
-    for( localIndex r=0; r<stack.numRows; ++r )
+    for( localIndex r = 0; r < stack.numRows; ++r )
     {
       localIndex const row = stack.localRowDofIndex[r] - m_dofRankOffset;
       if( row < 0 || row >= m_sparsity.numRows() ) continue;
-      for( localIndex c=0; c<stack.numCols; ++c )
+      for( localIndex c = 0; c < stack.numCols; ++c )
       {
-        m_sparsity.insertNonZero( row,
-                                  stack.localColDofIndex[c] );
+        m_sparsity.insertNonZero( row, stack.localColDofIndex[c] );
       }
     }
     return 0;
   }
+
 private:
   SparsityPattern< globalIndex > & m_sparsity;
 
   arrayView1d< localIndex > const & m_rowSizes;
 };
-
 
 //*****************************************************************************
 //*****************************************************************************
@@ -141,12 +128,9 @@ private:
  * @tparam KERNEL_TEMPLATE Templated class that defines the physics kernel.
  *                         Most likely derives from SparsityKernelBase.
  */
-template< template< typename,
-                    typename,
-                    typename > class KERNEL_TEMPLATE >
+template< template< typename, typename, typename > class KERNEL_TEMPLATE >
 struct SparsityHelper
 {
-
   /**
    * Defines an alias for the specialization of
    * #geosx::finiteElement::SparsityKernelBase from the compile time constants
@@ -154,21 +138,14 @@ struct SparsityHelper
    * NUM_TEST_SUPPORT_POINTS_PER_ELEM and NUM_TRIAL_SUPPORT_POINTS_PER_ELEM
    * parameters are specified by the physics solver.
    */
-  template< typename SUBREGION_TYPE,
-            typename CONSTITUTIVE_TYPE,
-            typename FE_TYPE >
-  using Kernel = SparsityKernelBase< SUBREGION_TYPE,
-                                     CONSTITUTIVE_TYPE,
-                                     FE_TYPE,
-                                     KERNEL_TEMPLATE< SUBREGION_TYPE,
-                                                      CONSTITUTIVE_TYPE,
-                                                      FE_TYPE >::numDofPerTestSupportPoint,
-                                     KERNEL_TEMPLATE< SUBREGION_TYPE,
-                                                      CONSTITUTIVE_TYPE,
-                                                      FE_TYPE >::numDofPerTrialSupportPoint
-                                     >;
+  template< typename SUBREGION_TYPE, typename CONSTITUTIVE_TYPE, typename FE_TYPE >
+  using Kernel = SparsityKernelBase<
+    SUBREGION_TYPE,
+    CONSTITUTIVE_TYPE,
+    FE_TYPE,
+    KERNEL_TEMPLATE< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE >::numDofPerTestSupportPoint,
+    KERNEL_TEMPLATE< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE >::numDofPerTrialSupportPoint >;
 };
-
 
 //*****************************************************************************
 //*****************************************************************************
@@ -198,37 +175,34 @@ struct SparsityHelper
  */
 template< typename POLICY,
           typename REGION_TYPE,
-          template< typename SUBREGION_TYPE,
-                    typename CONSTITUTIVE_TYPE,
-                    typename FE_TYPE > class KERNEL_TEMPLATE >
-static
-real64 fillSparsity( MeshLevel & mesh,
-                     arrayView1d< string const > const & targetRegions,
-                     string const & discretizationName,
-                     arrayView1d< globalIndex const > const & inputDofNumber,
-                     globalIndex const rankOffset,
-                     SparsityPattern< globalIndex > & inputSparsityPattern,
-                     arrayView1d< localIndex > const & rowSizes )
+          template< typename SUBREGION_TYPE, typename CONSTITUTIVE_TYPE, typename FE_TYPE >
+          class KERNEL_TEMPLATE >
+static real64
+fillSparsity( MeshLevel & mesh,
+              arrayView1d< string const > const & targetRegions,
+              string const & discretizationName,
+              arrayView1d< globalIndex const > const & inputDofNumber,
+              globalIndex const rankOffset,
+              SparsityPattern< globalIndex > & inputSparsityPattern,
+              arrayView1d< localIndex > const & rowSizes )
 {
   regionBasedKernelApplication< POLICY,
                                 constitutive::NullModel,
                                 REGION_TYPE,
-                                SparsityHelper< KERNEL_TEMPLATE >::template Kernel
-                                >( mesh,
-                                   targetRegions,
-                                   discretizationName,
-                                   array1d< string >(),
-                                   inputDofNumber,
-                                   rankOffset,
-                                   inputSparsityPattern,
-                                   rowSizes );
+                                SparsityHelper< KERNEL_TEMPLATE >::template Kernel >(
+    mesh,
+    targetRegions,
+    discretizationName,
+    array1d< string >(),
+    inputDofNumber,
+    rankOffset,
+    inputSparsityPattern,
+    rowSizes );
 
   return 0;
 }
 
-}
-}
-
-
+}  // namespace finiteElement
+}  // namespace geosx
 
 #endif /* GEOSX_FINITEELEMENT_SPARSITYKERNELBASE_HPP_ */

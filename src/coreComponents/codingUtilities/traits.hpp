@@ -30,10 +30,8 @@
 
 namespace geosx
 {
-
 namespace traits
 {
-
 /**
  * @brief Defines a static constexpr bool HasMemberFunction_data< @p CLASS >
  *        that is true iff the method @p CLASS ::data() exists and the return value is convertable to a pointer.
@@ -47,7 +45,8 @@ HAS_MEMBER_FUNCTION( data, void const *, );
  * @tparam CLASS The type to test.
  */
 template< typename CLASS >
-static constexpr bool HasMemberFunction_move = LvArray::bufferManipulation::HasMemberFunction_move< CLASS >;
+static constexpr bool HasMemberFunction_move =
+  LvArray::bufferManipulation::HasMemberFunction_move< CLASS >;
 
 /**
  * @brief Defines a static constexpr bool HasMemberFunction_setName< @p CLASS >
@@ -90,7 +89,8 @@ HAS_MEMBER_FUNCTION_NO_RTYPE( reserve, localIndex( 55 ) );
  * @tparam CLASS The type to test.
  */
 template< typename CLASS >
-static constexpr bool HasMemberFunction_toView = LvArray::typeManipulation::HasMemberFunction_toView< CLASS >;
+static constexpr bool HasMemberFunction_toView =
+  LvArray::typeManipulation::HasMemberFunction_toView< CLASS >;
 
 /**
  * @brief Defines a static constexpr bool with two template parameter CanStreamInto
@@ -98,7 +98,10 @@ static constexpr bool HasMemberFunction_toView = LvArray::typeManipulation::HasM
  * @tparam SRC The type of the source.
  * @tparam DST The type of the destination.
  */
-IS_VALID_EXPRESSION_2( CanStreamInto, SRC, DST, std::declval< SRC & >() >> std::declval< DST & >() );
+IS_VALID_EXPRESSION_2( CanStreamInto,
+                       SRC,
+                       DST,
+                       std::declval< SRC & >() >> std::declval< DST & >() );
 
 /**
  * @brief Defines a static constexpr bool HasAlias_value_type< @p CLASS >
@@ -109,8 +112,7 @@ HAS_ALIAS( value_type );
 
 namespace internal
 {
-template< class T,
-          bool HAS_DATA_METHOD = HasMemberFunction_data< T > >
+template< class T, bool HAS_DATA_METHOD = HasMemberFunction_data< T > >
 struct GetPointerType
 {
   using Pointer = T *;
@@ -124,7 +126,7 @@ struct GetPointerType< T, true >
   using ConstPointer = std::remove_pointer_t< Pointer > const *;
 };
 
-} // namespace internal
+}  // namespace internal
 
 /// Type aliased to whatever T::data() returns or T * if that method doesn't exist.
 template< typename T >
@@ -152,14 +154,16 @@ constexpr bool is_array = LvArray::isArray< T >;
 
 /// True if T is a Tensor class.
 template< typename T >
-constexpr bool is_tensorT = std::is_same< std::remove_const_t< T >, R1Tensor >::value;
+constexpr bool is_tensorT =
+  std::is_same< std::remove_const_t< T >, R1Tensor >::value;
 
 } /* namespace traits */
 
 template< typename T, bool COND >
 struct add_const_if
 {
-  using type = typename std::conditional< COND, typename std::add_const< T >::type, T >::type;
+  using type =
+    typename std::conditional< COND, typename std::add_const< T >::type, T >::type;
 };
 
 template< typename T, bool COND >

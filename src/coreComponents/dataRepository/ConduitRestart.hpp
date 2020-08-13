@@ -31,25 +31,24 @@
 
 /// @cond DO_NOT_DOCUMENT
 
-#define CONDUIT_TYPE_INFO( T, CONDUIT_TYPE ) \
-  template<> \
-  struct conduitTypeInfo< T > \
-  { \
-    using type = CONDUIT_TYPE; \
-    static constexpr int id = CONDUIT_TYPE ## _ID; \
-    static constexpr int sizeOfConduitType = sizeof( type ); \
+#define CONDUIT_TYPE_INFO( T, CONDUIT_TYPE )                                 \
+  template<>                                                                 \
+  struct conduitTypeInfo< T >                                                \
+  {                                                                          \
+    using type = CONDUIT_TYPE;                                               \
+    static constexpr int id = CONDUIT_TYPE##_ID;                             \
+    static constexpr int sizeOfConduitType = sizeof( type );                 \
     static constexpr int numConduitValues = sizeof( T ) / sizeOfConduitType; \
-    static_assert( sizeof( T ) % sizeOfConduitType == 0, #T " cannot be made made up of " #CONDUIT_TYPE "." ); \
+    static_assert( sizeof( T ) % sizeOfConduitType == 0,                     \
+                   #T " cannot be made made up of " #CONDUIT_TYPE "." );     \
   }
 
 namespace geosx
 {
 namespace dataRepository
 {
-
 namespace internal
 {
-
 template< typename T >
 struct conduitTypeInfo
 {};
@@ -73,25 +72,28 @@ CONDUIT_TYPE_INFO( unsigned long long, CONDUIT_NATIVE_UNSIGNED_LONG_LONG );
 CONDUIT_TYPE_INFO( float, CONDUIT_NATIVE_FLOAT );
 CONDUIT_TYPE_INFO( double, CONDUIT_NATIVE_DOUBLE );
 
-
 // Tensor types
 CONDUIT_TYPE_INFO( R1Tensor, CONDUIT_NATIVE_DOUBLE );
 
-} // namespace internal
+}  // namespace internal
 
 template< typename T >
-using conduitTypeInfo = internal::conduitTypeInfo< std::remove_const_t< std::remove_pointer_t< T > > >;
+using conduitTypeInfo =
+  internal::conduitTypeInfo< std::remove_const_t< std::remove_pointer_t< T > > >;
 
 extern conduit::Node rootConduitNode;
 
-std::string writeRootFile( conduit::Node & root, std::string const & rootPath );
+std::string
+writeRootFile( conduit::Node & root, std::string const & rootPath );
 
-void writeTree( std::string const & path );
+void
+writeTree( std::string const & path );
 
-void loadTree( std::string const & path );
+void
+loadTree( std::string const & path );
 
-} // namespace dataRepository
-} // namespace geosx
+}  // namespace dataRepository
+}  // namespace geosx
 
 /// @endcond
 

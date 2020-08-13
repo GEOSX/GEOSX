@@ -22,13 +22,10 @@
 
 namespace geosx
 {
-
 namespace logger
 {
-
 namespace internal
 {
-
 int rank = 0;
 std::string rankString = "0";
 
@@ -40,11 +37,12 @@ std::ostream * rankStream = nullptr;
 MPI_Comm comm;
 #endif
 
-} // namespace internal
+}  // namespace internal
 
 #ifdef GEOSX_USE_MPI
 
-void InitializeLogger( MPI_Comm mpi_comm, const std::string & rankOutputDir )
+void
+InitializeLogger( MPI_Comm mpi_comm, const std::string & rankOutputDir )
 {
   internal::comm = mpi_comm;
   MPI_Comm_rank( mpi_comm, &internal::rank );
@@ -60,7 +58,8 @@ void InitializeLogger( MPI_Comm mpi_comm, const std::string & rankOutputDir )
     }
 
     MPI_Barrier( mpi_comm );
-    std::string outputFilePath = rankOutputDir + "/rank_" + internal::rankString + ".out";
+    std::string outputFilePath =
+      rankOutputDir + "/rank_" + internal::rankString + ".out";
     internal::rankStream = new std::ofstream( outputFilePath );
   }
   else
@@ -71,13 +70,15 @@ void InitializeLogger( MPI_Comm mpi_comm, const std::string & rankOutputDir )
 
 #endif
 
-void InitializeLogger( const std::string & rankOutputDir )
+void
+InitializeLogger( const std::string & rankOutputDir )
 {
   if( rankOutputDir != "" )
   {
     makeDirsForPath( rankOutputDir );
 
-    std::string outputFilePath = rankOutputDir + "/rank_" + internal::rankString + ".out";
+    std::string outputFilePath =
+      rankOutputDir + "/rank_" + internal::rankString + ".out";
     internal::rankStream = new std::ofstream( outputFilePath );
   }
   else
@@ -86,7 +87,8 @@ void InitializeLogger( const std::string & rankOutputDir )
   }
 }
 
-void FinalizeLogger()
+void
+FinalizeLogger()
 {
   if( internal::rankStream != &std::cout )
   {
@@ -96,6 +98,6 @@ void FinalizeLogger()
   internal::rankStream = nullptr;
 }
 
-} // namespace logger
+}  // namespace logger
 
-} // namespace geosx
+}  // namespace geosx

@@ -12,7 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-
 #include <gtest/gtest.h>
 
 #include "dataRepository/ReferenceWrapper.hpp"
@@ -28,7 +27,6 @@ using namespace LvArray;
 
 TEST( testReferenceWrapper, testIntWrapper )
 {
-
   int var = 0;
 
   ReferenceWrapper< int > wrappedVar( var );
@@ -40,10 +38,9 @@ TEST( testReferenceWrapper, testIntWrapper )
   EXPECT_TRUE( var == 5 );
   EXPECT_TRUE( var2 == var );
 
-  EXPECT_TRUE( &var == &(wrappedVar.get()) );
-  EXPECT_TRUE( &var2 != &(wrappedVar.get()) );
+  EXPECT_TRUE( &var == &( wrappedVar.get() ) );
+  EXPECT_TRUE( &var2 != &( wrappedVar.get() ) );
   EXPECT_TRUE( &var != &var2 );
-
 }
 
 TEST( testReferenceWrapper, testArrayWrapper )
@@ -53,7 +50,7 @@ TEST( testReferenceWrapper, testArrayWrapper )
 
   ReferenceWrapper< Array< int, 1, int > > wrappedArr( arr );
 
-  for( int i=0; i<4; ++i )
+  for( int i = 0; i < 4; ++i )
   {
     wrappedArr[i] = 2 * i;
   }
@@ -62,7 +59,6 @@ TEST( testReferenceWrapper, testArrayWrapper )
   EXPECT_TRUE( arr[1] == 2 );
   EXPECT_TRUE( arr[2] == 4 );
   EXPECT_TRUE( arr[3] == 6 );
-
 }
 
 TEST( testReferenceWrapper, testArrayOfWrappedInts )
@@ -90,11 +86,11 @@ TEST( testReferenceWrapper, testOperatorParen )
 
   ReferenceWrapper< array2d > wrappedArr( arr );
 
-  for( int i=0; i<2; ++i )
+  for( int i = 0; i < 2; ++i )
   {
-    for( int j=0; j<3; ++j )
+    for( int j = 0; j < 3; ++j )
     {
-      wrappedArr( i, j ) = 3*i+j;
+      wrappedArr( i, j ) = 3 * i + j;
     }
   }
 
@@ -114,11 +110,11 @@ TEST( testReferenceWrapper, testNestedOperatorSquare )
 
   ReferenceWrapper< array2d > wrappedArr( arr );
 
-  for( int i=0; i<2; ++i )
+  for( int i = 0; i < 2; ++i )
   {
-    for( int j=0; j<3; ++j )
+    for( int j = 0; j < 3; ++j )
     {
-      wrappedArr[i][j] = 3*i+j;
+      wrappedArr[i][j] = 3 * i + j;
     }
   }
 

@@ -19,12 +19,11 @@
 
 #include "MeshGeneratorBase.hpp"
 
-
 namespace geosx
 {
 using namespace dataRepository;
 
-MeshGeneratorBase::MeshGeneratorBase( string const & name, Group * const parent ):
+MeshGeneratorBase::MeshGeneratorBase( string const & name, Group * const parent ) :
   Group( name, parent )
 {
   setInputFlags( InputFlags::OPTIONAL_NONUNIQUE );
@@ -33,10 +32,11 @@ MeshGeneratorBase::MeshGeneratorBase( string const & name, Group * const parent 
 MeshGeneratorBase::~MeshGeneratorBase()
 {}
 
-MeshGeneratorBase::CatalogInterface::CatalogType & MeshGeneratorBase::GetCatalog()
+MeshGeneratorBase::CatalogInterface::CatalogType &
+MeshGeneratorBase::GetCatalog()
 {
   static MeshGeneratorBase::CatalogInterface::CatalogType catalog;
   return catalog;
 }
 
-}
+}  // namespace geosx

@@ -36,17 +36,17 @@ namespace geosx
 {
 using namespace dataRepository;
 
-InternalMeshGenerator::InternalMeshGenerator( string const & name, Group * const parent ):
+InternalMeshGenerator::InternalMeshGenerator( string const & name,
+                                              Group * const parent ) :
   MeshGeneratorBase( name, parent ),
-//    m_vertices({this->registerWrapper<real64_array>(keys::xCoords).reference(),
-//                this->registerWrapper<real64_array>(keys::yCoords).reference(),
-//                this->registerWrapper<real64_array>(keys::zCoords).reference()
-// }),
+  //    m_vertices({this->registerWrapper<real64_array>(keys::xCoords).reference(),
+  //                this->registerWrapper<real64_array>(keys::yCoords).reference(),
+  //                this->registerWrapper<real64_array>(keys::zCoords).reference()
+  // }),
   m_dim( 0 ),
   m_min(),
   m_max()
 {
-
   /*
      for( int i=0 ; i<3 ; ++i )
      {
@@ -60,69 +60,79 @@ InternalMeshGenerator::InternalMeshGenerator( string const & name, Group * const
    */
   m_dim = 3;
 
-  registerWrapper( keys::xCoords, &(m_vertices[0]) )->
-    setInputFlag( InputFlags::REQUIRED )->
-    setSizedFromParent( 0 )->
-    setDescription( "x-coordinates of each mesh block vertex" );
+  registerWrapper( keys::xCoords, &( m_vertices[0] ) )
+    ->setInputFlag( InputFlags::REQUIRED )
+    ->setSizedFromParent( 0 )
+    ->setDescription( "x-coordinates of each mesh block vertex" );
 
-  registerWrapper( keys::yCoords, &(m_vertices[1]) )->
-    setInputFlag( InputFlags::REQUIRED )->
-    setSizedFromParent( 0 )->
-    setDescription( "y-coordinates of each mesh block vertex" );
+  registerWrapper( keys::yCoords, &( m_vertices[1] ) )
+    ->setInputFlag( InputFlags::REQUIRED )
+    ->setSizedFromParent( 0 )
+    ->setDescription( "y-coordinates of each mesh block vertex" );
 
-  registerWrapper( keys::zCoords, &(m_vertices[2]) )->
-    setInputFlag( InputFlags::REQUIRED )->
-    setSizedFromParent( 0 )->
-    setDescription( "z-coordinates of each mesh block vertex" );
+  registerWrapper( keys::zCoords, &( m_vertices[2] ) )
+    ->setInputFlag( InputFlags::REQUIRED )
+    ->setSizedFromParent( 0 )
+    ->setDescription( "z-coordinates of each mesh block vertex" );
 
-  registerWrapper( keys::xElems, &(m_nElems[0]) )->
-    setInputFlag( InputFlags::REQUIRED )->
-    setSizedFromParent( 0 )->
-    setDescription( "number of elements in the x-direction within each mesh block" );
+  registerWrapper( keys::xElems, &( m_nElems[0] ) )
+    ->setInputFlag( InputFlags::REQUIRED )
+    ->setSizedFromParent( 0 )
+    ->setDescription(
+      "number of elements in the x-direction within each mesh block" );
 
-  registerWrapper( keys::yElems, &(m_nElems[1]) )->
-    setInputFlag( InputFlags::REQUIRED )->
-    setSizedFromParent( 0 )->
-    setDescription( "number of elements in the y-direction within each mesh block" );
+  registerWrapper( keys::yElems, &( m_nElems[1] ) )
+    ->setInputFlag( InputFlags::REQUIRED )
+    ->setSizedFromParent( 0 )
+    ->setDescription(
+      "number of elements in the y-direction within each mesh block" );
 
-  registerWrapper( keys::zElems, &(m_nElems[2]) )->
-    setInputFlag( InputFlags::REQUIRED )->
-    setSizedFromParent( 0 )->
-    setDescription( "number of elements in the z-direction within each mesh block" );
+  registerWrapper( keys::zElems, &( m_nElems[2] ) )
+    ->setInputFlag( InputFlags::REQUIRED )
+    ->setSizedFromParent( 0 )
+    ->setDescription(
+      "number of elements in the z-direction within each mesh block" );
 
-  registerWrapper( keys::xBias, &(m_nElemBias[0]) )->
-    setApplyDefaultValue( 1.0 )->
-    setSizedFromParent( 0 )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription( "bias of element sizes in the x-direction within each mesh block (dx_left=(1+b)*L/N, dx_right=(1-b)*L/N)" );
+  registerWrapper( keys::xBias, &( m_nElemBias[0] ) )
+    ->setApplyDefaultValue( 1.0 )
+    ->setSizedFromParent( 0 )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription(
+      "bias of element sizes in the x-direction within each mesh block "
+      "(dx_left=(1+b)*L/N, dx_right=(1-b)*L/N)" );
 
-  registerWrapper( keys::yBias, &(m_nElemBias[1]) )->
-    setApplyDefaultValue( 1.0 )->
-    setSizedFromParent( 0 )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription( "bias of element sizes in the y-direction within each mesh block (dy_left=(1+b)*L/N, dx_right=(1-b)*L/N)" );
+  registerWrapper( keys::yBias, &( m_nElemBias[1] ) )
+    ->setApplyDefaultValue( 1.0 )
+    ->setSizedFromParent( 0 )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription(
+      "bias of element sizes in the y-direction within each mesh block "
+      "(dy_left=(1+b)*L/N, dx_right=(1-b)*L/N)" );
 
-  registerWrapper( keys::zBias, &(m_nElemBias[2]) )->
-    setApplyDefaultValue( 1.0 )->
-    setSizedFromParent( 0 )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription( "bias of element sizes in the z-direction within each mesh block (dz_left=(1+b)*L/N, dz_right=(1-b)*L/N)" );
+  registerWrapper( keys::zBias, &( m_nElemBias[2] ) )
+    ->setApplyDefaultValue( 1.0 )
+    ->setSizedFromParent( 0 )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription(
+      "bias of element sizes in the z-direction within each mesh block "
+      "(dz_left=(1+b)*L/N, dz_right=(1-b)*L/N)" );
 
-  registerWrapper( keys::cellBlockNames, &m_regionNames )->
-    setInputFlag( InputFlags::REQUIRED )->
-    setSizedFromParent( 0 )->
-    setDescription( "names of each mesh block" );
+  registerWrapper( keys::cellBlockNames, &m_regionNames )
+    ->setInputFlag( InputFlags::REQUIRED )
+    ->setSizedFromParent( 0 )
+    ->setDescription( "names of each mesh block" );
 
-  registerWrapper( keys::elementTypes, &m_elementType )->
-    setInputFlag( InputFlags::REQUIRED )->
-    setSizedFromParent( 0 )->
-    setDescription( "element types of each mesh block" );
+  registerWrapper( keys::elementTypes, &m_elementType )
+    ->setInputFlag( InputFlags::REQUIRED )
+    ->setSizedFromParent( 0 )
+    ->setDescription( "element types of each mesh block" );
 
-  registerWrapper( keys::trianglePattern, &m_trianglePattern )->
-    setApplyDefaultValue( 0 )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription( "pattern by which to decompose the hex mesh into prisms (more explanation required)" );
-
+  registerWrapper( keys::trianglePattern, &m_trianglePattern )
+    ->setApplyDefaultValue( 0 )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription(
+      "pattern by which to decompose the hex mesh into prisms (more "
+      "explanation required)" );
 }
 
 InternalMeshGenerator::~InternalMeshGenerator()
@@ -130,11 +140,12 @@ InternalMeshGenerator::~InternalMeshGenerator()
   // TODO Auto-generated destructor stub
 }
 
-
 /**
  * @param domain
  */
-void InternalMeshGenerator::GenerateElementRegions( DomainPartition & GEOSX_UNUSED_PARAM( domain ) )
+void
+InternalMeshGenerator::GenerateElementRegions(
+  DomainPartition & GEOSX_UNUSED_PARAM( domain ) )
 {
   //  lvector numElements;
   //
@@ -145,14 +156,13 @@ void InternalMeshGenerator::GenerateElementRegions( DomainPartition & GEOSX_UNUS
   //
   //  domain.m_feElementManager->resize( numElements, m_regionNames,
   // m_elementType );
-
 }
 
-void InternalMeshGenerator::PostProcessInput()
+void
+InternalMeshGenerator::PostProcessInput()
 {
-
-
-  if( m_elementType[0] == "C3D8" || m_elementType[0] == "C3D4" || m_elementType[0] == "C3D6" )
+  if( m_elementType[0] == "C3D8" || m_elementType[0] == "C3D4" ||
+      m_elementType[0] == "C3D6" )
   {
     m_dim = 3;
   }
@@ -168,17 +178,18 @@ void InternalMeshGenerator::PostProcessInput()
   {
     // Check for vertex/element matching
     bool failFlag = false;
-    for( int i=0; i<m_dim; ++i )
+    for( int i = 0; i < m_dim; ++i )
     {
-      failFlag += ( m_nElems[i].size() != m_vertices[i].size()-1 );
+      failFlag += ( m_nElems[i].size() != m_vertices[i].size() - 1 );
     }
     if( failFlag )
     {
-      GEOSX_ERROR( "vertex/element mismatch InternalMeshGenerator::ReadXMLPost()" );
+      GEOSX_ERROR(
+        "vertex/element mismatch InternalMeshGenerator::ReadXMLPost()" );
     }
 
     // If specified, check to make sure bias values have the correct length
-    for( int i=0; i<m_dim; ++i )
+    for( int i = 0; i < m_dim; ++i )
     {
       if( m_nElemBias[i].size() > 0 )
       {
@@ -191,26 +202,31 @@ void InternalMeshGenerator::PostProcessInput()
     }
   }
 
-  m_numElePerBox.resize( m_nElems[0].size() * m_nElems[1].size() * m_nElems[2].size());
+  m_numElePerBox.resize( m_nElems[0].size() * m_nElems[1].size() *
+                         m_nElems[2].size() );
 
-  if( LvArray::integerConversion< long >( m_elementType.size()) != m_numElePerBox.size())
+  if( LvArray::integerConversion< long >( m_elementType.size() ) !=
+      m_numElePerBox.size() )
   {
     if( m_elementType.size() == 1 )
     {
-      m_elementType.resize( m_numElePerBox.size());
-      for( localIndex i=1; i< m_elementType.size(); ++i )
+      m_elementType.resize( m_numElePerBox.size() );
+      for( localIndex i = 1; i < m_elementType.size(); ++i )
       {
         m_elementType[i] = m_elementType[0];
       }
     }
     else
     {
-      GEOSX_ERROR( "InternalMeshGenerator: The number of element types is inconsistent with the number of total block." );
+      GEOSX_ERROR(
+        "InternalMeshGenerator: The number of element types is inconsistent "
+        "with the number of total block." );
     }
   }
 
-
-  for( localIndex i = 0; i < LvArray::integerConversion< localIndex >( m_elementType.size() ); ++i )
+  for( localIndex i = 0;
+       i < LvArray::integerConversion< localIndex >( m_elementType.size() );
+       ++i )
   {
     if( m_elementType[i] == "C3D8" )
     {
@@ -241,7 +257,7 @@ void InternalMeshGenerator::PostProcessInput()
 
   {
     localIndex numBlocks = 1;
-    for( int i=0; i<m_dim; ++i )
+    for( int i = 0; i < m_dim; ++i )
     {
       numBlocks *= m_nElems[i].size();
     }
@@ -250,84 +266,89 @@ void InternalMeshGenerator::PostProcessInput()
       if( m_regionNames.size() == 1 )
       {
         m_regionNames.resize( numBlocks );
-        for( localIndex i=1; i< m_elementType.size(); ++i )
+        for( localIndex i = 1; i < m_elementType.size(); ++i )
         {
           m_regionNames[i] = m_regionNames[0];
         }
       }
       else
       {
-        GEOSX_ERROR( "Incorrect number of regionLayout entries specified in InternalMeshGenerator::ReadXML()" );
+        GEOSX_ERROR(
+          "Incorrect number of regionLayout entries specified in "
+          "InternalMeshGenerator::ReadXML()" );
       }
     }
   }
 
-  for( int i=0; i<3; ++i )
+  for( int i = 0; i < 3; ++i )
   {
     m_min[i] = m_vertices[i].front();
     m_max[i] = m_vertices[i].back();
   }
 
-  for( int dir=0; dir<3; ++dir )
+  for( int dir = 0; dir < 3; ++dir )
   {
     m_firstElemIndexForBlock[dir].resize( m_nElems[dir].size() );
     m_lastElemIndexForBlock[dir].resize( m_nElems[dir].size() );
     m_firstElemIndexForBlock[dir][0] = 0;
-    m_lastElemIndexForBlock[dir][0] = m_nElems[dir][0]-1;
-    for( int block=1; block<m_nElems[dir].size(); ++block )
+    m_lastElemIndexForBlock[dir][0] = m_nElems[dir][0] - 1;
+    for( int block = 1; block < m_nElems[dir].size(); ++block )
     {
-      m_firstElemIndexForBlock[dir][block] = m_lastElemIndexForBlock[dir][block-1] + 1;
-      m_lastElemIndexForBlock[dir][block] = m_firstElemIndexForBlock[dir][block] + m_nElems[dir][block]-1;
+      m_firstElemIndexForBlock[dir][block] =
+        m_lastElemIndexForBlock[dir][block - 1] + 1;
+      m_lastElemIndexForBlock[dir][block] =
+        m_firstElemIndexForBlock[dir][block] + m_nElems[dir][block] - 1;
     }
   }
 
   m_fPerturb = 0.0;
 
-//    m_fPerturb = hdn.GetAttributeOrDefault<realT>("perturbationFactor", 0.0);
-//    m_randSeed = hdn.GetAttributeOrDefault<int>("perturbationSeed",
-// time(NULL));
-//    srand(m_randSeed);
-//
-//    m_mapToRadial = hdn.GetAttributeOrDefault<int>("mapToRadial", 0);
-//
-//    m_skewAngle = hdn.GetAttributeOrDefault<realT>("skewAngle", 0.0);
-//    m_skewAngle *= 3.14159265/180;
-//    R1Tensor zeroVector;
-//    zeroVector *= 0.0;
-//    m_skewCenter = hdn.GetAttributeOrDefault<R1Tensor>("skewCenter",
-// zeroVector);
-//
-//
-//    // Mesh deformation
-//    m_delayMeshDeformation =
-// hdn.GetAttributeOrDefault<int>("delayMeshDeformation", 0);
-//    m_meshDx = hdn.GetAttributeString("dxTable");
-//    m_meshDy = hdn.GetAttributeString("dyTable");
-//    m_meshDz = hdn.GetAttributeString("dzTable");
-
+  //    m_fPerturb = hdn.GetAttributeOrDefault<realT>("perturbationFactor", 0.0);
+  //    m_randSeed = hdn.GetAttributeOrDefault<int>("perturbationSeed",
+  // time(NULL));
+  //    srand(m_randSeed);
+  //
+  //    m_mapToRadial = hdn.GetAttributeOrDefault<int>("mapToRadial", 0);
+  //
+  //    m_skewAngle = hdn.GetAttributeOrDefault<realT>("skewAngle", 0.0);
+  //    m_skewAngle *= 3.14159265/180;
+  //    R1Tensor zeroVector;
+  //    zeroVector *= 0.0;
+  //    m_skewCenter = hdn.GetAttributeOrDefault<R1Tensor>("skewCenter",
+  // zeroVector);
+  //
+  //
+  //    // Mesh deformation
+  //    m_delayMeshDeformation =
+  // hdn.GetAttributeOrDefault<int>("delayMeshDeformation", 0);
+  //    m_meshDx = hdn.GetAttributeString("dxTable");
+  //    m_meshDy = hdn.GetAttributeString("dyTable");
+  //    m_meshDz = hdn.GetAttributeString("dzTable");
 }
 
-
-
-Group * InternalMeshGenerator::CreateChild( string const & GEOSX_UNUSED_PARAM( childKey ), string const & GEOSX_UNUSED_PARAM( childName ) )
+Group *
+InternalMeshGenerator::CreateChild(
+  string const & GEOSX_UNUSED_PARAM( childKey ),
+  string const & GEOSX_UNUSED_PARAM( childName ) )
 {
   return nullptr;
 }
-
 
 /**
  * @param partition
  * @param domain
  */
-void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
+void
+InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
 {
   GEOSX_MARK_FUNCTION;
 
   // This cannot find groupkeys:
   // Group * const meshBodies = domain->GetGroup(domain->groupKeys.meshBodies);
-  Group * const meshBodies = domain->GetGroup( std::string( "MeshBodies" ));
+  Group * const meshBodies = domain->GetGroup( std::string( "MeshBodies" ) );
   MeshBody * const meshBody = meshBodies->RegisterGroup< MeshBody >( this->getName() );
-  MeshLevel * const meshLevel0 = meshBody->RegisterGroup< MeshLevel >( std::string( "Level0" ));
+  MeshLevel * const meshLevel0 =
+    meshBody->RegisterGroup< MeshLevel >( std::string( "Level0" ) );
 
   // special case
   //  bool isRadialWithOneThetaPartition = (m_mapToRadial > 0) &&
@@ -337,32 +358,46 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
 
   // Make sure that the node manager fields are initialized
 
-  CellBlockManager * elementManager = domain->GetGroup< CellBlockManager >( keys::cellManager );
+  CellBlockManager * elementManager =
+    domain->GetGroup< CellBlockManager >( keys::cellManager );
   Group & nodeSets = nodeManager->sets();
 
-  PartitionBase & partition = domain->getReference< PartitionBase >( keys::partitionManager );
+  PartitionBase & partition =
+    domain->getReference< PartitionBase >( keys::partitionManager );
 
   bool isRadialWithOneThetaPartition = false;
-
 
   // This should probably handled elsewhere:
   int aa = 0;
   for( auto & cellBlockName : m_regionNames )
   {
-    CellBlock * cellBlock = elementManager->GetGroup( keys::cellBlocks )->RegisterGroup< CellBlock >( cellBlockName );
+    CellBlock * cellBlock = elementManager->GetGroup( keys::cellBlocks )
+                              ->RegisterGroup< CellBlock >( cellBlockName );
     string elementType = m_elementType[aa++];
     cellBlock->SetElementType( elementType );
   }
 
-
-  SortedArray< localIndex > & xnegNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "xneg" ) )->reference();
-  SortedArray< localIndex > & xposNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "xpos" ) )->reference();
-  SortedArray< localIndex > & ynegNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "yneg" ) )->reference();
-  SortedArray< localIndex > & yposNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "ypos" ) )->reference();
-  SortedArray< localIndex > & znegNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "zneg" ) )->reference();
-  SortedArray< localIndex > & zposNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "zpos" ) )->reference();
-  SortedArray< localIndex > & allNodes  = nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "all" ) )->reference();
-
+  SortedArray< localIndex > & xnegNodes =
+    nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "xneg" ) )
+      ->reference();
+  SortedArray< localIndex > & xposNodes =
+    nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "xpos" ) )
+      ->reference();
+  SortedArray< localIndex > & ynegNodes =
+    nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "yneg" ) )
+      ->reference();
+  SortedArray< localIndex > & yposNodes =
+    nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "ypos" ) )
+      ->reference();
+  SortedArray< localIndex > & znegNodes =
+    nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "zneg" ) )
+      ->reference();
+  SortedArray< localIndex > & zposNodes =
+    nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "zpos" ) )
+      ->reference();
+  SortedArray< localIndex > & allNodes =
+    nodeSets.registerWrapper< SortedArray< localIndex > >( std::string( "all" ) )
+      ->reference();
 
   // partition based on even spacing to get load balance
   // Partition geometrical boundaries will be corrected in the end.
@@ -397,7 +432,8 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
     array1d< real64 > elemCenterCoordsLocal( m_numElemsTotal[i] );
     for( int k = 0; k < m_numElemsTotal[i]; ++k )
     {
-      elemCenterCoordsLocal[k] = m_min[i] + ( m_max[i] - m_min[i] ) * ( k + 0.5 ) / m_numElemsTotal[i];
+      elemCenterCoordsLocal[k] =
+        m_min[i] + ( m_max[i] - m_min[i] ) * ( k + 0.5 ) / m_numElemsTotal[i];
     }
     MpiWrapper::allReduce( elemCenterCoordsLocal.data(),
                            elemCenterCoords[i].data(),
@@ -409,10 +445,8 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
   // find starting/ending index
 
   // get the first and last indices in this partition each direction
-  int firstElemIndexInPartition[3] =
-  { -1, -1, -1 };
-  int lastElemIndexInPartition[3] =
-  { -2, -2, -2 };
+  int firstElemIndexInPartition[3] = { -1, -1, -1 };
+  int lastElemIndexInPartition[3] = { -2, -2, -2 };
 
   for( int i = 0; i < 3; ++i )
   {
@@ -455,21 +489,27 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
 
     for( int block = 0; block < m_nElems[dir].size(); ++block )
     {
-      if( firstElemIndexForBlockInPartition[dir][block] > lastElemIndexInPartition[dir] ||
-          lastElemIndexForBlockInPartition[dir][block] < firstElemIndexInPartition[dir] )
+      if( firstElemIndexForBlockInPartition[dir][block] >
+            lastElemIndexInPartition[dir] ||
+          lastElemIndexForBlockInPartition[dir][block] <
+            firstElemIndexInPartition[dir] )
       {
         firstElemIndexForBlockInPartition[dir][block] = -1;
         lastElemIndexForBlockInPartition[dir][block] = -2;
       }
       else
       {
-        if( firstElemIndexForBlockInPartition[dir][block] < firstElemIndexInPartition[dir] )
+        if( firstElemIndexForBlockInPartition[dir][block] <
+            firstElemIndexInPartition[dir] )
         {
-          firstElemIndexForBlockInPartition[dir][block] = firstElemIndexInPartition[dir];
+          firstElemIndexForBlockInPartition[dir][block] =
+            firstElemIndexInPartition[dir];
         }
-        if( lastElemIndexForBlockInPartition[dir][block] > lastElemIndexInPartition[dir] )
+        if( lastElemIndexForBlockInPartition[dir][block] >
+            lastElemIndexInPartition[dir] )
         {
-          lastElemIndexForBlockInPartition[dir][block] = lastElemIndexInPartition[dir];
+          lastElemIndexForBlockInPartition[dir][block] =
+            lastElemIndexInPartition[dir];
         }
       }
     }
@@ -483,8 +523,8 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
     {
       for( int kblock = 0; kblock < m_nElems[2].size(); ++kblock, ++regionOffset )
       {
-        numElemsInRegions[ m_regionNames[ regionOffset ] ] = 0;
-        elemTypeInRegions[ m_regionNames[ regionOffset ] ] = "";
+        numElemsInRegions[m_regionNames[regionOffset]] = 0;
+        elemTypeInRegions[m_regionNames[regionOffset]] = "";
       }
     }
   }
@@ -496,24 +536,27 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
     {
       for( int jblock = 0; jblock < m_nElems[1].size(); ++jblock )
       {
-        for( int kblock = 0; kblock < m_nElems[2].size(); ++kblock, ++regionOffset, ++iR )
+        for( int kblock = 0; kblock < m_nElems[2].size();
+             ++kblock, ++regionOffset, ++iR )
         {
           int numElemsInRegion = 1;
-          numElemsInRegion *= lastElemIndexForBlockInPartition[0][iblock] - firstElemIndexForBlockInPartition[0][iblock] + 1;
+          numElemsInRegion *= lastElemIndexForBlockInPartition[0][iblock] -
+            firstElemIndexForBlockInPartition[0][iblock] + 1;
 
           if( m_dim > 1 )
           {
-            numElemsInRegion *= lastElemIndexForBlockInPartition[1][jblock] - firstElemIndexForBlockInPartition[1][jblock] + 1;
+            numElemsInRegion *= lastElemIndexForBlockInPartition[1][jblock] -
+              firstElemIndexForBlockInPartition[1][jblock] + 1;
           }
           if( m_dim > 2 )
           {
-            numElemsInRegion *= lastElemIndexForBlockInPartition[2][kblock] - firstElemIndexForBlockInPartition[2][kblock] + 1;
+            numElemsInRegion *= lastElemIndexForBlockInPartition[2][kblock] -
+              firstElemIndexForBlockInPartition[2][kblock] + 1;
           }
 
           numElemsInRegion *= m_numElePerBox[iR];
-          numElemsInRegions[ m_regionNames[ regionOffset ] ] += numElemsInRegion;
-          elemTypeInRegions[ m_regionNames[ regionOffset ] ] = m_elementType[iR];
-
+          numElemsInRegions[m_regionNames[regionOffset]] += numElemsInRegion;
+          elemTypeInRegions[m_regionNames[regionOffset]] = m_elementType[iR];
         }
       }
     }
@@ -522,14 +565,14 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
   localIndex numNodes = 1;
 
   //  int numElemsInDir[3] = {1,1,1};
-  localIndex numNodesInDir[3] =
-  { 1, 1, 1 };
+  localIndex numNodesInDir[3] = { 1, 1, 1 };
 
   for( int i = 0; i < m_dim; ++i )
   {
     //    numElemsInDir[i] = lastElemIndexInPartition[i] -
     // firstElemIndexInPartition[i] + 1;
-    numNodesInDir[i] = lastElemIndexInPartition[i] - firstElemIndexInPartition[i] + 2;
+    numNodesInDir[i] =
+      lastElemIndexInPartition[i] - firstElemIndexInPartition[i] + 2;
     if( isRadialWithOneThetaPartition && i == 1 )
     {
       numNodesInDir[1] -= 1;
@@ -538,9 +581,11 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
   }
 
   nodeManager->resize( numNodes );
-  arrayView2d< real64, nodes::REFERENCE_POSITION_USD > const & X = nodeManager->referencePosition();
+  arrayView2d< real64, nodes::REFERENCE_POSITION_USD > const & X =
+    nodeManager->referencePosition();
 
-  arrayView1d< globalIndex > const & nodeLocalToGlobal = nodeManager->localToGlobalMap();
+  arrayView1d< globalIndex > const & nodeLocalToGlobal =
+    nodeManager->localToGlobalMap();
 
   {
     localIndex localNodeIndex = 0;
@@ -550,8 +595,7 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
       {
         for( int k = 0; k < numNodesInDir[2]; ++k )
         {
-          int index[3] =
-          { i, j, k };
+          int index[3] = { i, j, k };
           for( int a = 0; a < m_dim; ++a )
           {
             index[a] += firstElemIndexInPartition[a];
@@ -560,7 +604,7 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
           R1Tensor const pos = NodePosition( index, m_trianglePattern );
           for( int a = 0; a < 3; ++a )
           {
-            X( localNodeIndex, a ) = pos[ a ];
+            X( localNodeIndex, a ) = pos[a];
           }
 
           // alter global node map for radial mesh
@@ -619,7 +663,6 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
           allNodes.insert( localNodeIndex );
 
           ++localNodeIndex;
-
         }
       }
     }
@@ -631,10 +674,11 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
     string_array elementTypes;
     std::map< std::string, localIndex > localElemIndexInRegion;
 
-    for( std::map< std::string, int >::iterator iterNumElemsInRegion = numElemsInRegions.begin();
-         iterNumElemsInRegion != numElemsInRegions.end(); ++iterNumElemsInRegion )
+    for( std::map< std::string, int >::iterator iterNumElemsInRegion =
+           numElemsInRegions.begin();
+         iterNumElemsInRegion != numElemsInRegions.end();
+         ++iterNumElemsInRegion )
     {
-
       numElements.emplace_back( iterNumElemsInRegion->second );
       elementRegionNames.emplace_back( iterNumElemsInRegion->first );
       elementTypes.emplace_back( elemTypeInRegions[iterNumElemsInRegion->first] );
@@ -653,22 +697,30 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
     {
       for( int jblock = 0; jblock < m_nElems[1].size(); ++jblock )
       {
-        for( int kblock = 0; kblock < m_nElems[2].size(); ++kblock, ++regionOffset, ++iR )
+        for( int kblock = 0; kblock < m_nElems[2].size();
+             ++kblock, ++regionOffset, ++iR )
         {
-//          ElementRegionT& elemRegion =
-// domain->m_feElementManager->m_ElementRegions[*iterRegion];
+          //          ElementRegionT& elemRegion =
+          // domain->m_feElementManager->m_ElementRegions[*iterRegion];
 
-          CellBlock * elemRegion =  elementManager->GetRegion( m_regionNames[ regionOffset ] );
-          int const numNodesPerElem = LvArray::integerConversion< int >( elemRegion->numNodesPerElement());
+          CellBlock * elemRegion =
+            elementManager->GetRegion( m_regionNames[regionOffset] );
+          int const numNodesPerElem =
+            LvArray::integerConversion< int >( elemRegion->numNodesPerElement() );
           integer_array nodeIDInBox( 8 );
 
-          arrayView2d< localIndex, cells::NODE_MAP_USD > elemsToNodes = elemRegion->nodeList();
-          arrayView1d< globalIndex > const & elemLocalToGlobal = elemRegion->localToGlobalMap();
+          arrayView2d< localIndex, cells::NODE_MAP_USD > elemsToNodes =
+            elemRegion->nodeList();
+          arrayView1d< globalIndex > const & elemLocalToGlobal =
+            elemRegion->localToGlobalMap();
 
-          int numElemsInDirForRegion[3] =
-          { lastElemIndexForBlockInPartition[0][iblock] - firstElemIndexForBlockInPartition[0][iblock] + 1,
-            lastElemIndexForBlockInPartition[1][jblock] - firstElemIndexForBlockInPartition[1][jblock] + 1,
-            lastElemIndexForBlockInPartition[2][kblock] - firstElemIndexForBlockInPartition[2][kblock] + 1 };
+          int numElemsInDirForRegion[3] = {
+            lastElemIndexForBlockInPartition[0][iblock] -
+              firstElemIndexForBlockInPartition[0][iblock] + 1,
+            lastElemIndexForBlockInPartition[1][jblock] -
+              firstElemIndexForBlockInPartition[1][jblock] + 1,
+            lastElemIndexForBlockInPartition[2][kblock] -
+              firstElemIndexForBlockInPartition[2][kblock] + 1 };
 
           for( int i = 0; i < numElemsInDirForRegion[0]; ++i )
           {
@@ -676,35 +728,39 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
             {
               for( int k = 0; k < numElemsInDirForRegion[2]; ++k )
               {
-                int index[3] =
-                { i + firstElemIndexForBlockInPartition[0][iblock],
-                  j + firstElemIndexForBlockInPartition[1][jblock],
-                  k + firstElemIndexForBlockInPartition[2][kblock] };
+                int index[3] = { i + firstElemIndexForBlockInPartition[0][iblock],
+                                 j + firstElemIndexForBlockInPartition[1][jblock],
+                                 k + firstElemIndexForBlockInPartition[2][kblock] };
 
-                const localIndex firstNodeIndex = numNodesInDir[1] * numNodesInDir[2] * ( index[0] - firstElemIndexInPartition[0] )
-                                                  + numNodesInDir[2] * ( index[1] - firstElemIndexInPartition[1] )
-                                                  + ( index[2] - firstElemIndexInPartition[2] );
+                const localIndex firstNodeIndex = numNodesInDir[1] *
+                    numNodesInDir[2] * ( index[0] - firstElemIndexInPartition[0] ) +
+                  numNodesInDir[2] * ( index[1] - firstElemIndexInPartition[1] ) +
+                  ( index[2] - firstElemIndexInPartition[2] );
                 localIndex nodeOfBox[8];
 
                 if( m_elementType[iR] == "CPE4" || m_elementType[iR] == "STRI" )
                 {
-
                   nodeOfBox[0] = firstNodeIndex;
-                  nodeOfBox[1] = numNodesInDir[1] * numNodesInDir[2] + firstNodeIndex;
-                  nodeOfBox[2] = numNodesInDir[1] * numNodesInDir[2] + numNodesInDir[2] + firstNodeIndex;
+                  nodeOfBox[1] =
+                    numNodesInDir[1] * numNodesInDir[2] + firstNodeIndex;
+                  nodeOfBox[2] = numNodesInDir[1] * numNodesInDir[2] +
+                    numNodesInDir[2] + firstNodeIndex;
                   nodeOfBox[3] = numNodesInDir[2] + firstNodeIndex;
-
                 }
                 else
                 {
                   nodeOfBox[0] = firstNodeIndex;
-                  nodeOfBox[1] = numNodesInDir[1] * numNodesInDir[2] + firstNodeIndex;
-                  nodeOfBox[2] = numNodesInDir[1] * numNodesInDir[2] + numNodesInDir[2] + firstNodeIndex;
+                  nodeOfBox[1] =
+                    numNodesInDir[1] * numNodesInDir[2] + firstNodeIndex;
+                  nodeOfBox[2] = numNodesInDir[1] * numNodesInDir[2] +
+                    numNodesInDir[2] + firstNodeIndex;
                   nodeOfBox[3] = numNodesInDir[2] + firstNodeIndex;
 
                   nodeOfBox[4] = firstNodeIndex + 1;
-                  nodeOfBox[5] = numNodesInDir[1] * numNodesInDir[2] + firstNodeIndex + 1;
-                  nodeOfBox[6] = numNodesInDir[1] * numNodesInDir[2] + numNodesInDir[2] + firstNodeIndex + 1;
+                  nodeOfBox[5] =
+                    numNodesInDir[1] * numNodesInDir[2] + firstNodeIndex + 1;
+                  nodeOfBox[6] = numNodesInDir[1] * numNodesInDir[2] +
+                    numNodesInDir[2] + firstNodeIndex + 1;
                   nodeOfBox[7] = numNodesInDir[2] + firstNodeIndex + 1;
 
                   //               7___________________ 6
@@ -722,30 +778,40 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
                   //            |                   | /           |  /
                   //            |___________________|/            | /
                   //            0                   1             |/____ x
-
                 }
                 // fix local connectivity for single theta (y) partition (radial meshes only)
                 if( isRadialWithOneThetaPartition )
                 {
-                  if( j == numElemsInDirForRegion[1] - 1 && jblock == m_nElems[1].size() - 1 )
-                  { // last set of elements
+                  if( j == numElemsInDirForRegion[1] - 1 &&
+                      jblock == m_nElems[1].size() - 1 )
+                  {  // last set of elements
                     index[1] = -1;
-                    const localIndex firstNodeIndexR = numNodesInDir[1] * numNodesInDir[2] * ( index[0] - firstElemIndexInPartition[0] )
-                                                       + numNodesInDir[2] * ( index[1] - firstElemIndexInPartition[1] )
-                                                       + ( index[2] - firstElemIndexInPartition[2] );
-                    nodeOfBox[2] = numNodesInDir[1] * numNodesInDir[2] + numNodesInDir[2] + firstNodeIndexR;
+                    const localIndex firstNodeIndexR = numNodesInDir[1] *
+                        numNodesInDir[2] *
+                        ( index[0] - firstElemIndexInPartition[0] ) +
+                      numNodesInDir[2] *
+                        ( index[1] - firstElemIndexInPartition[1] ) +
+                      ( index[2] - firstElemIndexInPartition[2] );
+                    nodeOfBox[2] = numNodesInDir[1] * numNodesInDir[2] +
+                      numNodesInDir[2] + firstNodeIndexR;
                     nodeOfBox[3] = numNodesInDir[2] + firstNodeIndexR;
-                    nodeOfBox[6] = numNodesInDir[1] * numNodesInDir[2] + numNodesInDir[2] + firstNodeIndexR + 1;
+                    nodeOfBox[6] = numNodesInDir[1] * numNodesInDir[2] +
+                      numNodesInDir[2] + firstNodeIndexR + 1;
                     nodeOfBox[7] = numNodesInDir[2] + firstNodeIndexR + 1;
                   }
                 }
 
                 for( int iEle = 0; iEle < m_numElePerBox[iR]; ++iEle )
                 {
-                  localIndex & localElemIndex = localElemIndexInRegion[ m_regionNames[ regionOffset ] ];
-                  elemLocalToGlobal[localElemIndex] = ElemGlobalIndex( index ) * m_numElePerBox[iR] + iEle;
+                  localIndex & localElemIndex =
+                    localElemIndexInRegion[m_regionNames[regionOffset]];
+                  elemLocalToGlobal[localElemIndex] =
+                    ElemGlobalIndex( index ) * m_numElePerBox[iR] + iEle;
 
-                  GetElemToNodesRelationInBox( m_elementType[iR], index, iEle, nodeIDInBox.data(),
+                  GetElemToNodesRelationInBox( m_elementType[iR],
+                                               index,
+                                               iEle,
+                                               nodeIDInBox.data(),
                                                numNodesPerElem );
 
                   for( localIndex iN = 0; iN < numNodesPerElem; ++iN )
@@ -753,7 +819,6 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
                     elemsToNodes[localElemIndex][iN] = nodeOfBox[nodeIDInBox[iN]];
                   }
                   ++localElemIndex;
-
                 }
               }
             }
@@ -846,15 +911,14 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
   // Node perturbation
   if( m_fPerturb > 0 )
   {
-
     for( localIndex iN = 0; iN != nodeManager->size(); ++iN )
     {
-
       for( int i = 0; i < m_dim; ++i )
       {
         if( X[iN][i] > m_min[i] && X[iN][i] < m_max[i] )
         {
-          srand( LvArray::integerConversion< int >( nodeLocalToGlobal[iN] ) + m_randSeed + i ); // This
+          srand( LvArray::integerConversion< int >( nodeLocalToGlobal[iN] ) +
+                 m_randSeed + i );  // This
           // ensures
           // that
           // the
@@ -864,7 +928,8 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
           // unaffected
           // by
           // domain
-          X[iN][i] += ( ( m_max[i] - m_min[i] ) / m_numElemsTotal[i] ) * ( ( rand() * 1.0 ) / RAND_MAX - 0.5 ) * 2 * m_fPerturb;
+          X[iN][i] += ( ( m_max[i] - m_min[i] ) / m_numElemsTotal[i] ) *
+            ( ( rand() * 1.0 ) / RAND_MAX - 0.5 ) * 2 * m_fPerturb;
         }
       }
     }
@@ -884,13 +949,15 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
     for( localIndex iN = 0; iN != nodeManager->size(); ++iN )
     {
       m_meshTheta = X[iN][1] * M_PI / 180.0;
-      m_meshAxis = static_cast< int >(round( m_meshTheta * 2.0 / M_PI ));
+      m_meshAxis = static_cast< int >( round( m_meshTheta * 2.0 / M_PI ) );
       m_meshPhi = fabs( m_meshTheta - m_meshAxis * M_PI / 2.0 );
       m_meshRout = m_max[0] / cos( m_meshPhi );
 
       if( m_mapToRadial > 1 )
       {
-        m_meshRact = ( ( m_meshRout - m_min[0] ) / ( m_max[0] - m_min[0] ) ) * ( X[iN][0] - m_min[0] ) + m_min[0];
+        m_meshRact = ( ( m_meshRout - m_min[0] ) / ( m_max[0] - m_min[0] ) ) *
+            ( X[iN][0] - m_min[0] ) +
+          m_min[0];
       }
       else
       {
@@ -936,11 +1003,12 @@ void InternalMeshGenerator::GenerateMesh( DomainPartition * const domain )
  * @param nodeIDInBox
  * @param node_size
  */
-void InternalMeshGenerator::GetElemToNodesRelationInBox( const std::string & elementType,
-                                                         const int index[],
-                                                         const int & iEle,
-                                                         int nodeIDInBox[],
-                                                         const int node_size )
+void
+InternalMeshGenerator::GetElemToNodesRelationInBox( const std::string & elementType,
+                                                    const int index[],
+                                                    const int & iEle,
+                                                    int nodeIDInBox[],
+                                                    const int node_size )
 
 {
   if( elementType == "C3D8" )
@@ -1058,7 +1126,6 @@ void InternalMeshGenerator::GetElemToNodesRelationInBox( const std::string & ele
         nodeIDInBox[6] = 6;
         nodeIDInBox[7] = 2;
       }
-
     }
   }
   else if( elementType == "CPE4" )
@@ -1099,7 +1166,6 @@ void InternalMeshGenerator::GetElemToNodesRelationInBox( const std::string & ele
         nodeIDInBox[1] = 2;
         nodeIDInBox[2] = 3;
       }
-
     }
   }
   else if( ( elementType == "STRI" ) && ( m_trianglePattern == 1 ) )
@@ -1133,78 +1199,58 @@ void InternalMeshGenerator::GetElemToNodesRelationInBox( const std::string & ele
         nodeIDInBox[1] = 2;
         nodeIDInBox[2] = 3;
       }
-
     }
   }
   else if( elementType == "C3D4" )
   {
-    int mapBoxTet[8][6][4] =
-    {
-      {
-        { 0, 3, 7, 6 },
-        { 0, 7, 4, 6 },
-        { 0, 5, 1, 6 },
-        { 0, 4, 5, 6 },
-        { 0, 1, 2, 6 },
-        { 0, 2, 3, 6 }
-      },
-      {
-        { 1, 5, 6, 7 },
-        { 1, 6, 2, 7 },
-        { 0, 4, 1, 7 },
-        { 1, 4, 5, 7 },
-        { 0, 1, 3, 7 },
-        { 1, 2, 3, 7 }
-      },
-      {
-        { 0, 3, 4, 2 },
-        { 3, 7, 4, 2 },
-        { 0, 4, 1, 2 },
-        { 1, 4, 5, 2 },
-        { 4, 7, 6, 2 },
-        { 4, 6, 5, 2 }
-      },
-      {
-        { 1, 5, 2, 3 },
-        { 2, 5, 6, 3 },
-        { 0, 5, 1, 3 },
-        { 0, 4, 5, 3 },
-        { 4, 7, 5, 3 },
-        { 5, 7, 6, 3 }
-      },
-      {
-        { 0, 3, 4, 5 },
-        { 3, 7, 4, 5 },
-        { 3, 6, 7, 5 },
-        { 3, 2, 6, 5 },
-        { 3, 0, 1, 5 },
-        { 1, 2, 3, 5 }
-      },
-      {
-        { 1, 5, 2, 4 },
-        { 2, 5, 6, 4 },
-        { 2, 6, 7, 4 },
-        { 2, 7, 3, 4 },
-        { 0, 2, 3, 4 },
-        { 0, 1, 2, 4 }
-      },
-      {
-        { 0, 7, 4, 1 },
-        { 0, 3, 7, 1 },
-        { 2, 7, 3, 1 },
-        { 2, 6, 7, 1 },
-        { 4, 7, 5, 1 },
-        { 5, 7, 6, 1 }
-      },
-      {
-        { 1, 5, 6, 0 },
-        { 1, 6, 2, 0 },
-        { 2, 6, 3, 0 },
-        { 3, 6, 7, 0 },
-        { 4, 6, 5, 0 },
-        { 4, 7, 6, 0 }
-      }
-    };
+    int mapBoxTet[8][6][4] = { { { 0, 3, 7, 6 },
+                                 { 0, 7, 4, 6 },
+                                 { 0, 5, 1, 6 },
+                                 { 0, 4, 5, 6 },
+                                 { 0, 1, 2, 6 },
+                                 { 0, 2, 3, 6 } },
+                               { { 1, 5, 6, 7 },
+                                 { 1, 6, 2, 7 },
+                                 { 0, 4, 1, 7 },
+                                 { 1, 4, 5, 7 },
+                                 { 0, 1, 3, 7 },
+                                 { 1, 2, 3, 7 } },
+                               { { 0, 3, 4, 2 },
+                                 { 3, 7, 4, 2 },
+                                 { 0, 4, 1, 2 },
+                                 { 1, 4, 5, 2 },
+                                 { 4, 7, 6, 2 },
+                                 { 4, 6, 5, 2 } },
+                               { { 1, 5, 2, 3 },
+                                 { 2, 5, 6, 3 },
+                                 { 0, 5, 1, 3 },
+                                 { 0, 4, 5, 3 },
+                                 { 4, 7, 5, 3 },
+                                 { 5, 7, 6, 3 } },
+                               { { 0, 3, 4, 5 },
+                                 { 3, 7, 4, 5 },
+                                 { 3, 6, 7, 5 },
+                                 { 3, 2, 6, 5 },
+                                 { 3, 0, 1, 5 },
+                                 { 1, 2, 3, 5 } },
+                               { { 1, 5, 2, 4 },
+                                 { 2, 5, 6, 4 },
+                                 { 2, 6, 7, 4 },
+                                 { 2, 7, 3, 4 },
+                                 { 0, 2, 3, 4 },
+                                 { 0, 1, 2, 4 } },
+                               { { 0, 7, 4, 1 },
+                                 { 0, 3, 7, 1 },
+                                 { 2, 7, 3, 1 },
+                                 { 2, 6, 7, 1 },
+                                 { 4, 7, 5, 1 },
+                                 { 5, 7, 6, 1 } },
+                               { { 1, 5, 6, 0 },
+                                 { 1, 6, 2, 0 },
+                                 { 2, 6, 3, 0 },
+                                 { 3, 6, 7, 0 },
+                                 { 4, 6, 5, 0 },
+                                 { 4, 7, 6, 0 } } };
 
     int mapBoxType[2][2][2];
     mapBoxType[0][0][0] = 0;
@@ -1221,11 +1267,12 @@ void InternalMeshGenerator::GetElemToNodesRelationInBox( const std::string & ele
     {
       nodeIDInBox[i] = mapBoxTet[boxType][iEle][i];
     }
-
   }
 }
 
-void InternalMeshGenerator::RemapMesh( dataRepository::Group * const GEOSX_UNUSED_PARAM( domain ) )
+void
+InternalMeshGenerator::RemapMesh(
+  dataRepository::Group * const GEOSX_UNUSED_PARAM( domain ) )
 {
   //  // Node mapping
   //  if (!m_meshDx.empty())
@@ -1263,8 +1310,10 @@ void InternalMeshGenerator::RemapMesh( dataRepository::Group * const GEOSX_UNUSE
   //      X[iN][2] += dz;
   //    }
   //  }
-
 }
 
-REGISTER_CATALOG_ENTRY( MeshGeneratorBase, InternalMeshGenerator, std::string const &, Group * const )
-}
+REGISTER_CATALOG_ENTRY( MeshGeneratorBase,
+                        InternalMeshGenerator,
+                        std::string const &,
+                        Group * const )
+}  // namespace geosx

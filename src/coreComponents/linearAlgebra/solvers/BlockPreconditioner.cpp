@@ -25,18 +25,18 @@
 
 namespace geosx
 {
-
 template< typename LAI >
-BlockPreconditioner< LAI >::BlockPreconditioner( BlockShapeOption const shapeOption,
-                                                 SchurComplementOption const schurOption,
-                                                 BlockScalingOption const scalingOption )
-  : Base(),
+BlockPreconditioner< LAI >::BlockPreconditioner(
+  BlockShapeOption const shapeOption,
+  SchurComplementOption const schurOption,
+  BlockScalingOption const scalingOption ) :
+  Base(),
   m_shapeOption( shapeOption ),
   m_schurOption( schurOption ),
   m_scalingOption( scalingOption ),
   m_matBlocks( 2, 2 ),
-  m_solvers{},
-  m_scaling{ 1.0, 1.0 },
+  m_solvers {},
+  m_scaling { 1.0, 1.0 },
   m_rhs( 2 ),
   m_sol( 2 )
 {}
@@ -45,7 +45,9 @@ template< typename LAI >
 BlockPreconditioner< LAI >::~BlockPreconditioner() = default;
 
 template< typename LAI >
-void BlockPreconditioner< LAI >::reinitialize( Matrix const & mat, DofManager const & dofManager )
+void
+BlockPreconditioner< LAI >::reinitialize( Matrix const & mat,
+                                          DofManager const & dofManager )
 {
   MPI_Comm const & comm = mat.getComm();
 
@@ -64,10 +66,12 @@ void BlockPreconditioner< LAI >::reinitialize( Matrix const & mat, DofManager co
 }
 
 template< typename LAI >
-void BlockPreconditioner< LAI >::setupBlock( localIndex const blockIndex,
-                                             std::vector< DofManager::SubComponent > blockDofs,
-                                             std::unique_ptr< PreconditionerBase< LAI > > solver,
-                                             real64 const scaling )
+void
+BlockPreconditioner< LAI >::setupBlock(
+  localIndex const blockIndex,
+  std::vector< DofManager::SubComponent > blockDofs,
+  std::unique_ptr< PreconditionerBase< LAI > > solver,
+  real64 const scaling )
 {
   GEOSX_LAI_ASSERT_GT( 2, blockIndex );
   GEOSX_LAI_ASSERT( solver );
@@ -80,13 +84,15 @@ void BlockPreconditioner< LAI >::setupBlock( localIndex const blockIndex,
 }
 
 template< typename LAI >
-void BlockPreconditioner< LAI >::applyBlockScaling()
+void
+BlockPreconditioner< LAI >::applyBlockScaling()
 {
   if( m_scalingOption != BlockScalingOption::None )
   {
     if( m_scalingOption == BlockScalingOption::FrobeniusNorm )
     {
-      real64 norms[2] = { m_matBlocks( 0, 0 ).normFrobenius(), m_matBlocks( 1, 1 ).normFrobenius() };
+      real64 norms[2] = { m_matBlocks( 0, 0 ).normFrobenius(),
+                          m_matBlocks( 1, 1 ).normFrobenius() };
       m_scaling[0] = std::min( norms[1] / norms[0], 1.0 );
       m_scaling[1] = std::min( norms[0] / norms[1], 1.0 );
     }
@@ -102,7 +108,8 @@ void BlockPreconditioner< LAI >::applyBlockScaling()
 }
 
 template< typename LAI >
-void BlockPreconditioner< LAI >::computeSchurComplement()
+void
+BlockPreconditioner< LAI >::computeSchurComplement()
 {
   switch( m_schurOption )
   {
@@ -119,9 +126,9 @@ void BlockPreconditioner< LAI >::computeSchurComplement()
       // TODO: This is suboptimal, since we have to create multiple matrix copies.
       m_matBlocks( 0, 0 ).extractDiagonal( m_rhs( 0 ) );
       m_rhs( 0 ).reciprocal();
-      Matrix mat01 = m_matBlocks( 0, 1 ); // make a copy in order to scale
+      Matrix mat01 = m_matBlocks( 0, 1 );  // make a copy in order to scale
       mat01.leftScale( m_rhs( 0 ) );
-      Matrix mat11 = m_matBlocks( 1, 1 ); // make a copy in order to add later
+      Matrix mat11 = m_matBlocks( 1, 1 );  // make a copy in order to add later
       m_matBlocks( 1, 0 ).multiply( mat01, m_matBlocks( 1, 1 ) );
       m_matBlocks( 1, 1 ).addEntries( mat11 );
       break;
@@ -143,8 +150,9 @@ void BlockPreconditioner< LAI >::computeSchurComplement()
 }
 
 template< typename LAI >
-void BlockPreconditioner< LAI >::compute( Matrix const & mat,
-                                          DofManager const & dofManager )
+void
+BlockPreconditioner< LAI >::compute( Matrix const & mat,
+                                     DofManager const & dofManager )
 {
   // Check that user has set block solvers
   GEOSX_LAI_ASSERT( m_solvers[0] != nullptr );
@@ -154,8 +162,8 @@ void BlockPreconditioner< LAI >::compute( Matrix const & mat,
   // A change in size indicates a new matrix structure.
   // This is done before Base::compute() since it overwrites old sizes.
   bool const newSize = !this->ready() ||
-                       mat.numGlobalRows() != this->numGlobalRows() ||
-                       mat.numGlobalCols() != this->numGlobalRows();
+    mat.numGlobalRows() != this->numGlobalRows() ||
+    mat.numGlobalCols() != this->numGlobalRows();
 
   Base::compute( mat, dofManager );
 
@@ -170,7 +178,8 @@ void BlockPreconditioner< LAI >::compute( Matrix const & mat,
   mat.multiplyPtAP( m_prolongators[1], m_matBlocks( 1, 1 ) );
 
   // Extract off-diagonal blocks only if used
-  if( m_schurOption != SchurComplementOption::None && m_shapeOption != BlockShapeOption::Diagonal )
+  if( m_schurOption != SchurComplementOption::None &&
+      m_shapeOption != BlockShapeOption::Diagonal )
   {
     mat.multiplyRAP( m_restrictors[0], m_prolongators[1], m_matBlocks( 0, 1 ) );
     mat.multiplyRAP( m_restrictors[1], m_prolongators[0], m_matBlocks( 1, 0 ) );
@@ -183,8 +192,8 @@ void BlockPreconditioner< LAI >::compute( Matrix const & mat,
 }
 
 template< typename LAI >
-void BlockPreconditioner< LAI >::apply( Vector const & src,
-                                        Vector & dst ) const
+void
+BlockPreconditioner< LAI >::apply( Vector const & src, Vector & dst ) const
 {
   m_restrictors[0].apply( src, m_rhs( 0 ) );
   m_restrictors[1].apply( src, m_rhs( 1 ) );
@@ -219,7 +228,8 @@ void BlockPreconditioner< LAI >::apply( Vector const & src,
 }
 
 template< typename LAI >
-void BlockPreconditioner< LAI >::clear()
+void
+BlockPreconditioner< LAI >::clear()
 {
   Base::clear();
   for( localIndex i = 0; i < 2; ++i )
@@ -251,4 +261,4 @@ template class BlockPreconditioner< HypreInterface >;
 template class BlockPreconditioner< PetscInterface >;
 #endif
 
-}
+}  // namespace geosx

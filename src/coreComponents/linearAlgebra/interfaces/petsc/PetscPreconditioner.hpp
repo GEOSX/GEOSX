@@ -41,14 +41,12 @@ using PC = _p_PC *;
 
 namespace geosx
 {
-
 /**
  * @brief Wrapper around PETSc-based preconditioners.
  */
 class PetscPreconditioner final : public PreconditionerBase< PetscInterface >
 {
 public:
-
   /// Alias for base type
   using Base = PreconditionerBase< PetscInterface >;
 
@@ -76,7 +74,8 @@ public:
    * @brief Compute the preconditioner from a matrix.
    * @param mat the matrix to precondition.
    */
-  virtual void compute( Matrix const & mat ) override;
+  virtual void
+  compute( Matrix const & mat ) override;
 
   /**
    * @brief Apply operator to a vector
@@ -85,18 +84,20 @@ public:
    *
    * @warning @p src and @p dst cannot alias the same vector.
    */
-  virtual void apply( Vector const & src, Vector & dst ) const override;
+  virtual void
+  apply( Vector const & src, Vector & dst ) const override;
 
-  virtual void clear() override;
+  virtual void
+  clear() override;
 
   /**
    * @brief Access the underlying implementation.
    * @return the wrapped PETSc preconditioner
    */
-  PC const & unwrapped() const;
+  PC const &
+  unwrapped() const;
 
 private:
-
   /// Parameters for all preconditioners
   LinearSolverParameters m_parameters;
 
@@ -104,6 +105,6 @@ private:
   PC m_precond;
 };
 
-}
+}  // namespace geosx
 
-#endif //GEOSX_PETSCPRECONDITIONER_HPP
+#endif  //GEOSX_PETSCPRECONDITIONER_HPP

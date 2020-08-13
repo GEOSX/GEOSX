@@ -21,7 +21,7 @@
 #include "rajaInterface/GEOS_RAJA_Interface.hpp"
 
 #ifdef UMPIRE_ENABLE_CUDA
-#include "umpire/alloc/CudaPinnedAllocator.hpp"
+  #include "umpire/alloc/CudaPinnedAllocator.hpp"
 #endif
 
 #include <ctime>
@@ -30,37 +30,41 @@
 using namespace geosx;
 
 #ifndef GTEST_SKIP
-#define GTEST_SKIP() return
+  #define GTEST_SKIP() return
 #endif
 
-#define SKIP_TEST_IF( COND, REASON ) \
-  do \
-  { \
-    if( COND ) \
-    { \
-      GEOSX_WARNING( "This test is currently known to fail when " #COND " because:\n" REASON "\n" \
-                                                                                             "Therefore, we skip it entirely for this run (may show as PASSED or SKIPPED)" ); \
-      GTEST_SKIP(); \
-    } \
+#define SKIP_TEST_IF( COND, REASON )                                          \
+  do                                                                          \
+  {                                                                           \
+    if( COND )                                                                \
+    {                                                                         \
+      GEOSX_WARNING( "This test is currently known to fail when " #COND       \
+                     " because:\n" REASON                                     \
+                     "\n"                                                     \
+                     "Therefore, we skip it entirely for this run (may show " \
+                     "as PASSED or SKIPPED)" );                               \
+      GTEST_SKIP();                                                           \
+    }                                                                         \
   } while( 0 )
 
-#define SKIP_TEST_IN_SERIAL( REASON ) \
-  do \
-  { \
+#define SKIP_TEST_IN_SERIAL( REASON )                            \
+  do                                                             \
+  {                                                              \
     int const mpiSize = MpiWrapper::Comm_size( MPI_COMM_GEOSX ); \
-    SKIP_TEST_IF( mpiSize == 1, REASON ); \
+    SKIP_TEST_IF( mpiSize == 1, REASON );                        \
   } while( 0 )
 
-#define SKIP_TEST_IN_PARALLEL( REASON ) \
-  do \
-  { \
+#define SKIP_TEST_IN_PARALLEL( REASON )                          \
+  do                                                             \
+  {                                                              \
     int const mpiSize = MpiWrapper::Comm_size( MPI_COMM_GEOSX ); \
-    SKIP_TEST_IF( mpiSize != 1, REASON ); \
+    SKIP_TEST_IF( mpiSize != 1, REASON );                        \
   } while( 0 )
 
-char crand( )
+char
+crand()
 {
-  return 'a' + rand()%26;
+  return 'a' + rand() % 26;
 }
 
 TEST( TestNeighborComms, testBuffers )
@@ -68,36 +72,32 @@ TEST( TestNeighborComms, testBuffers )
   {
     size_t sz = 100;
     std::vector< char > sd( sz );
-    for( size_t ii = 0; ii < sz; ++ii )
-      sd[ii] = crand();
+    for( size_t ii = 0; ii < sz; ++ii ) sd[ii] = crand();
 
     auto nc = NeighborCommunicator();
     nc.resizeSendBuffer( 0, sz );
 
     auto & sb = nc.SendBuffer( 0 );
-    for( size_t ii = 0; ii < sz; ++ii )
-      sb[ii] = sd[ii];
+    for( size_t ii = 0; ii < sz; ++ii ) sb[ii] = sd[ii];
 
-    for( size_t ii = 0; ii < sz; ++ii )
-      EXPECT_EQ( sb[ii], sd[ii] );
+    for( size_t ii = 0; ii < sz; ++ii ) EXPECT_EQ( sb[ii], sd[ii] );
   }
 }
 
-
-#if defined(UMPIRE_ENABLE_CUDA) && defined(USE_CHAI)
-void pack( buffer_unit_type * buf, arrayView1d< const int > & veloc_view, localIndex size )
+#if defined( UMPIRE_ENABLE_CUDA ) && defined( USE_CHAI )
+void
+pack( buffer_unit_type * buf, arrayView1d< const int > & veloc_view, localIndex size )
 {
-  forAll< parallelDevicePolicy< > >( size, [=] GEOSX_HOST_DEVICE ( localIndex ii )
-  {
-    reinterpret_cast< int * >(buf)[ii] = veloc_view.data()[ii];
+  forAll< parallelDevicePolicy<> >( size, [=] GEOSX_HOST_DEVICE( localIndex ii ) {
+    reinterpret_cast< int * >( buf )[ii] = veloc_view.data()[ii];
   } );
 }
 
-void unpack( buffer_unit_type * buf, arrayView1d< int > & veloc_view, localIndex size )
+void
+unpack( buffer_unit_type * buf, arrayView1d< int > & veloc_view, localIndex size )
 {
-  forAll< parallelDevicePolicy< > >( size, [=] GEOSX_HOST_DEVICE ( localIndex ii )
-  {
-    veloc_view.data()[ii] = reinterpret_cast< int * >(buf)[ii];
+  forAll< parallelDevicePolicy<> >( size, [=] GEOSX_HOST_DEVICE( localIndex ii ) {
+    veloc_view.data()[ii] = reinterpret_cast< int * >( buf )[ii];
   } );
 }
 
@@ -108,10 +108,9 @@ TEST( TestNeighborComms, testMPICommunication_fromPinnedSetOnDevice )
     int rnk = MpiWrapper::Comm_rank( MPI_COMM_GEOSX );
 
     constexpr localIndex size = 1000;
-    constexpr localIndex byte_size = 1000 * sizeof(int);
+    constexpr localIndex byte_size = 1000 * sizeof( int );
     array1d< int > veloc( size );
-    for( int ii = 0; ii < size; ++ii )
-      veloc[ii] = rnk == 0 ? ii : 0;
+    for( int ii = 0; ii < size; ++ii ) veloc[ii] = rnk == 0 ? ii : 0;
 
     auto nc = NeighborCommunicator();
     nc.resizeSendBuffer( 0, byte_size );
@@ -136,14 +135,14 @@ TEST( TestNeighborComms, testMPICommunication_fromPinnedSetOnDevice )
       auto veloc_view = veloc.toView();
       unpack( buf, veloc_view, size );
       veloc.move( LvArray::MemorySpace::CPU );
-      for( int ii = 0; ii < size; ++ii )
-        EXPECT_EQ( veloc[ii], ii );
+      for( int ii = 0; ii < size; ++ii ) EXPECT_EQ( veloc[ii], ii );
     }
   }
 }
 #endif
 
-int main( int ac, char * av[] )
+int
+main( int ac, char * av[] )
 {
   ::testing::InitGoogleTest( &ac, av );
   geosx::basicSetup( ac, av );

@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 namespace dataRepository
 {
 class Group;
@@ -33,7 +32,6 @@ class ObjectManagerBase;
 class xmlWrapper;
 class NodeManager;
 
-
 /**
  * @class MeshUtilities
  * @brief This class is used to generate the utilities for the mesh.
@@ -41,7 +39,6 @@ class NodeManager;
 class MeshUtilities
 {
 public:
-
   /**
    * @name Constructor / Destructor
    */
@@ -65,21 +62,21 @@ public:
    * @param[in] geometry a pointer to the group in the data repository
    * @param[in] nodeManager pointer to the NodeManager object in the DomainPartition
    */
-  static void GenerateNodesets( dataRepository::Group const * geometry,
-                                NodeManager * const nodeManager );
+  static void
+  GenerateNodesets( dataRepository::Group const * geometry,
+                    NodeManager * const nodeManager );
 
-//  static void GenerateFasesetsAndAssociatedNodesets( xmlWrapper const & hdn,
-//                                                     Group&
-// faceManager,
-//                                                     Group&
-// nodeManager);
-//
-//  static void GenerateElementsets ( xmlWrapper const & hdn,
-//                                    const Group& nodeManager,
-//                                    Group& elementManager);
-
+  //  static void GenerateFasesetsAndAssociatedNodesets( xmlWrapper const & hdn,
+  //                                                     Group&
+  // faceManager,
+  //                                                     Group&
+  // nodeManager);
+  //
+  //  static void GenerateElementsets ( xmlWrapper const & hdn,
+  //                                    const Group& nodeManager,
+  //                                    Group& elementManager);
 };
 
-}
+}  // namespace geosx
 
 #endif /* GEOSX_MESHUTILITIES_MESHUTILITIES_HPP */

@@ -26,23 +26,21 @@
 
 namespace geosx
 {
-
-
 template< typename VECTOR >
 BiCGSTABsolver< VECTOR >::BiCGSTABsolver( LinearOperator< Vector > const & A,
                                           LinearOperator< Vector > const & M,
                                           real64 const tolerance,
                                           localIndex const maxIterations,
-                                          integer const verbosity )
-  : KrylovSolver< VECTOR >( A, M, tolerance, maxIterations, verbosity )
+                                          integer const verbosity ) :
+  KrylovSolver< VECTOR >( A, M, tolerance, maxIterations, verbosity )
 {}
 
 template< typename VECTOR >
 BiCGSTABsolver< VECTOR >::~BiCGSTABsolver() = default;
 
 template< typename VECTOR >
-void BiCGSTABsolver< VECTOR >::solve( Vector const & b,
-                                      Vector & x ) const
+void
+BiCGSTABsolver< VECTOR >::solve( Vector const & b, Vector & x ) const
 {
   Stopwatch watch;
 
@@ -172,4 +170,4 @@ template class BiCGSTABsolver< PetscInterface::ParallelVector >;
 template class BiCGSTABsolver< BlockVectorView< PetscInterface::ParallelVector > >;
 #endif
 
-} //namespace geosx
+}  //namespace geosx

@@ -26,44 +26,45 @@
 #include <EpetraExt_MultiVectorOut.h>
 
 #ifdef GEOSX_USE_MPI
-#include <Epetra_MpiComm.h>
+  #include <Epetra_MpiComm.h>
 #else
-#include <Epetra_SerialComm.h>
+  #include <Epetra_SerialComm.h>
 typedef Epetra_SerialComm Epetra_MpiComm;
 #endif
 
 namespace geosx
 {
-
 // Check matching requirements on index/value types between GEOSX and PETSc
 
 static_assert( sizeof( long long ) == sizeof( globalIndex ),
                "long long and geosx::globalIndex must have the same size" );
 
-static_assert( std::is_signed< long long >::value == std::is_signed< globalIndex >::value,
-               "long long and geosx::globalIndex must both be signed or unsigned" );
+static_assert(
+  std::is_signed< long long >::value == std::is_signed< globalIndex >::value,
+  "long long and geosx::globalIndex must both be signed or unsigned" );
 
 static_assert( std::is_same< double, real64 >::value,
                "double and geosx::real64 must be the same type" );
 
-EpetraVector::EpetraVector()
-  : VectorBase(),
-  m_vector{}
+EpetraVector::EpetraVector() :
+  VectorBase(),
+  m_vector {}
 {}
 
-EpetraVector::EpetraVector( EpetraVector const & src )
-  : EpetraVector()
+EpetraVector::EpetraVector( EpetraVector const & src ) :
+  EpetraVector()
 {
   *this = src;
 }
 
-EpetraVector::EpetraVector( EpetraVector && src ) noexcept
-  : EpetraVector()
+EpetraVector::EpetraVector( EpetraVector && src ) noexcept :
+  EpetraVector()
 {
   *this = std::move( src );
 }
 
-EpetraVector & EpetraVector::operator=( EpetraVector const & src )
+EpetraVector &
+EpetraVector::operator=( EpetraVector const & src )
 {
   GEOSX_LAI_ASSERT( &src != this );
   GEOSX_LAI_ASSERT( src.ready() );
@@ -78,7 +79,8 @@ EpetraVector & EpetraVector::operator=( EpetraVector const & src )
   return *this;
 }
 
-EpetraVector & EpetraVector::operator=( EpetraVector && src ) noexcept
+EpetraVector &
+EpetraVector::operator=( EpetraVector && src ) noexcept
 {
   GEOSX_LAI_ASSERT( &src != this );
   GEOSX_LAI_ASSERT( src.ready() );
@@ -88,13 +90,15 @@ EpetraVector & EpetraVector::operator=( EpetraVector && src ) noexcept
 
 EpetraVector::~EpetraVector() = default;
 
-bool EpetraVector::created() const
+bool
+EpetraVector::created() const
 {
-  return bool(m_vector);
+  return bool( m_vector );
 }
 
-void EpetraVector::createWithLocalSize( localIndex const localSize,
-                                        MPI_Comm const & MPI_PARAM( comm ) )
+void
+EpetraVector::createWithLocalSize( localIndex const localSize,
+                                   MPI_Comm const & MPI_PARAM( comm ) )
 {
   GEOSX_LAI_ASSERT( closed() );
   GEOSX_LAI_ASSERT_GE( localSize, 0 );
@@ -105,8 +109,9 @@ void EpetraVector::createWithLocalSize( localIndex const localSize,
   m_vector = std::make_unique< Epetra_FEVector >( map );
 }
 
-void EpetraVector::createWithGlobalSize( globalIndex const globalSize,
-                                         MPI_Comm const & MPI_PARAM( comm ) )
+void
+EpetraVector::createWithGlobalSize( globalIndex const globalSize,
+                                    MPI_Comm const & MPI_PARAM( comm ) )
 {
   GEOSX_LAI_ASSERT( closed() );
   GEOSX_LAI_ASSERT_GE( globalSize, 0 );
@@ -116,8 +121,9 @@ void EpetraVector::createWithGlobalSize( globalIndex const globalSize,
   m_vector = std::make_unique< Epetra_FEVector >( map );
 }
 
-void EpetraVector::create( arrayView1d< real64 const > const & localValues,
-                           MPI_Comm const & MPI_PARAM( comm ) )
+void
+EpetraVector::create( arrayView1d< real64 const > const & localValues,
+                      MPI_Comm const & MPI_PARAM( comm ) )
 {
   GEOSX_LAI_ASSERT( closed() );
 
@@ -128,103 +134,121 @@ void EpetraVector::create( arrayView1d< real64 const > const & localValues,
                         localSize,
                         0,
                         Epetra_MpiComm( MPI_PARAM( comm ) ) );
-  m_vector = std::make_unique< Epetra_FEVector >( Copy,
-                                                  map,
-                                                  const_cast< real64 * >( localValues.data() ),
-                                                  localSize,
-                                                  1 );
+  m_vector =
+    std::make_unique< Epetra_FEVector >( Copy,
+                                         map,
+                                         const_cast< real64 * >( localValues.data() ),
+                                         localSize,
+                                         1 );
 }
 
-void EpetraVector::set( globalIndex const globalRowIndex,
-                        real64 const value )
+void
+EpetraVector::set( globalIndex const globalRowIndex, real64 const value )
 {
   GEOSX_LAI_ASSERT( !closed() );
-  GEOSX_LAI_CHECK_ERROR( m_vector->ReplaceGlobalValues( 1, toEpetraLongLong( &globalRowIndex ), &value ) );
+  GEOSX_LAI_CHECK_ERROR(
+    m_vector->ReplaceGlobalValues( 1, toEpetraLongLong( &globalRowIndex ), &value ) );
 }
 
-void EpetraVector::add( globalIndex const globalRowIndex,
-                        real64 const value )
+void
+EpetraVector::add( globalIndex const globalRowIndex, real64 const value )
 {
   GEOSX_LAI_ASSERT( !closed() );
-  GEOSX_LAI_CHECK_ERROR( m_vector->SumIntoGlobalValues( 1, toEpetraLongLong( &globalRowIndex ), &value ) );
+  GEOSX_LAI_CHECK_ERROR(
+    m_vector->SumIntoGlobalValues( 1, toEpetraLongLong( &globalRowIndex ), &value ) );
 }
 
-void EpetraVector::set( globalIndex const * globalRowIndices,
-                        real64 const * values,
-                        localIndex size )
+void
+EpetraVector::set( globalIndex const * globalRowIndices,
+                   real64 const * values,
+                   localIndex size )
 {
   GEOSX_LAI_ASSERT( !closed() );
-  GEOSX_LAI_CHECK_ERROR( m_vector->ReplaceGlobalValues( LvArray::integerConversion< int >( size ),
-                                                        toEpetraLongLong( globalRowIndices ),
-                                                        values ) );
+  GEOSX_LAI_CHECK_ERROR(
+    m_vector->ReplaceGlobalValues( LvArray::integerConversion< int >( size ),
+                                   toEpetraLongLong( globalRowIndices ),
+                                   values ) );
 }
 
-void EpetraVector::add( globalIndex const * globalRowIndices,
-                        real64 const * values,
-                        localIndex size )
+void
+EpetraVector::add( globalIndex const * globalRowIndices,
+                   real64 const * values,
+                   localIndex size )
 {
   GEOSX_LAI_ASSERT( !closed() );
-  GEOSX_LAI_CHECK_ERROR( m_vector->SumIntoGlobalValues( LvArray::integerConversion< int >( size ),
-                                                        toEpetraLongLong( globalRowIndices ),
-                                                        values ) );
+  GEOSX_LAI_CHECK_ERROR(
+    m_vector->SumIntoGlobalValues( LvArray::integerConversion< int >( size ),
+                                   toEpetraLongLong( globalRowIndices ),
+                                   values ) );
 }
 
-void EpetraVector::set( arraySlice1d< globalIndex const > const & globalRowIndices,
-                        arraySlice1d< real64 const > const & values )
+void
+EpetraVector::set( arraySlice1d< globalIndex const > const & globalRowIndices,
+                   arraySlice1d< real64 const > const & values )
 {
   GEOSX_LAI_ASSERT( !closed() );
-  GEOSX_LAI_CHECK_ERROR( m_vector->ReplaceGlobalValues( LvArray::integerConversion< int >( values.size() ),
-                                                        toEpetraLongLong( globalRowIndices.dataIfContiguous() ),
-                                                        values.dataIfContiguous() ) );
+  GEOSX_LAI_CHECK_ERROR( m_vector->ReplaceGlobalValues(
+    LvArray::integerConversion< int >( values.size() ),
+    toEpetraLongLong( globalRowIndices.dataIfContiguous() ),
+    values.dataIfContiguous() ) );
 }
 
-void EpetraVector::add( arraySlice1d< globalIndex const > const & globalRowIndices,
-                        arraySlice1d< real64 const > const & values )
+void
+EpetraVector::add( arraySlice1d< globalIndex const > const & globalRowIndices,
+                   arraySlice1d< real64 const > const & values )
 {
   GEOSX_LAI_ASSERT( !closed() );
-  GEOSX_LAI_CHECK_ERROR( m_vector->SumIntoGlobalValues( LvArray::integerConversion< int >( values.size() ),
-                                                        toEpetraLongLong( globalRowIndices.dataIfContiguous() ),
-                                                        values.dataIfContiguous() ) );
+  GEOSX_LAI_CHECK_ERROR( m_vector->SumIntoGlobalValues(
+    LvArray::integerConversion< int >( values.size() ),
+    toEpetraLongLong( globalRowIndices.dataIfContiguous() ),
+    values.dataIfContiguous() ) );
 }
 
-void EpetraVector::set( real64 value )
+void
+EpetraVector::set( real64 value )
 {
   GEOSX_LAI_ASSERT( ready() );
   GEOSX_LAI_CHECK_ERROR( m_vector->PutScalar( value ) );
 }
 
-void EpetraVector::zero()
+void
+EpetraVector::zero()
 {
   set( 0.0 );
 }
 
-void EpetraVector::rand( unsigned const seed )
+void
+EpetraVector::rand( unsigned const seed )
 {
   GEOSX_LAI_ASSERT( ready() );
   GEOSX_LAI_CHECK_ERROR( m_vector->SetSeed( seed ) );
   GEOSX_LAI_CHECK_ERROR( m_vector->Random() );
 }
 
-void EpetraVector::open()
+void
+EpetraVector::open()
 {
   GEOSX_LAI_ASSERT( ready() );
   m_closed = false;
 }
 
-void EpetraVector::close()
+void
+EpetraVector::close()
 {
   GEOSX_LAI_ASSERT( !closed() );
   GEOSX_LAI_CHECK_ERROR( m_vector->GlobalAssemble() );
   m_closed = true;
 }
 
-void EpetraVector::reset()
+void
+EpetraVector::reset()
 {
   VectorBase::reset();
   m_vector.reset();
 }
 
-void EpetraVector::scale( real64 const scalingFactor )
+void
+EpetraVector::scale( real64 const scalingFactor )
 {
   GEOSX_LAI_ASSERT( ready() );
 
@@ -236,13 +260,15 @@ void EpetraVector::scale( real64 const scalingFactor )
   GEOSX_LAI_CHECK_ERROR( m_vector->Scale( scalingFactor ) );
 }
 
-void EpetraVector::reciprocal()
+void
+EpetraVector::reciprocal()
 {
   GEOSX_LAI_ASSERT( ready() );
   GEOSX_LAI_CHECK_ERROR( m_vector->Reciprocal( *m_vector ) );
 }
 
-real64 EpetraVector::dot( EpetraVector const & vec ) const
+real64
+EpetraVector::dot( EpetraVector const & vec ) const
 {
   GEOSX_LAI_ASSERT( ready() );
   GEOSX_LAI_ASSERT( vec.ready() );
@@ -253,7 +279,8 @@ real64 EpetraVector::dot( EpetraVector const & vec ) const
   return tmp;
 }
 
-void EpetraVector::copy( EpetraVector const & x )
+void
+EpetraVector::copy( EpetraVector const & x )
 {
   GEOSX_LAI_ASSERT( ready() );
   GEOSX_LAI_ASSERT( x.ready() );
@@ -262,8 +289,8 @@ void EpetraVector::copy( EpetraVector const & x )
   GEOSX_LAI_CHECK_ERROR( m_vector->Update( 1., x.unwrapped(), 0. ) );
 }
 
-void EpetraVector::axpy( real64 const alpha,
-                         EpetraVector const & x )
+void
+EpetraVector::axpy( real64 const alpha, EpetraVector const & x )
 {
   GEOSX_LAI_ASSERT( ready() );
   GEOSX_LAI_ASSERT( x.ready() );
@@ -272,9 +299,10 @@ void EpetraVector::axpy( real64 const alpha,
   GEOSX_LAI_CHECK_ERROR( m_vector->Update( alpha, x.unwrapped(), 1. ) );
 }
 
-void EpetraVector::axpby( real64 const alpha,
-                          EpetraVector const & x,
-                          real64 const beta )
+void
+EpetraVector::axpby( real64 const alpha,
+                     EpetraVector const & x,
+                     real64 const beta )
 {
   GEOSX_LAI_ASSERT( ready() );
   GEOSX_LAI_ASSERT( x.ready() );
@@ -283,7 +311,8 @@ void EpetraVector::axpby( real64 const alpha,
   GEOSX_LAI_CHECK_ERROR( m_vector->Update( alpha, x.unwrapped(), beta ) );
 }
 
-real64 EpetraVector::norm1() const
+real64
+EpetraVector::norm1() const
 {
   GEOSX_LAI_ASSERT( ready() );
 
@@ -292,7 +321,8 @@ real64 EpetraVector::norm1() const
   return tmp;
 }
 
-real64 EpetraVector::norm2() const
+real64
+EpetraVector::norm2() const
 {
   GEOSX_LAI_ASSERT( ready() );
   real64 tmp;
@@ -300,7 +330,8 @@ real64 EpetraVector::norm2() const
   return tmp;
 }
 
-real64 EpetraVector::normInf() const
+real64
+EpetraVector::normInf() const
 {
   GEOSX_LAI_ASSERT( ready() );
   real64 tmp;
@@ -308,26 +339,29 @@ real64 EpetraVector::normInf() const
   return tmp;
 }
 
-void EpetraVector::print( std::ostream & os ) const
+void
+EpetraVector::print( std::ostream & os ) const
 {
   GEOSX_LAI_ASSERT( ready() );
   m_vector->Print( os );
 }
 
-void EpetraVector::write( string const & filename,
-                          LAIOutputFormat const format ) const
+void
+EpetraVector::write( string const & filename, LAIOutputFormat const format ) const
 {
   GEOSX_LAI_ASSERT( ready() );
   switch( format )
   {
     case LAIOutputFormat::MATLAB_ASCII:
     {
-      GEOSX_LAI_CHECK_ERROR( EpetraExt::MultiVectorToMatlabFile( filename.c_str(), *m_vector ) );
+      GEOSX_LAI_CHECK_ERROR(
+        EpetraExt::MultiVectorToMatlabFile( filename.c_str(), *m_vector ) );
       break;
     }
     case LAIOutputFormat::MATRIX_MARKET:
     {
-      GEOSX_LAI_CHECK_ERROR( EpetraExt::MultiVectorToMatrixMarketFile( filename.c_str(), *m_vector ) );
+      GEOSX_LAI_CHECK_ERROR(
+        EpetraExt::MultiVectorToMatrixMarketFile( filename.c_str(), *m_vector ) );
       break;
     }
     default:
@@ -335,7 +369,8 @@ void EpetraVector::write( string const & filename,
   }
 }
 
-real64 EpetraVector::get( globalIndex globalRow ) const
+real64
+EpetraVector::get( globalIndex globalRow ) const
 {
   GEOSX_LAI_ASSERT( ready() );
   GEOSX_LAI_ASSERT_GE( globalRow, ilower() );
@@ -344,14 +379,20 @@ real64 EpetraVector::get( globalIndex globalRow ) const
   return extractLocalVector()[getLocalRowID( globalRow )];
 }
 
-void EpetraVector::get( arraySlice1d< globalIndex const > const & globalIndices,
-                        arraySlice1d< real64 > const & values ) const
+void
+EpetraVector::get( arraySlice1d< globalIndex const > const & globalIndices,
+                   arraySlice1d< real64 > const & values ) const
 {
   GEOSX_LAI_ASSERT( ready() );
   GEOSX_LAI_ASSERT_GE( values.size(), globalIndices.size() );
-  GEOSX_LAI_ASSERT_GE( *std::min_element( globalIndices.dataIfContiguous(), globalIndices.dataIfContiguous() + globalIndices.size() ), ilower() );
-  GEOSX_LAI_ASSERT_GT( iupper(), *std::max_element( globalIndices.dataIfContiguous(),
-                                                    globalIndices.dataIfContiguous() + globalIndices.size() ) );
+  GEOSX_LAI_ASSERT_GE(
+    *std::min_element( globalIndices.dataIfContiguous(),
+                       globalIndices.dataIfContiguous() + globalIndices.size() ),
+    ilower() );
+  GEOSX_LAI_ASSERT_GT(
+    iupper(),
+    *std::max_element( globalIndices.dataIfContiguous(),
+                       globalIndices.dataIfContiguous() + globalIndices.size() ) );
 
   real64 const * const localVector = extractLocalVector();
   for( localIndex i = 0; i < globalIndices.size(); ++i )
@@ -360,37 +401,43 @@ void EpetraVector::get( arraySlice1d< globalIndex const > const & globalIndices,
   }
 }
 
-Epetra_FEVector const & EpetraVector::unwrapped() const
+Epetra_FEVector const &
+EpetraVector::unwrapped() const
 {
   GEOSX_LAI_ASSERT( created() );
   return *m_vector;
 }
 
-Epetra_FEVector & EpetraVector::unwrapped()
+Epetra_FEVector &
+EpetraVector::unwrapped()
 {
   GEOSX_LAI_ASSERT( created() );
   return *m_vector;
 }
 
-globalIndex EpetraVector::globalSize() const
+globalIndex
+EpetraVector::globalSize() const
 {
   GEOSX_LAI_ASSERT( created() );
   return m_vector->GlobalLength64();
 }
 
-localIndex EpetraVector::localSize() const
+localIndex
+EpetraVector::localSize() const
 {
   GEOSX_LAI_ASSERT( created() );
   return m_vector->MyLength();
 }
 
-localIndex EpetraVector::getLocalRowID( globalIndex const globalRow ) const
+localIndex
+EpetraVector::getLocalRowID( globalIndex const globalRow ) const
 {
   GEOSX_LAI_ASSERT( created() );
   return m_vector->Map().LID( LvArray::integerConversion< long long >( globalRow ) );
 }
 
-globalIndex EpetraVector::getGlobalRowID( localIndex const localRow ) const
+globalIndex
+EpetraVector::getGlobalRowID( localIndex const localRow ) const
 {
   GEOSX_LAI_ASSERT( created() );
   GEOSX_LAI_ASSERT_GE( localRow, 0 );
@@ -398,7 +445,8 @@ globalIndex EpetraVector::getGlobalRowID( localIndex const localRow ) const
   return m_vector->Map().GID64( LvArray::integerConversion< int >( localRow ) );
 }
 
-real64 const * EpetraVector::extractLocalVector() const
+real64 const *
+EpetraVector::extractLocalVector() const
 {
   GEOSX_LAI_ASSERT( ready() );
   int dummy;
@@ -407,7 +455,8 @@ real64 const * EpetraVector::extractLocalVector() const
   return localVector;
 }
 
-real64 * EpetraVector::extractLocalVector()
+real64 *
+EpetraVector::extractLocalVector()
 {
   GEOSX_LAI_ASSERT( ready() );
   int dummy;
@@ -416,19 +465,22 @@ real64 * EpetraVector::extractLocalVector()
   return localVector;
 }
 
-globalIndex EpetraVector::ilower() const
+globalIndex
+EpetraVector::ilower() const
 {
   GEOSX_LAI_ASSERT( created() );
   return m_vector->Map().MinMyGID64();
 }
 
-globalIndex EpetraVector::iupper() const
+globalIndex
+EpetraVector::iupper() const
 {
   GEOSX_LAI_ASSERT( created() );
   return m_vector->Map().MaxMyGID64() + 1;
 }
 
-MPI_Comm EpetraVector::getComm() const
+MPI_Comm
+EpetraVector::getComm() const
 {
   GEOSX_LAI_ASSERT( created() );
 #ifdef GEOSX_USE_MPI
@@ -438,4 +490,4 @@ MPI_Comm EpetraVector::getComm() const
 #endif
 }
 
-} // end geosx
+}  // namespace geosx

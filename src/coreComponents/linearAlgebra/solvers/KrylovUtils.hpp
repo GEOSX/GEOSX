@@ -24,19 +24,22 @@
 #define GEOSX_KRYLOV_MIN_DIV ::geosx::NumericTraits< real64 >::eps
 
 #ifndef GEOSX_KRYLOV_BREAKDOWN_IF_ZERO
-/**
+  /**
  * @brief Exit solver iteration and report a breakdown if value too close to zero.
  * @param VAR the variable or expression
  */
-#define GEOSX_KRYLOV_BREAKDOWN_IF_ZERO( VAR ) \
-  do { \
-    if( isZero( VAR, GEOSX_KRYLOV_MIN_DIV ) ) \
-    { \
-      GEOSX_LOG_LEVEL_RANK_0( 1, "Breakdown in " << methodName() << ": " << #VAR << " = " << VAR ); \
-      m_result.status = LinearSolverResult::Status::Breakdown; \
-      break; \
-    } \
-  } while( false )
+  #define GEOSX_KRYLOV_BREAKDOWN_IF_ZERO( VAR )                              \
+    do                                                                       \
+    {                                                                        \
+      if( isZero( VAR, GEOSX_KRYLOV_MIN_DIV ) )                              \
+      {                                                                      \
+        GEOSX_LOG_LEVEL_RANK_0(                                              \
+          1,                                                                 \
+          "Breakdown in " << methodName() << ": " << #VAR << " = " << VAR ); \
+        m_result.status = LinearSolverResult::Status::Breakdown;             \
+        break;                                                               \
+      }                                                                      \
+    } while( false )
 #endif
 
-#endif //GEOSX_LINEARALGEBRA_SOLVERS_KRYLOVUTILS_HPP_
+#endif  //GEOSX_LINEARALGEBRA_SOLVERS_KRYLOVUTILS_HPP_

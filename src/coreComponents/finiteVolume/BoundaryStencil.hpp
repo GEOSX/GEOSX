@@ -23,7 +23,6 @@
 
 namespace geosx
 {
-
 /**
  * @struct BoundaryStencil_Traits
  * Struct to predeclare the types and consexpr values of BoundaryStencil so that they may be used in StencilBase.
@@ -61,46 +60,50 @@ struct BoundaryStencil_Traits
  * Provides management of the boundary stencil points
  * (stencils used to prescribe boundary conditions on domain boundaries, i.e. faces)
  */
-class BoundaryStencil : public StencilBase< BoundaryStencil_Traits, BoundaryStencil >,
-  public BoundaryStencil_Traits
+class BoundaryStencil
+  : public StencilBase< BoundaryStencil_Traits, BoundaryStencil >,
+    public BoundaryStencil_Traits
 {
 public:
-
   /**
    * @brief Defines the order of element/face in the stencil.
    */
   struct Order
   {
-    static constexpr localIndex ELEM = 0; ///< Order of element index in stencil
-    static constexpr localIndex FACE = 1; ///< Order of face index in stencil
+    static constexpr localIndex ELEM = 0;  ///< Order of element index in stencil
+    static constexpr localIndex FACE = 1;  ///< Order of face index in stencil
   };
 
   /// default constructor
   BoundaryStencil();
 
-  virtual void add( localIndex const numPts,
-                    localIndex const * const elementRegionIndices,
-                    localIndex const * const elementSubRegionIndices,
-                    localIndex const * const elementIndices,
-                    real64 const * const weights,
-                    localIndex const connectorIndex ) override final;
+  virtual void
+  add( localIndex const numPts,
+       localIndex const * const elementRegionIndices,
+       localIndex const * const elementSubRegionIndices,
+       localIndex const * const elementIndices,
+       real64 const * const weights,
+       localIndex const connectorIndex ) override final;
 
-  virtual localIndex size() const override final
-  { return m_elementRegionIndices.size( 0 ); }
+  virtual localIndex
+  size() const override final
+  {
+    return m_elementRegionIndices.size( 0 );
+  }
 
   /**
    * @brief Gives the number of points in a stencil entry.
    * @param[in] index of the stencil entry for which to query the size
    * @return the size of a stencil entry
    */
-  constexpr localIndex stencilSize( localIndex const index ) const
+  constexpr localIndex
+  stencilSize( localIndex const index ) const
   {
     GEOSX_UNUSED_VAR( index )
     return MAX_STENCIL_SIZE;
   }
-
 };
 
-}
+}  // namespace geosx
 
-#endif //GEOSX_FINITEVOLUME_BOUNDARYSTENCIL_HPP_
+#endif  //GEOSX_FINITEVOLUME_BOUNDARYSTENCIL_HPP_

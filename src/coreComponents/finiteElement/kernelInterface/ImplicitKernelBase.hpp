@@ -19,16 +19,12 @@
  */
 
 #ifndef GEOSX_FINITEELEMENT_IMPLICITKERNELBASE_HPP_
-#define GEOSX_FINITEELEMENT_IMPLICITKERNELBASE_HPP_
-
-
+  #define GEOSX_FINITEELEMENT_IMPLICITKERNELBASE_HPP_
 
 namespace geosx
 {
-
 namespace finiteElement
 {
-
 //*****************************************************************************
 //*****************************************************************************
 //*****************************************************************************
@@ -47,26 +43,19 @@ template< typename SUBREGION_TYPE,
           typename FE_TYPE,
           int NUM_DOF_PER_TEST_SP,
           int NUM_DOF_PER_TRIAL_SP >
-class ImplicitKernelBase : public KernelBase< SUBREGION_TYPE,
-                                              CONSTITUTIVE_TYPE,
-                                              FE_TYPE,
-                                              NUM_DOF_PER_TEST_SP,
-                                              NUM_DOF_PER_TRIAL_SP >
+class ImplicitKernelBase
+  : public KernelBase< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE, NUM_DOF_PER_TEST_SP, NUM_DOF_PER_TRIAL_SP >
 {
 public:
   /// Alias for the base class. (i.e. #geosx::finiteElement::KernelBase)
-  using Base = KernelBase< SUBREGION_TYPE,
-                           CONSTITUTIVE_TYPE,
-                           FE_TYPE,
-                           NUM_DOF_PER_TEST_SP,
-                           NUM_DOF_PER_TRIAL_SP >;
+  using Base =
+    KernelBase< SUBREGION_TYPE, CONSTITUTIVE_TYPE, FE_TYPE, NUM_DOF_PER_TEST_SP, NUM_DOF_PER_TRIAL_SP >;
 
-  using Base::numTestSupportPointsPerElem;
-  using Base::numTrialSupportPointsPerElem;
+  using Base::m_elemsToNodes;
   using Base::numDofPerTestSupportPoint;
   using Base::numDofPerTrialSupportPoint;
-  using Base::m_elemsToNodes;
-
+  using Base::numTestSupportPointsPerElem;
+  using Base::numTrialSupportPointsPerElem;
 
   /**
    * @brief Constructor
@@ -88,10 +77,8 @@ public:
                       arrayView1d< globalIndex const > const & inputDofNumber,
                       globalIndex const rankOffset,
                       CRSMatrixView< real64, globalIndex const > const & inputMatrix,
-                      arrayView1d< real64 > const & inputRhs ):
-    Base( elementSubRegion,
-          finiteElementSpace,
-          inputConstitutiveType ),
+                      arrayView1d< real64 > const & inputRhs ) :
+    Base( elementSubRegion, finiteElementSpace, inputConstitutiveType ),
     m_dofNumber( inputDofNumber ),
     m_dofRankOffset( rankOffset ),
     m_matrix( inputMatrix ),
@@ -102,7 +89,6 @@ public:
     GEOSX_UNUSED_VAR( faceManager );
   }
 
-
   //***************************************************************************
   /**
    * @copydoc finiteElement::KernelBase::StackVariables
@@ -110,20 +96,22 @@ public:
   struct StackVariables : public Base::StackVariables
   {
     /// The number of rows in the element local jacobian matrix.
-    static constexpr int numRows = numTestSupportPointsPerElem *numDofPerTestSupportPoint;
+    static constexpr int numRows =
+      numTestSupportPointsPerElem * numDofPerTestSupportPoint;
 
     /// The number of columns in the element local jacobian matrix.
-    static constexpr int numCols = numTrialSupportPointsPerElem *numDofPerTrialSupportPoint;
+    static constexpr int numCols =
+      numTrialSupportPointsPerElem * numDofPerTrialSupportPoint;
 
     /**
      * Default constructor
      */
     GEOSX_HOST_DEVICE
-    StackVariables():
-      localRowDofIndex{ 0 },
-      localColDofIndex{ 0 },
-      localResidual{ 0.0 },
-      localJacobian{ {0.0} }
+    StackVariables() :
+      localRowDofIndex { 0 },
+      localColDofIndex { 0 },
+      localResidual { 0.0 },
+      localJacobian { { 0.0 } }
     {}
 
     /// C-array storage for the element local row degrees of freedom.
@@ -153,28 +141,29 @@ public:
    */
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
-  void setup( localIndex const k,
-              StackVariables & stack ) const
+  void
+  setup( localIndex const k, StackVariables & stack ) const
   {
-    for( localIndex a=0; a<numTestSupportPointsPerElem; ++a )
+    for( localIndex a = 0; a < numTestSupportPointsPerElem; ++a )
     {
       localIndex const localNodeIndex = m_elemsToNodes[k][a];
-      for( int i=0; i<numDofPerTestSupportPoint; ++i )
+      for( int i = 0; i < numDofPerTestSupportPoint; ++i )
       {
-        stack.localRowDofIndex[a*numDofPerTestSupportPoint+i] = m_dofNumber[localNodeIndex]+i;
+        stack.localRowDofIndex[a * numDofPerTestSupportPoint + i] =
+          m_dofNumber[localNodeIndex] + i;
       }
     }
 
-    for( localIndex a=0; a<numTrialSupportPointsPerElem; ++a )
+    for( localIndex a = 0; a < numTrialSupportPointsPerElem; ++a )
     {
       localIndex const localNodeIndex = m_elemsToNodes[k][a];
-      for( int i=0; i<numDofPerTrialSupportPoint; ++i )
+      for( int i = 0; i < numDofPerTrialSupportPoint; ++i )
       {
-        stack.localColDofIndex[a*numDofPerTrialSupportPoint+i] = m_dofNumber[localNodeIndex]+i;
+        stack.localColDofIndex[a * numDofPerTrialSupportPoint + i] =
+          m_dofNumber[localNodeIndex] + i;
       }
     }
   }
-
 
 protected:
   /// The global degree of freedom number
@@ -188,12 +177,9 @@ protected:
 
   /// The global residaul vector.
   arrayView1d< real64 > const m_rhs;
-
 };
 
-}
-}
-
-
+}  // namespace finiteElement
+}  // namespace geosx
 
 #endif /* GEOSX_FINITEELEMENT_IMPLICITKERNELBASE_HPP_ */

@@ -24,7 +24,6 @@
 
 namespace geosx
 {
-
 /**
  * @brief "Shallow" representation of a block operator.
  * @tparam VECTOR type of vector that sub-blocks of this view can operate on
@@ -39,7 +38,6 @@ template< typename VECTOR, typename OPERATOR = LinearOperator< VECTOR > >
 class BlockOperatorWrapper : public BlockOperatorView< VECTOR, OPERATOR >
 {
 public:
-
   /// Alias for base type
   using Base = BlockOperatorView< VECTOR, OPERATOR >;
 
@@ -51,8 +49,8 @@ public:
    * @param nRows number of block rows
    * @param nCols number of block columns
    */
-  explicit BlockOperatorWrapper( localIndex const nRows, localIndex const nCols )
-    : Base( nRows, nCols )
+  explicit BlockOperatorWrapper( localIndex const nRows, localIndex const nCols ) :
+    Base( nRows, nCols )
   {}
 
   /**
@@ -78,14 +76,15 @@ public:
    * @param blockColIndex block column index
    * @param op            reference to the operator (which must not go out of scope before the block wrapper)
    */
-  void set( localIndex const blockRowIndex,
-            localIndex const blockColIndex,
-            OPERATOR & op )
+  void
+  set( localIndex const blockRowIndex,
+       localIndex const blockColIndex,
+       OPERATOR & op )
   {
     this->setPointer( blockRowIndex, blockColIndex, &op );
   }
 };
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif //GEOSX_LINEARALGEBRA_UTILITIES_BLOCKOPERATORWRAPPER_HPP_
+#endif  //GEOSX_LINEARALGEBRA_UTILITIES_BLOCKOPERATORWRAPPER_HPP_

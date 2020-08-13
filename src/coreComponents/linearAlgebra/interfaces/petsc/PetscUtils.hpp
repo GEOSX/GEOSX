@@ -24,15 +24,15 @@
 
 namespace geosx
 {
-
 /**
  * @brief Converts a non-const array from GEOSX globalIndex type to PetscInt
  * @param[in] index the input array
  * @return the converted array
  */
-inline PetscInt * toPetscInt( globalIndex * const index )
+inline PetscInt *
+toPetscInt( globalIndex * const index )
 {
-  return reinterpret_cast< PetscInt * >(index);
+  return reinterpret_cast< PetscInt * >( index );
 }
 
 /**
@@ -40,11 +40,12 @@ inline PetscInt * toPetscInt( globalIndex * const index )
  * @param[in] index the input array
  * @return the converted array
  */
-inline PetscInt const * toPetscInt( globalIndex const * const index )
+inline PetscInt const *
+toPetscInt( globalIndex const * const index )
 {
-  return reinterpret_cast< PetscInt const * >(index);
+  return reinterpret_cast< PetscInt const * >( index );
 }
 
-}
+}  // namespace geosx
 
-#endif //GEOSX_LINEARALGEBRA_INTERFACES_PETSCUTILS_HPP
+#endif  //GEOSX_LINEARALGEBRA_INTERFACES_PETSCUTILS_HPP

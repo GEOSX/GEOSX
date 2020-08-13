@@ -29,7 +29,6 @@ namespace dataRepository
 {
 namespace internal
 {
-
 /**
  * @struct is_defaultable
  * @tparam T type to check
@@ -39,11 +38,9 @@ template< typename T >
 struct is_defaultable
 {
   /// attribute to set what type is able to contain a default value
-  static constexpr bool value = std::is_arithmetic< T > ::value ||
-                                std::is_same< T, string >::value ||
-                                std::is_same< T, Path >::value ||
-                                traits::is_tensorT< T > ||
-                                std::is_enum< T >::value;
+  static constexpr bool value = std::is_arithmetic< T >::value ||
+    std::is_same< T, string >::value || std::is_same< T, Path >::value ||
+    traits::is_tensorT< T > || std::is_enum< T >::value;
 };
 
 /**
@@ -53,7 +50,7 @@ struct is_defaultable
  *
  * default implementation of struct to return if a type \p T has a default value.
  */
-template< typename T, typename ENABLE=void >
+template< typename T, typename ENABLE = void >
 struct Helper
 {
   /// attribute to indicate whether type \p T has a default value
@@ -94,9 +91,10 @@ struct Helper< T, std::enable_if_t< is_defaultable< T >::value > >
  * containers.
  */
 template< typename T >
-struct Helper< T, std::enable_if_t< traits::HasAlias_value_type< T > &&
-                                    is_defaultable< typename T::value_type >::value &&
-                                    !traits::is_string< T > > >
+struct Helper< T,
+               std::enable_if_t< traits::HasAlias_value_type< T > &&
+                                 is_defaultable< typename T::value_type >::value &&
+                                 !traits::is_string< T > > >
 {
   /// attribute to indicate whether type @p T has a default value
   static constexpr bool has_default_value = true;
@@ -110,19 +108,23 @@ struct Helper< T, std::enable_if_t< traits::HasAlias_value_type< T > &&
 
 template< typename T >
 std::enable_if_t< !Helper< T >::has_default_value, std::ostream & >
-operator<<( std::ostream & stream, Helper< T > const & GEOSX_UNUSED_PARAM( value ) )
+operator<<(
+  std::ostream & stream,
+  Helper< T > const & GEOSX_UNUSED_PARAM( value ) )
 {
   return stream;
 }
 
 template< typename T >
 std::enable_if_t< Helper< T >::has_default_value, std::ostream & >
-operator<<( std::ostream & stream, Helper< T > const & value )
+operator<<(
+  std::ostream & stream,
+  Helper< T > const & value )
 {
   return stream << value.value;
 }
 
-} // namespace internal
+}  // namespace internal
 
 /**
  * @tparam T the type to check
@@ -131,8 +133,7 @@ operator<<( std::ostream & stream, Helper< T > const & value )
 template< typename T >
 using DefaultValue = internal::Helper< T >;
 
-} // namespace dataRepository
-} // namespace geosx
-
+}  // namespace dataRepository
+}  // namespace geosx
 
 #endif /* GEOSX_DATAREPOSITORY_DEFAULTVALUE_HPP_ */

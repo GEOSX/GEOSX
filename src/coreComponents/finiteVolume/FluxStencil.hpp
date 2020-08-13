@@ -25,7 +25,6 @@
 
 namespace geosx
 {
-
 /**
  * @class FluxStencil
  *
@@ -35,7 +34,6 @@ template< typename INDEX, typename WEIGHT >
 class FluxStencil
 {
 public:
-
   /**
    * @brief Number of points the flux is between (normally 2).
    */
@@ -47,7 +45,7 @@ public:
   static localIndex constexpr MAX_STENCIL_SIZE = 18;
 
   /// Alias for INDEX
-  using index_type  = INDEX;
+  using index_type = INDEX;
   /// Alias for WEIGHT
   using weight_type = WEIGHT;
 
@@ -58,22 +56,22 @@ public:
    * @param[in] numConn number of connections
    * @param[in] avgStencilSize average stencil size
    */
-  explicit FluxStencil( localIndex const numConn,
-                        localIndex const avgStencilSize );
+  explicit FluxStencil( localIndex const numConn, localIndex const avgStencilSize );
 
   /**
    * @brief Return the size of the stencil collection (i.e. number of connections).
    * @return the size of the stencil collection (i.e. number of connections)
    */
-  localIndex numConnections() const;
+  localIndex
+  numConnections() const;
 
   /**
    * @brief Resize the collection.
    * @param[in] numConn number of connections
    * @param[in] avgStencilSize average stencil size
    */
-  void reserve( localIndex const numConn,
-                localIndex const avgStencilSize );
+  void
+  reserve( localIndex const numConn, localIndex const avgStencilSize );
 
   /**
    * @brief Add data for one connection.
@@ -82,22 +80,25 @@ public:
    * @param[in] weights the WEIGHT array
    * @param[in] connectorIndex the connector index
    */
-  void add( localIndex const numPts,
-            INDEX const * const indices,
-            WEIGHT const * const weights,
-            localIndex const connectorIndex );
+  void
+  add( localIndex const numPts,
+       INDEX const * const indices,
+       WEIGHT const * const weights,
+       localIndex const connectorIndex );
 
   /**
    * @brief Zero out connections.
    * @param[in] connectorIndex the connector index
    * @return true if the stencil is zeroed out
    */
-  bool zero( localIndex const connectorIndex );
+  bool
+  zero( localIndex const connectorIndex );
 
   /**
    * @brief Called after adding connections is done to compress the data.
    */
-  void compress();
+  void
+  compress();
 
   /**
    * @struct Entry
@@ -105,55 +106,60 @@ public:
    */
   struct Entry
   {
-    INDEX index;   ///< edge index
-    WEIGHT weight; ///< edge weight
+    INDEX index;    ///< edge index
+    WEIGHT weight;  ///< edge weight
   };
 
   /**
    * @brief Return the connections.
    * @return the connections
    */
-  ArrayOfArraysView< Entry const, true > getConnections() const { return m_connections.toViewConst(); }
+  ArrayOfArraysView< Entry const, true >
+  getConnections() const
+  {
+    return m_connections.toViewConst();
+  }
 
 private:
-
   ArrayOfArrays< Entry > m_connections;
   map< localIndex, localIndex > m_connectorIndices;
-
 };
 
 template< typename INDEX, typename WEIGHT >
-FluxStencil< INDEX, WEIGHT >::FluxStencil()
-  : FluxStencil( 0, 0 )
+FluxStencil< INDEX, WEIGHT >::FluxStencil() :
+  FluxStencil( 0, 0 )
 {}
 
 template< typename INDEX, typename WEIGHT >
 FluxStencil< INDEX, WEIGHT >::FluxStencil( localIndex const numConn,
-                                           localIndex const avgStencilSize )
-  : m_connections()
+                                           localIndex const avgStencilSize ) :
+  m_connections()
 {
   reserve( numConn, avgStencilSize );
 }
 
 template< typename INDEX, typename WEIGHT >
-localIndex FluxStencil< INDEX, WEIGHT >::numConnections() const
+localIndex
+FluxStencil< INDEX, WEIGHT >::numConnections() const
 {
   return m_connections.size();
 }
 
 template< typename INDEX, typename WEIGHT >
-void FluxStencil< INDEX, WEIGHT >::reserve( localIndex const numConn,
-                                            localIndex const avgStencilSize )
+void
+FluxStencil< INDEX, WEIGHT >::reserve( localIndex const numConn,
+                                       localIndex const avgStencilSize )
 {
   m_connections.reserve( numConn );
   m_connections.reserveValues( numConn * avgStencilSize );
 }
 
 template< typename INDEX, typename WEIGHT >
-void FluxStencil< INDEX, WEIGHT >::add( localIndex const numPts,
-                                        INDEX const * const indices,
-                                        WEIGHT const * const weights,
-                                        localIndex const connectorIndex )
+void
+FluxStencil< INDEX, WEIGHT >::add( localIndex const numPts,
+                                   INDEX const * const indices,
+                                   WEIGHT const * const weights,
+                                   localIndex const connectorIndex )
 {
   GEOSX_ERROR_IF( numPts >= MAX_STENCIL_SIZE, "Maximum stencil size exceeded" );
 
@@ -168,28 +174,30 @@ void FluxStencil< INDEX, WEIGHT >::add( localIndex const numPts,
 }
 
 template< typename INDEX, typename WEIGHT >
-bool FluxStencil< INDEX, WEIGHT >::zero( localIndex const connectorIndex )
+bool
+FluxStencil< INDEX, WEIGHT >::zero( localIndex const connectorIndex )
 {
-  return
-    executeOnMapValue( m_connectorIndices, connectorIndex, [&]( localIndex const connectionListIndex )
-  {
-    Entry * const entries = m_connections[connectionListIndex];
-    for( localIndex i = 0; i < m_connections.sizeOfArray( connectionListIndex ); ++i )
-    {
-      entries[i].weight = 0; // TODO remove entries altogether?
-    }
-//    m_connections.resizeArray( connectionListIndex, 0 );
-  } );
+  return executeOnMapValue(
+    m_connectorIndices,
+    connectorIndex,
+    [&]( localIndex const connectionListIndex ) {
+      Entry * const entries = m_connections[connectionListIndex];
+      for( localIndex i = 0; i < m_connections.sizeOfArray( connectionListIndex );
+           ++i )
+      {
+        entries[i].weight = 0;  // TODO remove entries altogether?
+      }
+      //    m_connections.resizeArray( connectionListIndex, 0 );
+    } );
 }
 
-
 template< typename INDEX, typename WEIGHT >
-void FluxStencil< INDEX, WEIGHT >::compress()
+void
+FluxStencil< INDEX, WEIGHT >::compress()
 {
   // nothing for the moment
 }
 
-}
+}  // namespace geosx
 
-
-#endif //GEOSX_FINITEVOLUME_FLUXSTENCIL_HPP_
+#endif  //GEOSX_FINITEVOLUME_FLUXSTENCIL_HPP_

@@ -19,14 +19,12 @@
 
 namespace geosx
 {
-
 /**
  * @class Holds parameters and status for execution of nonlinear solution schemes.
  */
 class NonlinearSolverParameters : public dataRepository::Group
 {
 public:
-
   /**
    * @brief Default constructor.
    */
@@ -37,8 +35,7 @@ public:
    * @param[in] name The name of the new instantiation of this Group.
    * @param[in] parent A pointer to the parent of this Group.
    */
-  NonlinearSolverParameters( std::string const & name,
-                             Group * const parent );
+  NonlinearSolverParameters( std::string const & name, Group * const parent );
 
   /**
    * @brief Default destructor
@@ -58,50 +55,58 @@ public:
    * NonlinearSolverParameters object when calling
    * Group::GetCatalog()::Allocate().
    */
-  static string CatalogName() { return "NonlinearSolverParameters"; }
+  static string
+  CatalogName()
+  {
+    return "NonlinearSolverParameters";
+  }
 
-  virtual void PostProcessInput() override;
+  virtual void
+  PostProcessInput() override;
 
   struct viewKeysStruct
   {
-    static constexpr auto lineSearchActionString        = "lineSearchAction";
-    static constexpr auto lineSearchMaxCutsString       = "lineSearchMaxCuts";
-    static constexpr auto lineSearchCutFactorString     = "lineSearchCutFactor";
+    static constexpr auto lineSearchActionString = "lineSearchAction";
+    static constexpr auto lineSearchMaxCutsString = "lineSearchMaxCuts";
+    static constexpr auto lineSearchCutFactorString = "lineSearchCutFactor";
 
-    static constexpr auto newtonTolString               = "newtonTol";
-    static constexpr auto newtonMaxIterString           = "newtonMaxIter";
-    static constexpr auto newtonMinIterString           = "newtonMinIter";
-    static constexpr auto newtonNumIterationsString     = "newtonNumberOfIterations";
-    static constexpr auto newtonSplitOperMaxIterString  = "newtonSplitOperMaxIter";
+    static constexpr auto newtonTolString = "newtonTol";
+    static constexpr auto newtonMaxIterString = "newtonMaxIter";
+    static constexpr auto newtonMinIterString = "newtonMinIter";
+    static constexpr auto newtonNumIterationsString =
+      "newtonNumberOfIterations";
+    static constexpr auto newtonSplitOperMaxIterString =
+      "newtonSplitOperMaxIter";
 
-    static constexpr auto allowNonConvergedString       = "allowNonConverged";
-    static constexpr auto dtCutIterLimString            = "dtCutIterLimit";
-    static constexpr auto dtIncIterLimString            = "dtIncIterLimit";
-    static constexpr auto maxSubStepsString             = "maxSubSteps";
-    static constexpr auto maxTimeStepCutsString         = "maxTimeStepCuts";
-    static constexpr auto minNumNewtonIterationsString  = "minNumberOfNewtonIterations";
-    static constexpr auto timeStepCutFactorString       = "timestepCutFactor";
+    static constexpr auto allowNonConvergedString = "allowNonConverged";
+    static constexpr auto dtCutIterLimString = "dtCutIterLimit";
+    static constexpr auto dtIncIterLimString = "dtIncIterLimit";
+    static constexpr auto maxSubStepsString = "maxSubSteps";
+    static constexpr auto maxTimeStepCutsString = "maxTimeStepCuts";
+    static constexpr auto minNumNewtonIterationsString =
+      "minNumberOfNewtonIterations";
+    static constexpr auto timeStepCutFactorString = "timestepCutFactor";
 
   } viewKeys;
-
 
   /**
    * @brief Calculates the upper limit for the number of iterations to allow a
    * cut to the next timestep.
    * @return The scaled value of the limit (m_dtCutIterLimit * m_maxIterNewton)
    */
-  integer dtCutIterLimit() const
+  integer
+  dtCutIterLimit() const
   {
     return std::ceil( m_dtCutIterLimit * m_maxIterNewton );
   }
-
 
   /**
    * @brief Calculates the lower limit for the number of iterations to force an
    * increase to the next timestep.
    * @return The scaled value of the limit (m_dtIncIterLimit * m_maxIterNewton)
    */
-  integer dtIncIterLimit() const
+  integer
+  dtIncIterLimit() const
   {
     return std::ceil( m_dtIncIterLimit * m_maxIterNewton );
   }
@@ -147,8 +152,6 @@ public:
 
   /// number of times that the time-step had to be cut
   integer m_numdtAttempts;
-
-
 };
 
 } /* namespace geosx */

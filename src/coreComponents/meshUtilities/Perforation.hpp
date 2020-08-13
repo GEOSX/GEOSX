@@ -23,15 +23,13 @@
 
 namespace geosx
 {
-
 namespace dataRepository
 {
 namespace keys
 {
 static constexpr auto perforation = "Perforation";
 }
-}
-
+}  // namespace dataRepository
 
 /**
  * @class Perforation
@@ -41,7 +39,6 @@ static constexpr auto perforation = "Perforation";
 class Perforation : public dataRepository::Group
 {
 public:
-
   /**
    * @name Constructor / Destructor
    */
@@ -78,13 +75,15 @@ public:
    * @brief Deleted assignment operator.
    * @return a reference to a perforation object
    */
-  Perforation & operator=( Perforation const & ) = delete;
+  Perforation &
+  operator=( Perforation const & ) = delete;
 
   /**
    * @brief Deleted move operator.
    * @return a reference to a perforation object
    */
-  Perforation & operator=( Perforation && ) = delete;
+  Perforation &
+  operator=( Perforation && ) = delete;
 
   ///@}
 
@@ -97,14 +96,21 @@ public:
    * @brief Get the linear distance between the well head and the perforation.
    * @return the distance between the well head and the perforation
    */
-  real64 const & GetDistanceFromWellHead() const { return m_distanceFromHead; }
-
+  real64 const &
+  GetDistanceFromWellHead() const
+  {
+    return m_distanceFromHead;
+  }
 
   /**
    * @brief Get the well Peaceman index at the perforation.
    * @return the well transmissibility
    */
-  real64 GetWellTransmissibility() const { return m_wellTransmissibility; }
+  real64
+  GetWellTransmissibility() const
+  {
+    return m_wellTransmissibility;
+  }
 
   ///@}
 
@@ -115,11 +121,11 @@ public:
   struct viewKeyStruct
   {
     /// String key for the linear distance from well head
-    static constexpr auto distanceFromHeadString  = "distanceFromHead";
+    static constexpr auto distanceFromHeadString = "distanceFromHead";
     /// String key for the well transmissibility at this perforation
     static constexpr auto wellTransmissibilityString = "transmissibility";
     /// ViewKey for the linear distance from well head
-    dataRepository::ViewKey distanceFromHead  = { distanceFromHeadString };
+    dataRepository::ViewKey distanceFromHead = { distanceFromHeadString };
     /// ViewKey for the well transmissibility at this perforation
     dataRepository::ViewKey wellTransmissibility = { wellTransmissibilityString };
   }
@@ -127,19 +133,17 @@ public:
   viewKeysPerforation;
 
 protected:
-
-  void PostProcessInput() override;
+  void
+  PostProcessInput() override;
 
 private:
-
   /// Linear distance from well head
   real64 m_distanceFromHead;
 
   /// Well transmissibility at this perforation
   real64 m_wellTransmissibility;
-
 };
 
-} //namespace geosx
+}  //namespace geosx
 
-#endif //GEOSX_MESHUTILITIES_PERFORATION_HPP
+#endif  //GEOSX_MESHUTILITIES_PERFORATION_HPP

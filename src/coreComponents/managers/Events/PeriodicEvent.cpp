@@ -21,11 +21,9 @@
 
 namespace geosx
 {
-
 using namespace dataRepository;
 
-PeriodicEvent::PeriodicEvent( const std::string & name,
-                              Group * const parent ):
+PeriodicEvent::PeriodicEvent( const std::string & name, Group * const parent ) :
   EventBase( name, parent ),
   m_functionTarget( nullptr ),
   m_timeFrequency( -1.0 ),
@@ -37,55 +35,71 @@ PeriodicEvent::PeriodicEvent( const std::string & name,
   m_functionStatOption( 0 ),
   m_eventThreshold( 0.0 )
 {
-  registerWrapper( viewKeyStruct::timeFrequencyString, &m_timeFrequency )->
-    setApplyDefaultValue( -1.0 )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription( "Event application frequency (time).  Note: if this value is specified, it will override any cycle-based behavior." );
+  registerWrapper( viewKeyStruct::timeFrequencyString, &m_timeFrequency )
+    ->setApplyDefaultValue( -1.0 )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription(
+      "Event application frequency (time).  Note: if this value is specified, "
+      "it will override any cycle-based behavior." );
 
-  registerWrapper( viewKeyStruct::cycleFrequencyString, &m_cycleFrequency )->
-    setApplyDefaultValue( 1 )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription( "Event application frequency (cycle, default)" );
+  registerWrapper( viewKeyStruct::cycleFrequencyString, &m_cycleFrequency )
+    ->setApplyDefaultValue( 1 )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription( "Event application frequency (cycle, default)" );
 
-  registerWrapper( viewKeyStruct::targetExactTimestepString, &m_targetExactTimestep )->
-    setApplyDefaultValue( 1 )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription(
-    "If this option is set, the event will reduce its timestep requests to match the specified timeFrequency perfectly: dt_request = min(dt_request, t_last + time_frequency - time))." );
+  registerWrapper( viewKeyStruct::targetExactTimestepString, &m_targetExactTimestep )
+    ->setApplyDefaultValue( 1 )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription(
+      "If this option is set, the event will reduce its timestep requests to "
+      "match the specified timeFrequency perfectly: dt_request = "
+      "min(dt_request, t_last + time_frequency - time))." );
 
-  registerWrapper( viewKeyStruct::functionNameString, &m_functionName )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription( "Name of an optional function to evaluate when the time/cycle criteria are met."
-                    "If the result is greater than the specified eventThreshold, the function will continue to execute." );
+  registerWrapper( viewKeyStruct::functionNameString, &m_functionName )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription(
+      "Name of an optional function to evaluate when the time/cycle criteria "
+      "are met."
+      "If the result is greater than the specified eventThreshold, the "
+      "function will continue to execute." );
 
-  registerWrapper( viewKeyStruct::functionInputObjectString, &m_functionInputObject )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription( "If the optional function requires an object as an input, specify its path here." );
+  registerWrapper( viewKeyStruct::functionInputObjectString, &m_functionInputObject )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription(
+      "If the optional function requires an object as an input, specify its "
+      "path here." );
 
-  registerWrapper( viewKeyStruct::functionInputSetnameString, &m_functionInputSetname )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription( "If the optional function is applied to an object, specify the setname to evaluate (default = everything)." );
+  registerWrapper( viewKeyStruct::functionInputSetnameString,
+                   &m_functionInputSetname )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription(
+      "If the optional function is applied to an object, specify the setname "
+      "to evaluate (default = everything)." );
 
-  registerWrapper( viewKeyStruct::functionStatOptionString, &m_functionStatOption )->
-    setApplyDefaultValue( 0 )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription( "If the optional function is applied to an object, specify the statistic to compare to the eventThreshold."
-                    "The current options include: min, avg, and max." );
+  registerWrapper( viewKeyStruct::functionStatOptionString, &m_functionStatOption )
+    ->setApplyDefaultValue( 0 )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription(
+      "If the optional function is applied to an object, specify the statistic "
+      "to compare to the eventThreshold."
+      "The current options include: min, avg, and max." );
 
-  registerWrapper( viewKeyStruct::eventThresholdString, &m_eventThreshold )->
-    setApplyDefaultValue( 0.0 )->
-    setInputFlag( InputFlags::OPTIONAL )->
-    setDescription( "If the optional function is used, the event will execute if the value returned by the function exceeds this threshold." );
-
+  registerWrapper( viewKeyStruct::eventThresholdString, &m_eventThreshold )
+    ->setApplyDefaultValue( 0.0 )
+    ->setInputFlag( InputFlags::OPTIONAL )
+    ->setDescription(
+      "If the optional function is used, the event will execute if the value "
+      "returned by the function exceeds this threshold." );
 }
 
 PeriodicEvent::~PeriodicEvent()
 {}
 
-void PeriodicEvent::EstimateEventTiming( real64 const time,
-                                         real64 const dt,
-                                         integer const cycle,
-                                         Group * domain )
+void
+PeriodicEvent::EstimateEventTiming( real64 const time,
+                                    real64 const dt,
+                                    integer const cycle,
+                                    Group * domain )
 {
   // Check event status
   if( cycle == 0 )
@@ -101,8 +115,8 @@ void PeriodicEvent::EstimateEventTiming( real64 const time,
     else
     {
       // Note: add a small value to this forecast to account for floating point errors
-      real64 forecast = ((m_timeFrequency - (time - m_lastTime)) / dt) + 1e-10;
-      setForecast( static_cast< integer >(std::min( std::max( forecast, 0.0 ), 1e9 )) );
+      real64 forecast = ( ( m_timeFrequency - ( time - m_lastTime ) ) / dt ) + 1e-10;
+      setForecast( static_cast< integer >( std::min( std::max( forecast, 0.0 ), 1e9 ) ) );
     }
   }
   else
@@ -116,17 +130,19 @@ void PeriodicEvent::EstimateEventTiming( real64 const time,
   }
 }
 
-void PeriodicEvent::CheckOptionalFunctionThreshold( real64 const time,
-                                                    real64 const GEOSX_UNUSED_PARAM( dt ),
-                                                    integer const GEOSX_UNUSED_PARAM( cycle ),
-                                                    Group * GEOSX_UNUSED_PARAM( domain ))
+void
+PeriodicEvent::CheckOptionalFunctionThreshold(
+  real64 const time,
+  real64 const GEOSX_UNUSED_PARAM( dt ),
+  integer const GEOSX_UNUSED_PARAM( cycle ),
+  Group * GEOSX_UNUSED_PARAM( domain ) )
 {
   // Grab the function
   FunctionManager & functionManager = FunctionManager::Instance();
   FunctionBase * function = functionManager.GetGroup< FunctionBase >( m_functionName );
 
   real64 result = 0.0;
-  if( m_functionInputObject.empty())
+  if( m_functionInputObject.empty() )
   {
     // This is a time-only function
     result = function->Evaluate( &time );
@@ -141,18 +157,19 @@ void PeriodicEvent::CheckOptionalFunctionThreshold( real64 const time,
 
     // Get the set
     SortedArray< localIndex > mySet;
-    if( m_functionInputSetname.empty())
+    if( m_functionInputSetname.empty() )
     {
-      for( localIndex ii=0; ii<m_functionTarget->size(); ++ii )
+      for( localIndex ii = 0; ii < m_functionTarget->size(); ++ii )
       {
         mySet.insert( ii );
       }
     }
     else
     {
-      dataRepository::Group const * sets = m_functionTarget->GetGroup( periodicEventViewKeys.functionSetNames );
-      SortedArrayView< localIndex const > const &
-      functionSet = sets->getReference< SortedArray< localIndex > >( m_functionInputSetname );
+      dataRepository::Group const * sets =
+        m_functionTarget->GetGroup( periodicEventViewKeys.functionSetNames );
+      SortedArrayView< localIndex const > const & functionSet =
+        sets->getReference< SortedArray< localIndex > >( m_functionInputSetname );
 
       for( localIndex const index : functionSet )
       {
@@ -184,12 +201,12 @@ void PeriodicEvent::CheckOptionalFunctionThreshold( real64 const time,
   }
 }
 
-
-real64 PeriodicEvent::GetEventTypeDtRequest( real64 const time )
+real64
+PeriodicEvent::GetEventTypeDtRequest( real64 const time )
 {
   real64 requestedDt = std::numeric_limits< real64 >::max();
 
-  if((m_timeFrequency > 0) && (m_targetExactTimestep > 0))
+  if( ( m_timeFrequency > 0 ) && ( m_targetExactTimestep > 0 ) )
   {
     // Limit the timestep request to match the exact execution frequency
     real64 nextTargetTime = m_lastTime + m_timeFrequency;
@@ -209,11 +226,12 @@ real64 PeriodicEvent::GetEventTypeDtRequest( real64 const time )
   return requestedDt;
 }
 
-void PeriodicEvent::Cleanup( real64 const time_n,
-                             integer const cycleNumber,
-                             integer const GEOSX_UNUSED_PARAM( eventCounter ),
-                             real64 const GEOSX_UNUSED_PARAM( eventProgress ),
-                             Group * domain )
+void
+PeriodicEvent::Cleanup( real64 const time_n,
+                        integer const cycleNumber,
+                        integer const GEOSX_UNUSED_PARAM( eventCounter ),
+                        real64 const GEOSX_UNUSED_PARAM( eventProgress ),
+                        Group * domain )
 {
   // Only call the cleanup method of the target/children if it is within its application time
   if( isActive( time_n ) )
@@ -226,8 +244,7 @@ void PeriodicEvent::Cleanup( real64 const time_n,
     }
 
     // Cleanup any sub-events
-    this->forSubGroups< EventBase >( [&]( EventBase & subEvent )
-    {
+    this->forSubGroups< EventBase >( [&]( EventBase & subEvent ) {
       subEvent.Cleanup( time_n, cycleNumber, 0, 0, domain );
     } );
   }

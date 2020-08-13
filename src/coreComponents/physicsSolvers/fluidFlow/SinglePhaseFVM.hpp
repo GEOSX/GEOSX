@@ -24,8 +24,6 @@
 
 namespace geosx
 {
-
-
 /**
  * @class SinglePhaseFVM
  *
@@ -37,73 +35,68 @@ template< typename BASE = SinglePhaseBase >
 class SinglePhaseFVM : public BASE
 {
 public:
-
-
   // Aliasing public/protected members/methods of Group so we don't
   // have to use this->member etc.
   using BASE::getLogLevel;
 
   // Aliasing public/protected members/methods of SolverBase so we don't
   // have to use this->member etc.
-  using BASE::m_cflFactor;
-  using BASE::m_maxStableDt;
-  using BASE::m_nextDt;
-  using BASE::m_discretizationName;
-  using BASE::targetRegionNames;
   using BASE::forTargetRegions;
   using BASE::forTargetRegionsComplete;
   using BASE::forTargetSubRegions;
   using BASE::forTargetSubRegionsComplete;
+  using BASE::m_cflFactor;
+  using BASE::m_discretizationName;
   using BASE::m_dofManager;
-  using BASE::m_matrix;
-  using BASE::m_rhs;
-  using BASE::m_solution;
+  using BASE::m_linearSolverParameters;
   using BASE::m_localMatrix;
   using BASE::m_localRhs;
   using BASE::m_localSolution;
-  using BASE::m_linearSolverParameters;
+  using BASE::m_matrix;
+  using BASE::m_maxStableDt;
+  using BASE::m_nextDt;
   using BASE::m_nonlinearSolverParameters;
+  using BASE::m_rhs;
+  using BASE::m_solution;
+  using BASE::targetRegionNames;
 
   // Aliasing public/protected members/methods of FlowSolverBase so we don't
   // have to use this->member etc.
-  using BASE::m_fluidModelNames;
-  using BASE::m_solidModelNames;
-  using BASE::m_poroElasticFlag;
   using BASE::m_coupledWellsFlag;
-  using BASE::m_numDofPerCell;
   using BASE::m_derivativeFluxResidual_dAperture;
-  using BASE::m_fluxEstimate;
-  using BASE::m_elemGhostRank;
-  using BASE::m_volume;
-  using BASE::m_gravCoef;
-  using BASE::m_porosityRef;
-  using BASE::m_elementArea;
-  using BASE::m_elementAperture0;
-  using BASE::m_elementAperture;
   using BASE::m_effectiveAperture;
-
+  using BASE::m_elementAperture;
+  using BASE::m_elementAperture0;
+  using BASE::m_elementArea;
+  using BASE::m_elemGhostRank;
+  using BASE::m_fluidModelNames;
+  using BASE::m_fluxEstimate;
+  using BASE::m_gravCoef;
+  using BASE::m_numDofPerCell;
+  using BASE::m_poroElasticFlag;
+  using BASE::m_porosityRef;
+  using BASE::m_solidModelNames;
+  using BASE::m_volume;
 
   // Aliasing public/protected members/methods of SinglePhaseBase so we don't
   // have to use this->member etc.
-  using BASE::m_pressure;
+  using BASE::m_dDens_dPres;
   using BASE::m_deltaPressure;
   using BASE::m_deltaVolume;
-  using BASE::m_mobility;
-  using BASE::m_dMobility_dPres;
   using BASE::m_density;
-  using BASE::m_dDens_dPres;
-  using BASE::m_viscosity;
+  using BASE::m_dMobility_dPres;
   using BASE::m_dVisc_dPres;
+  using BASE::m_mobility;
+  using BASE::m_pressure;
   using BASE::m_transTMultiplier;
+  using BASE::m_viscosity;
 
   /**
    * @brief main constructor for Group Objects
    * @param name the name of this instantiation of Group in the repository
    * @param parent the parent group of this instantiation of Group
    */
-  SinglePhaseFVM( const std::string & name,
-                  dataRepository::Group * const parent );
-
+  SinglePhaseFVM( const std::string & name, dataRepository::Group * const parent );
 
   /// deleted default constructor
   SinglePhaseFVM() = delete;
@@ -115,10 +108,12 @@ public:
   SinglePhaseFVM( SinglePhaseFVM && ) = default;
 
   /// deleted assignment operator
-  SinglePhaseFVM & operator=( SinglePhaseFVM const & ) = delete;
+  SinglePhaseFVM &
+  operator=( SinglePhaseFVM const & ) = delete;
 
   /// deleted move operator
-  SinglePhaseFVM & operator=( SinglePhaseFVM && ) = delete;
+  SinglePhaseFVM &
+  operator=( SinglePhaseFVM && ) = delete;
 
   /**
    * @brief default destructor
@@ -129,18 +124,19 @@ public:
    * @brief name of the node manager in the object catalog
    * @return string that contains the catalog name to generate a new NodeManager object through the object catalog.
    */
-  template< typename _BASE=BASE >
+  template< typename _BASE = BASE >
   static
-  typename std::enable_if< std::is_same< _BASE, SinglePhaseBase >::value, string >::type
-  CatalogName()
+    typename std::enable_if< std::is_same< _BASE, SinglePhaseBase >::value, string >::type
+    CatalogName()
   {
     return "SinglePhaseFVM";
   }
 
-  template< typename _BASE=BASE >
+  template< typename _BASE = BASE >
   static
-  typename std::enable_if< std::is_same< _BASE, SinglePhaseProppantBase >::value, string >::type
-  CatalogName()
+    typename std::enable_if< std::is_same< _BASE, SinglePhaseProppantBase >::value,
+                             string >::type
+    CatalogName()
   {
     return "SinglePhaseProppantFVM";
   }
@@ -165,17 +161,19 @@ public:
                bool const setSparsity = true ) override;
 
   virtual void
-  ApplyBoundaryConditions( real64 const time_n,
-                           real64 const dt,
-                           DomainPartition & domain,
-                           DofManager const & dofManager,
-                           CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                           arrayView1d< real64 > const & localRhs ) override;
+  ApplyBoundaryConditions(
+    real64 const time_n,
+    real64 const dt,
+    DomainPartition & domain,
+    DofManager const & dofManager,
+    CRSMatrixView< real64, globalIndex const > const & localMatrix,
+    arrayView1d< real64 > const & localRhs ) override;
 
   virtual real64
-  CalculateResidualNorm( DomainPartition const & domain,
-                         DofManager const & dofManager,
-                         arrayView1d< real64 const > const & localRhs ) override;
+  CalculateResidualNorm(
+    DomainPartition const & domain,
+    DofManager const & dofManager,
+    arrayView1d< real64 const > const & localRhs ) override;
 
   virtual void
   ApplySystemSolution( DofManager const & dofManager,
@@ -193,35 +191,49 @@ public:
    * @param localRhs the system right-hand side vector
    */
   virtual void
-  AssembleFluxTerms( real64 const time_n,
-                     real64 const dt,
-                     DomainPartition const & domain,
-                     DofManager const & dofManager,
-                     CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                     arrayView1d< real64 > const & localRhs ) override;
+  AssembleFluxTerms(
+    real64 const time_n,
+    real64 const dt,
+    DomainPartition const & domain,
+    DofManager const & dofManager,
+    CRSMatrixView< real64, globalIndex const > const & localMatrix,
+    arrayView1d< real64 > const & localRhs ) override;
 
   /**@}*/
 
   struct viewKeyStruct : SinglePhaseBase::viewKeyStruct
-  {} viewKeysSinglePhaseFVM;
+  {
+  } viewKeysSinglePhaseFVM;
 
-  viewKeyStruct & viewKeys()
-  { return viewKeysSinglePhaseFVM; }
+  viewKeyStruct &
+  viewKeys()
+  {
+    return viewKeysSinglePhaseFVM;
+  }
 
-  viewKeyStruct const & viewKeys() const
-  { return viewKeysSinglePhaseFVM; }
+  viewKeyStruct const &
+  viewKeys() const
+  {
+    return viewKeysSinglePhaseFVM;
+  }
 
   struct groupKeyStruct : SolverBase::groupKeyStruct
-  {} groupKeysSinglePhaseFVM;
+  {
+  } groupKeysSinglePhaseFVM;
 
-  groupKeyStruct & groupKeys()
-  { return groupKeysSinglePhaseFVM; }
+  groupKeyStruct &
+  groupKeys()
+  {
+    return groupKeysSinglePhaseFVM;
+  }
 
-  groupKeyStruct const & groupKeys() const
-  { return groupKeysSinglePhaseFVM; }
+  groupKeyStruct const &
+  groupKeys() const
+  {
+    return groupKeysSinglePhaseFVM;
+  }
 
 private:
-
   /**
    * @brief Function to perform the application of Dirichlet BCs on faces
    * @param time_n current time
@@ -231,18 +243,17 @@ private:
    * @param matrix the system matrix
    * @param rhs the system right-hand side vector
    */
-  void ApplyFaceDirichletBC( real64 const time_n,
-                             real64 const dt,
-                             DofManager const & faceSet,
-                             DomainPartition & domain,
-                             CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                             arrayView1d< real64 > const & localRhs );
+  void
+  ApplyFaceDirichletBC( real64 const time_n,
+                        real64 const dt,
+                        DofManager const & faceSet,
+                        DomainPartition & domain,
+                        CRSMatrixView< real64, globalIndex const > const & localMatrix,
+                        arrayView1d< real64 > const & localRhs );
 
   // no data needed here, see SinglePhaseBase
-
 };
-
 
 } /* namespace geosx */
 
-#endif //GEOSX_PHYSICSSOLVERS_FLUIDFLOW_SINGLEPHASEFVM_HPP_
+#endif  //GEOSX_PHYSICSSOLVERS_FLUIDFLOW_SINGLEPHASEFVM_HPP_

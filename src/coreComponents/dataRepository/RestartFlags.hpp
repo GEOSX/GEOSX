@@ -23,7 +23,6 @@ namespace geosx
 {
 namespace dataRepository
 {
-
 /**
  * @enum RestartFlags
  *
@@ -31,9 +30,9 @@ namespace dataRepository
  */
 enum class RestartFlags : int
 {
-  NO_WRITE,      ///< Doe no write into restart
-  WRITE,         ///< Write into restart
-  WRITE_AND_READ ///< Write and read from restart
+  NO_WRITE,       ///< Doe no write into restart
+  WRITE,          ///< Write into restart
+  WRITE_AND_READ  ///< Write and read from restart
 };
 
 /**
@@ -43,11 +42,11 @@ enum class RestartFlags : int
  */
 enum class PlotLevel : int
 {
-  LEVEL_0, ///< Write to plot always
-  LEVEL_1, ///< Write to plot when plotLevel>=1 is specified in input
-  LEVEL_2, ///< Write to plot when plotLevel>=2 is specified in input
-  LEVEL_3, ///< Write to plot when plotLevel>=3 is specified in input
-  NOPLOT   ///< Do not ever write to plot file
+  LEVEL_0,  ///< Write to plot always
+  LEVEL_1,  ///< Write to plot when plotLevel>=1 is specified in input
+  LEVEL_2,  ///< Write to plot when plotLevel>=2 is specified in input
+  LEVEL_3,  ///< Write to plot when plotLevel>=3 is specified in input
+  NOPLOT    ///< Do not ever write to plot file
 };
 
 /**
@@ -55,7 +54,8 @@ enum class PlotLevel : int
  * @param val int that represents the PlotLevel
  * @return The PlotLevel that corresponds to the input
  */
-inline PlotLevel toPlotLevel( int const val )
+inline PlotLevel
+toPlotLevel( int const val )
 {
   switch( val )
   {
@@ -93,8 +93,8 @@ inline PlotLevel toPlotLevel( int const val )
  * @param plotLevel The PlotLevel to write to.
  * @return The stream.
  */
-inline
-std::istream & operator>>( std::istream & is, PlotLevel & plotLevel )
+inline std::istream &
+operator>>( std::istream & is, PlotLevel & plotLevel )
 {
   int value;
   is >> value;
@@ -108,11 +108,13 @@ std::istream & operator>>( std::istream & is, PlotLevel & plotLevel )
  * @param plotLevel the PlotLevel to write.
  * @return The stream.
  */
-inline
-std::ostream & operator<<( std::ostream & os, PlotLevel const & plotLevel )
-{ return os << static_cast< int >( plotLevel ); }
+inline std::ostream &
+operator<<( std::ostream & os, PlotLevel const & plotLevel )
+{
+  return os << static_cast< int >( plotLevel );
+}
 
-} /// namespace dataRepository
-} /// namespace geosx
+}  // namespace dataRepository
+}  // namespace geosx
 
-#endif  /* GEOSX_DATAREPOSITORY_RESTARTFLAGS_HPP_ */
+#endif /* GEOSX_DATAREPOSITORY_RESTARTFLAGS_HPP_ */

@@ -17,6 +17,6 @@
 
 #include "R1TensorT.h"
 
-using R1Tensor    = R1TensorT< 3 >;
+using R1Tensor = R1TensorT< 3 >;
 
 #endif

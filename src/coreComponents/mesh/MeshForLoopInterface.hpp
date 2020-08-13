@@ -29,7 +29,6 @@
 
 namespace geosx
 {
-
 /**
  * @brief Loop over all elements in a geosx::MeshLevel.
  * @tparam POLICY The execution policy for the loop over elements in a geosx::ElementSubRegionBase.
@@ -37,18 +36,19 @@ namespace geosx
  * @param mesh The geosx::MeshLevel that will have all of its elements processed by this function.
  * @param lambda The type of lambda function to execute for each element.
  */
-template< class POLICY=serialPolicy, typename LAMBDA=void >
-void forAllElemsInMesh( MeshLevel const * const mesh, LAMBDA && lambda )
+template< class POLICY = serialPolicy, typename LAMBDA = void >
+void
+forAllElemsInMesh( MeshLevel const * const mesh, LAMBDA && lambda )
 {
-
   ElementRegionManager const * const elemManager = mesh->getElemManager();
-  elemManager->forElementSubRegionsComplete< ElementSubRegionBase >( [&] ( localIndex const er,
-                                                                           localIndex const esr,
-                                                                           ElementRegionBase const &,
-                                                                           ElementSubRegionBase const & subRegion )
-  {
-    forAll< POLICY >( subRegion.size(), [&]( localIndex const k ) { lambda( er, esr, k ); } );
-  } );
+  elemManager->forElementSubRegionsComplete< ElementSubRegionBase >(
+    [&]( localIndex const er,
+         localIndex const esr,
+         ElementRegionBase const &,
+         ElementSubRegionBase const & subRegion ) {
+      forAll< POLICY >( subRegion.size(),
+                        [&]( localIndex const k ) { lambda( er, esr, k ); } );
+    } );
 }
 
 /**
@@ -68,30 +68,30 @@ minLocOverElemsInMesh( MeshLevel const * const mesh, LAMBDA && lambda )
 
   ElementRegionManager const * const elemManager = mesh->getElemManager();
 
-  for( localIndex er=0; er<elemManager->numRegions(); ++er )
+  for( localIndex er = 0; er < elemManager->numRegions(); ++er )
   {
     ElementRegionBase const * const elemRegion = elemManager->GetRegion( er );
 
-    elemRegion->forElementSubRegionsIndex< CellElementSubRegion >( [&]( localIndex const esr, CellElementSubRegion const & subRegion )
-    {
-      localIndex const size = subRegion.size();
-      for( localIndex k = 0; k < size; ++k )
-      {
-        NUMBER const val = lambda( er, esr, k );
-        if( val < minVal )
+    elemRegion->forElementSubRegionsIndex< CellElementSubRegion >(
+      [&]( localIndex const esr, CellElementSubRegion const & subRegion ) {
+        localIndex const size = subRegion.size();
+        for( localIndex k = 0; k < size; ++k )
         {
-          minVal = val;
-          minReg = er;
-          minSubreg = esr;
-          minIndex = k;
+          NUMBER const val = lambda( er, esr, k );
+          if( val < minVal )
+          {
+            minVal = val;
+            minReg = er;
+            minSubreg = esr;
+            minIndex = k;
+          }
         }
-      }
-    } );
+      } );
   }
 
-  return std::make_pair( minVal, std::make_tuple( minReg, minSubreg, minIndex ));
+  return std::make_pair( minVal, std::make_tuple( minReg, minSubreg, minIndex ) );
 }
 
-} // namespace geosx
+}  // namespace geosx
 
-#endif // GEOSX_MESH_MESHFORLOOPINTERFACE_HPP
+#endif  // GEOSX_MESH_MESHFORLOOPINTERFACE_HPP

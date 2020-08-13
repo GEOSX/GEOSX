@@ -27,9 +27,10 @@
 
 namespace geosx
 {
-
-template< typename Vector > class LinearOperator;
-template< typename Vector > class BlockVectorView;
+template< typename Vector >
+class LinearOperator;
+template< typename Vector >
+class BlockVectorView;
 
 /**
  * @brief Base class for Krylov solvers
@@ -39,7 +40,6 @@ template< typename VECTOR >
 class KrylovSolver : public LinearOperator< VECTOR >
 {
 public:
-
   /// Base type
   using Base = LinearOperator< VECTOR >;
 
@@ -53,9 +53,11 @@ public:
    * @param precond preconditioning operator (must be set up by the user prior to calling solve()/apply())
    * @return an owning pointer to the newly instantiated solver
    */
-  static std::unique_ptr< KrylovSolver< VECTOR > > Create( LinearSolverParameters const & parameters,
-                                                           LinearOperator< VECTOR > const & matrix,
-                                                           LinearOperator< VECTOR > const & precond );
+  static std::unique_ptr< KrylovSolver< VECTOR > >
+  Create(
+    LinearSolverParameters const & parameters,
+    LinearOperator< VECTOR > const & matrix,
+    LinearOperator< VECTOR > const & precond );
 
   /**
    * @brief Constructor.
@@ -81,8 +83,8 @@ public:
    * @param [in] b system right hand side.
    * @param [inout] x system solution (input = initial guess, output = solution).
    */
-  virtual void solve( Vector const & b, Vector & x ) const = 0;
-
+  virtual void
+  solve( Vector const & b, Vector & x ) const = 0;
 
   /**
    * @brief Apply operator to a vector.
@@ -90,17 +92,20 @@ public:
    * @param src Input vector (src).
    * @param dst Output vector (dst).
    */
-  virtual void apply( Vector const & src, Vector & dst ) const override final
+  virtual void
+  apply( Vector const & src, Vector & dst ) const override final
   {
     solve( src, dst );
   }
 
-  virtual globalIndex numGlobalRows() const override final
+  virtual globalIndex
+  numGlobalRows() const override final
   {
     return m_operator.numGlobalRows();
   }
 
-  virtual globalIndex numGlobalCols() const override final
+  virtual globalIndex
+  numGlobalCols() const override final
   {
     return m_operator.numGlobalCols();
   }
@@ -109,7 +114,8 @@ public:
    * @brief Get result of a linear solve.
    * @return struct containing status and various statistics of the last solve
    */
-  LinearSolverResult const & result() const
+  LinearSolverResult const &
+  result() const
   {
     return m_result;
   }
@@ -118,7 +124,8 @@ public:
    * @brief Get convergence history of a linear solve.
    * @return array containing residual norms of every iteration (including initial)
    */
-  arrayView1d< real64 const > const & history() const
+  arrayView1d< real64 const > const &
+  history() const
   {
     return m_residualNorms;
   }
@@ -127,7 +134,8 @@ public:
    * @brief Get log level.
    * @return integer value of the log level
    */
-  integer getLogLevel() const
+  integer
+  getLogLevel() const
   {
     return m_logLevel;
   }
@@ -136,10 +144,10 @@ public:
    * @brief Get name of the Krylov subspace method.
    * @return the abbreviated name of the method
    */
-  virtual string methodName() const = 0;
+  virtual string
+  methodName() const = 0;
 
 private:
-
   ///@cond DO_NOT_DOCUMENT
 
   template< typename VEC >
@@ -147,7 +155,8 @@ private:
   {
     using type = VEC;
 
-    static VEC createFrom( VEC const & src )
+    static VEC
+    createFrom( VEC const & src )
     {
       VEC v;
       v.createWithLocalSize( src.localSize(), src.getComm() );
@@ -160,12 +169,14 @@ private:
   {
     using type = BlockVector< VEC >;
 
-    static BlockVector< VEC > createFrom( BlockVectorView< VEC > const & src )
+    static BlockVector< VEC >
+    createFrom( BlockVectorView< VEC > const & src )
     {
       BlockVector< VEC > v( src.blockSize() );
       for( localIndex i = 0; i < src.blockSize(); ++i )
       {
-        v.block( i ).createWithLocalSize( src.block( i ).localSize(), src.block( i ).getComm() );
+        v.block( i ).createWithLocalSize( src.block( i ).localSize(),
+                                          src.block( i ).getComm() );
       }
       return v;
     }
@@ -174,7 +185,6 @@ private:
   ///@endcond DO_NOT_DOCUMENT
 
 protected:
-
   /// Alias for vector type that can be used for temporaries
   using VectorTemp = typename VectorStorageHelper< VECTOR >::type;
 
@@ -185,7 +195,8 @@ protected:
    *
    * The main purpose is to deal with BlockVector/View/Wrapper hierarchy.
    */
-  static VectorTemp createTempVector( Vector const & src )
+  static VectorTemp
+  createTempVector( Vector const & src )
   {
     return VectorStorageHelper< VECTOR >::createFrom( src );
   }
@@ -195,21 +206,27 @@ protected:
    * @param iter  current iteration number
    * @param rnorm current residual norm
    */
-  void logProgress( localIndex const iter, real64 const rnorm ) const
+  void
+  logProgress( localIndex const iter, real64 const rnorm ) const
   {
     m_residualNorms[iter] = rnorm;
-    GEOSX_LOG_LEVEL_RANK_0( 2, methodName() << " iteration " << iter << ": residual = " << rnorm );
+    GEOSX_LOG_LEVEL_RANK_0(
+      2,
+      methodName() << " iteration " << iter << ": residual = " << rnorm );
   }
 
   /**
    * @brief Output convergence result (called by implementations).
    */
-  void logResult() const
+  void
+  logResult() const
   {
-    GEOSX_LOG_LEVEL_RANK_0( 1, methodName() << ' ' <<
-                            ( m_result.success() ? "converged" : "failed to converge" ) <<
-                            " in " << m_result.numIterations << " iterations " <<
-                            "(" << m_result.solveTime << " s)" );
+    GEOSX_LOG_LEVEL_RANK_0(
+      1,
+      methodName() << ' '
+                   << ( m_result.success() ? "converged" : "failed to converge" )
+                   << " in " << m_result.numIterations << " iterations "
+                   << "(" << m_result.solveTime << " s)" );
   }
 
   /// reference to the operator to be solved
@@ -234,6 +251,6 @@ protected:
   mutable array1d< real64 > m_residualNorms;
 };
 
-} //namespace geosx
+}  //namespace geosx
 
-#endif //GEOSX_LINEARALGEBRA_SOLVERS_KRYLOVSOLVER_HPP_
+#endif  //GEOSX_LINEARALGEBRA_SOLVERS_KRYLOVSOLVER_HPP_
