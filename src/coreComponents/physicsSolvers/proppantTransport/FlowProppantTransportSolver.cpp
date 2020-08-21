@@ -23,7 +23,7 @@
 #include "managers/DomainPartition.hpp"
 #include "managers/FieldSpecification/FieldSpecificationManager.hpp"
 #include "physicsSolvers/fluidFlow/FlowSolverBase.hpp"
-#include "physicsSolvers/fluidFlow/ProppantTransport.hpp"
+#include "ProppantTransport.hpp"
 
 namespace geosx
 {

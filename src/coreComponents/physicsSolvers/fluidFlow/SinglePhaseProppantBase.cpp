@@ -20,7 +20,7 @@
 #include "SinglePhaseProppantBase.hpp"
 
 #include "constitutive/fluid/slurryFluidSelector.hpp"
-#include "physicsSolvers/fluidFlow/ProppantTransport.hpp"
+#include "physicsSolvers/proppantTransport/ProppantTransport.hpp"
 #include "physicsSolvers/fluidFlow/SinglePhaseProppantBaseKernels.hpp"
 
 namespace geosx

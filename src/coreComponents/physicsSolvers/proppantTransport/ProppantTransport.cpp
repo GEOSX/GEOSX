@@ -35,7 +35,7 @@
 #include "mpiCommunications/NeighborCommunicator.hpp"
 #include "mesh/FaceElementRegion.hpp"
 
-#include "physicsSolvers/fluidFlow/ProppantTransportKernels.hpp"
+#include "ProppantTransportKernels.hpp"
 
 /**
  * @namespace the geosx namespace that encapsulates the majority of the code

@@ -13,8 +13,6 @@ set( physicsSolvers_headers
      fluidFlow/CompositionalMultiphaseFlow.hpp
      fluidFlow/CompositionalMultiphaseFlowKernels.hpp
      fluidFlow/FlowSolverBase.hpp
-     fluidFlow/ProppantTransport.hpp
-     fluidFlow/ProppantTransportKernels.hpp
      fluidFlow/SinglePhaseBase.hpp
      fluidFlow/SinglePhaseFVM.hpp
      fluidFlow/SinglePhaseHybridFVM.hpp     
@@ -30,13 +28,15 @@ set( physicsSolvers_headers
      fluidFlow/wells/CompositionalMultiphaseWell.hpp
      fluidFlow/wells/CompositionalMultiphaseWellKernels.hpp
      fluidFlow/wells/WellControls.hpp
-     multiphysics/FlowProppantTransportSolver.hpp
      multiphysics/HydrofractureSolver.hpp
      multiphysics/LagrangianContactSolver.hpp
      multiphysics/PoroelasticSolver.hpp
      multiphysics/ReservoirSolverBase.hpp
      multiphysics/SinglePhaseReservoir.hpp
      multiphysics/CompositionalMultiphaseReservoir.hpp
+     proppantTransport/FlowProppantTransportSolver.hpp
+     proppantTransport/ProppantTransport.hpp
+     proppantTransport/ProppantTransportKernels.hpp
      simplePDE/LaplaceFEM.hpp
      simplePDE/LaplaceFEMKernels.hpp
      solidMechanics/SolidMechanicsEmbeddedFractures.hpp
@@ -64,8 +64,6 @@ set( physicsSolvers_sources
      fluidFlow/CompositionalMultiphaseFlow.cpp
      fluidFlow/CompositionalMultiphaseFlowKernels.cpp
      fluidFlow/FlowSolverBase.cpp
-     fluidFlow/ProppantTransport.cpp
-     fluidFlow/ProppantTransportKernels.cpp
      fluidFlow/SinglePhaseBase.cpp
      fluidFlow/SinglePhaseBaseKernels.cpp
      fluidFlow/SinglePhaseFVM.cpp
@@ -77,13 +75,15 @@ set( physicsSolvers_sources
      fluidFlow/wells/SinglePhaseWell.cpp          
      fluidFlow/wells/CompositionalMultiphaseWell.cpp     
      fluidFlow/wells/WellControls.cpp     
-     multiphysics/FlowProppantTransportSolver.cpp
      multiphysics/HydrofractureSolver.cpp
      multiphysics/LagrangianContactSolver.cpp
      multiphysics/PoroelasticSolver.cpp
      multiphysics/ReservoirSolverBase.cpp
      multiphysics/SinglePhaseReservoir.cpp
      multiphysics/CompositionalMultiphaseReservoir.cpp
+     proppantTransport/FlowProppantTransportSolver.cpp
+     proppantTransport/ProppantTransport.cpp
+     proppantTransport/ProppantTransportKernels.cpp
      simplePDE/LaplaceFEM.cpp
      solidMechanics/SolidMechanicsEmbeddedFractures.cpp
      solidMechanics/SolidMechanicsLagrangianFEM.cpp

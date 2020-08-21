@@ -21,7 +21,7 @@
 
 #include "common/DataTypes.hpp"
 #include "finiteVolume/FluxApproximationBase.hpp"
-#include "physicsSolvers/fluidFlow/ProppantTransport.hpp"
+#include "ProppantTransport.hpp"
 #include "rajaInterface/GEOS_RAJA_Interface.hpp"
 
 namespace geosx
