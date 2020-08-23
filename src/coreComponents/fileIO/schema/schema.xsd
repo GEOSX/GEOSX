@@ -165,6 +165,7 @@
 			<xsd:element name="FieldSpecifications" type="FieldSpecificationsType" maxOccurs="1" />
 			<xsd:element name="Functions" type="FunctionsType" maxOccurs="1" />
 			<xsd:element name="Geometry" type="GeometryType" maxOccurs="1" />
+			<xsd:element name="Graphs" type="GraphsType" minOccurs="1" maxOccurs="1" />
 			<xsd:element name="Mesh" type="MeshType" minOccurs="1" maxOccurs="1" />
 			<xsd:element name="NumericalMethods" type="NumericalMethodsType" maxOccurs="1" />
 			<xsd:element name="Outputs" type="OutputsType" minOccurs="1" maxOccurs="1" />
@@ -470,6 +471,21 @@
 		<!--name => A name is required for any non-unique nodes-->
 		<xsd:attribute name="name" type="string" use="required" />
 	</xsd:complexType>
+	<xsd:complexType name="GraphsType">
+		<xsd:choice minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="GraphFromText" type="GraphFromTextType" />
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="GraphFromTextType">
+		<!--file => Name of the graph file.-->
+		<xsd:attribute name="file" type="path" use="required" />
+		<!--logLevel => Log level-->
+		<xsd:attribute name="logLevel" type="integer" default="0" />
+		<!--mesh => Name of the mesh to link to the graph.-->
+		<xsd:attribute name="mesh" type="string" default="" />
+		<!--name => A name is required for any non-unique nodes-->
+		<xsd:attribute name="name" type="string" use="required" />
+	</xsd:complexType>
 	<xsd:complexType name="MeshType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
 			<xsd:element name="InternalMesh" type="InternalMeshType" />
@@ -641,6 +657,7 @@ Available options are: direct, cg, gmres, fgmres, bicgstab, preconditioner-->
 	<xsd:complexType name="FiniteVolumeType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
 			<xsd:element name="TwoPointFluxApproximation" type="TwoPointFluxApproximationType" />
+			<xsd:element name="TwoPointFluxApproximationWithGraph" type="TwoPointFluxApproximationWithGraphType" />
 		</xsd:choice>
 	</xsd:complexType>
 	<xsd:complexType name="TwoPointFluxApproximationType">
@@ -650,6 +667,20 @@ Available options are: direct, cg, gmres, fgmres, bicgstab, preconditioner-->
 		<xsd:attribute name="coefficientName" type="string" use="required" />
 		<!--fieldName => Name of primary solution field-->
 		<xsd:attribute name="fieldName" type="string" use="required" />
+		<!--targetRegions => List of regions to build the stencil for-->
+		<xsd:attribute name="targetRegions" type="string_array" default="{}" />
+		<!--name => A name is required for any non-unique nodes-->
+		<xsd:attribute name="name" type="string" use="required" />
+	</xsd:complexType>
+	<xsd:complexType name="TwoPointFluxApproximationWithGraphType">
+		<!--areaRelTol => Relative tolerance for area calculations.-->
+		<xsd:attribute name="areaRelTol" type="real64" default="1e-08" />
+		<!--coefficientName => Name of coefficient field-->
+		<xsd:attribute name="coefficientName" type="string" use="required" />
+		<!--fieldName => Name of primary solution field-->
+		<xsd:attribute name="fieldName" type="string" use="required" />
+		<!--graph => Name of the graph to link to the graph.-->
+		<xsd:attribute name="graph" type="string" default="" />
 		<!--targetRegions => List of regions to build the stencil for-->
 		<xsd:attribute name="targetRegions" type="string_array" default="{}" />
 		<!--name => A name is required for any non-unique nodes-->

@@ -166,6 +166,7 @@
 			<xsd:element name="FieldSpecifications" type="FieldSpecificationsType" maxOccurs="1" />
 			<xsd:element name="Functions" type="FunctionsType" maxOccurs="1" />
 			<xsd:element name="Geometry" type="GeometryType" maxOccurs="1" />
+			<xsd:element name="Graphs" type="GraphsType" minOccurs="1" maxOccurs="1" />
 			<xsd:element name="Included" type="IncludedType" maxOccurs="1" />
 			<xsd:element name="Mesh" type="MeshType" minOccurs="1" maxOccurs="1" />
 			<xsd:element name="NumericalMethods" type="NumericalMethodsType" maxOccurs="1" />
@@ -300,6 +301,12 @@
 	</xsd:complexType>
 	<xsd:complexType name="CylinderType" />
 	<xsd:complexType name="ThickPlaneType" />
+	<xsd:complexType name="GraphsType">
+		<xsd:choice minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="GraphFromText" type="GraphFromTextType" />
+		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="GraphFromTextType" />
 	<xsd:complexType name="IncludedType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
 			<xsd:element name="File" type="FileType" />
@@ -358,9 +365,16 @@
 	<xsd:complexType name="FiniteVolumeType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
 			<xsd:element name="TwoPointFluxApproximation" type="TwoPointFluxApproximationType" />
+			<xsd:element name="TwoPointFluxApproximationWithGraph" type="TwoPointFluxApproximationWithGraphType" />
 		</xsd:choice>
 	</xsd:complexType>
 	<xsd:complexType name="TwoPointFluxApproximationType">
+		<!--cellStencil => (no description available)-->
+		<xsd:attribute name="cellStencil" type="geosx_CellElementStencilTPFA" />
+		<!--fractureStencil => (no description available)-->
+		<xsd:attribute name="fractureStencil" type="geosx_FaceElementStencil" />
+	</xsd:complexType>
+	<xsd:complexType name="TwoPointFluxApproximationWithGraphType">
 		<!--cellStencil => (no description available)-->
 		<xsd:attribute name="cellStencil" type="geosx_CellElementStencilTPFA" />
 		<!--fractureStencil => (no description available)-->
@@ -1140,6 +1154,7 @@
 	<xsd:complexType name="finiteVolumeStencilsType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
 			<xsd:element name="TwoPointFluxApproximation" type="TwoPointFluxApproximationType" />
+			<xsd:element name="TwoPointFluxApproximationWithGraph" type="TwoPointFluxApproximationWithGraphType" />
 		</xsd:choice>
 	</xsd:complexType>
 	<xsd:complexType name="nodeManagerType">

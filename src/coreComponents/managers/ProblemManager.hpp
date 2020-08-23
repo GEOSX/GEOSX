@@ -30,6 +30,7 @@
 
 #include "EventManager.hpp"
 #include "managers/Functions/FunctionManager.hpp"
+#include "mesh/GraphManager.hpp"
 #include "fileIO/schema/schemaUtilities.hpp"
 
 namespace geosx
@@ -131,6 +132,12 @@ public:
    * @brief Generates numerical meshes used throughout the code
    */
   void GenerateMesh();
+
+ /**
+   * @brief Generates graphs used throughout the code
+   */
+  void GenerateGraph();
+
 
   /**
    * @brief Allocates constitutive relations according to the discretizations
@@ -250,6 +257,8 @@ public:
     dataRepository::GroupKey numericalMethodsManager = { numericalMethodsManagerString }; ///< Numerical methods key
     dataRepository::GroupKey outputManager = { "Outputs" };                               ///< Outputs key
     dataRepository::GroupKey physicsSolverManager = { "Solvers" };                        ///< Solvers key
+    dataRepository::GroupKey graphManager = { "Graphs" };                                 ///< Graphs key
+
   } groupKeys; ///< Child group viewKeys
 
   /**
@@ -309,6 +318,9 @@ private:
 
   /// The FunctionManager
   FunctionManager * m_functionManager;
+
+ /// The GraphManager
+  GraphManager * m_graphManager;
 };
 
 } /* namespace geosx */

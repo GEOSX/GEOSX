@@ -44,7 +44,7 @@
     <PeriodicEvent
       name="solverApplications"
       forceDt="2"
-      target="/Solvers/SinglePhaseFlow"/>
+      target="/Solvers/SinglePhaseFlow"/> 
 
     <!-- This event is applied every 1.0s.  The targetExactTimestep
     flag allows this event to request a dt modification to match an
@@ -62,14 +62,20 @@
       target="/Outputs/restartOutput"
       endTime="-1"/>
   </Events>
-
+  <Graphs>
+    <GraphFromText
+      name="graph"
+      file="cube_10x10x10_hex_graph.txt"
+      mesh="/Mesh/CubeHex"/>
+  </Graphs>
   <!-- SPHINX_TUT_EXT_HEX_EVENTS_END -->
   <!-- SPHINX_TUT_EXT_HEX_NUM_METHODS -->
   <NumericalMethods>
     <FiniteVolume>
-      <TwoPointFluxApproximation
+      <TwoPointFluxApproximationWithGraph
         name="singlePhaseTPFA"
         fieldName="pressure"
+        graph="/Graphs/graph"
         coefficientName="permeability"/>
     </FiniteVolume>
   </NumericalMethods>
@@ -160,7 +166,7 @@
   <Functions/>
 
   <Outputs>
-    <Silo
+    <VTK
       name="siloWellPump"/>
 
     <Restart

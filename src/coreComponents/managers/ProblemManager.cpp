@@ -29,6 +29,7 @@
 #include "managers/NumericalMethodsManager.hpp"
 #include "managers/Outputs/OutputManager.hpp"
 #include "mesh/MeshBody.hpp"
+#include "mesh/GraphManager.hpp"
 #include "meshUtilities/MeshManager.hpp"
 #include "meshUtilities/MeshUtilities.hpp"
 #include "meshUtilities/SimpleGeometricObjects/GeometricObjectManager.hpp"
@@ -81,6 +82,7 @@ ProblemManager::ProblemManager( const std::string & name,
   RegisterGroup< GeometricObjectManager >( groupKeys.geometricObjectManager );
   RegisterGroup< MeshManager >( groupKeys.meshManager );
   RegisterGroup< OutputManager >( groupKeys.outputManager );
+  RegisterGroup< GraphManager >( groupKeys.graphManager );
   m_physicsSolverManager = RegisterGroup< PhysicsSolverManager >( groupKeys.physicsSolverManager );
 
   // The function manager is handled separately
@@ -159,6 +161,8 @@ void ProblemManager::ProblemSetup()
   PostProcessInputRecursive();
 
   GenerateMesh();
+
+  GenerateGraph();
 
   ApplyNumericalMethods();
 
@@ -637,6 +641,14 @@ void ProblemManager::GenerateMesh()
   domain->SetupCommunications( useNonblockingMPI );
   faceManager->SetIsExternal();
   edgeManager->SetIsExternal( faceManager );
+}
+
+
+void ProblemManager::GenerateGraph()
+{
+ 
+  GraphManager * graphManager = this->GetGroup< GraphManager >( groupKeys.graphManager );
+  graphManager->GenerateGraphs();
 }
 
 

@@ -246,6 +246,20 @@ Element: Geometry
 .. include:: ../../coreComponents/fileIO/schema/docs/Geometry.rst
 
 
+.. _XML_GraphFromText:
+
+Element: GraphFromText
+======================
+.. include:: ../../coreComponents/fileIO/schema/docs/GraphFromText.rst
+
+
+.. _XML_Graphs:
+
+Element: Graphs
+===============
+.. include:: ../../coreComponents/fileIO/schema/docs/Graphs.rst
+
+
 .. _XML_HaltEvent:
 
 Element: HaltEvent
@@ -603,6 +617,13 @@ Element: TwoPointFluxApproximation
 .. include:: ../../coreComponents/fileIO/schema/docs/TwoPointFluxApproximation.rst
 
 
+.. _XML_TwoPointFluxApproximationWithGraph:
+
+Element: TwoPointFluxApproximationWithGraph
+===========================================
+.. include:: ../../coreComponents/fileIO/schema/docs/TwoPointFluxApproximationWithGraph.rst
+
+
 .. _XML_VTK:
 
 Element: VTK
@@ -906,6 +927,20 @@ Datastructure: Functions
 Datastructure: Geometry
 =======================
 .. include:: ../../coreComponents/fileIO/schema/docs/Geometry_other.rst
+
+
+.. _DATASTRUCTURE_GraphFromText:
+
+Datastructure: GraphFromText
+============================
+.. include:: ../../coreComponents/fileIO/schema/docs/GraphFromText_other.rst
+
+
+.. _DATASTRUCTURE_Graphs:
+
+Datastructure: Graphs
+=====================
+.. include:: ../../coreComponents/fileIO/schema/docs/Graphs_other.rst
 
 
 .. _DATASTRUCTURE_HaltEvent:
@@ -1277,6 +1312,13 @@ Datastructure: ThickPlane
 Datastructure: TwoPointFluxApproximation
 ========================================
 .. include:: ../../coreComponents/fileIO/schema/docs/TwoPointFluxApproximation_other.rst
+
+
+.. _DATASTRUCTURE_TwoPointFluxApproximationWithGraph:
+
+Datastructure: TwoPointFluxApproximationWithGraph
+=================================================
+.. include:: ../../coreComponents/fileIO/schema/docs/TwoPointFluxApproximationWithGraph_other.rst
 
 
 .. _DATASTRUCTURE_VTK:

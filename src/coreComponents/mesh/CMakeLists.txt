@@ -19,6 +19,11 @@ set(mesh_headers
     ExtrinsicMeshData.hpp
     FaceManager.hpp
     InterObjectRelation.hpp
+    GraphBase.hpp
+    GraphFromText.hpp
+    GraphManager.hpp
+    Vertice.hpp
+    Edge.hpp
     MeshBody.hpp
     MeshLevel.hpp
     NodeManager.hpp
@@ -44,6 +49,11 @@ set(mesh_sources
     WellElementRegion.cpp
     WellElementSubRegion.cpp
     FaceManager.cpp
+    GraphBase.cpp
+    GraphFromText.cpp
+    GraphManager.cpp
+    Vertice.cpp
+    Edge.cpp
     MeshBody.cpp
     MeshLevel.cpp
     NodeManager.cpp

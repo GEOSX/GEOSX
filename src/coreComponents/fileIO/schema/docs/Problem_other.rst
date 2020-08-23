@@ -10,6 +10,7 @@ Events              node :ref:`DATASTRUCTURE_Events`
 FieldSpecifications node :ref:`DATASTRUCTURE_FieldSpecifications` 
 Functions           node :ref:`DATASTRUCTURE_Functions`           
 Geometry            node :ref:`DATASTRUCTURE_Geometry`            
+Graphs              node :ref:`DATASTRUCTURE_Graphs`              
 Included            node :ref:`DATASTRUCTURE_Included`            
 Mesh                node :ref:`DATASTRUCTURE_Mesh`                
 NumericalMethods    node :ref:`DATASTRUCTURE_NumericalMethods`    
