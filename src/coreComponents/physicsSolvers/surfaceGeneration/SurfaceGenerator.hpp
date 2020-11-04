@@ -185,6 +185,21 @@ private:
                                  ElementRegionManager & elementManager );
 
   /**
+   * @brief
+   * @param nodeManager
+   * @param edgeManager
+   * @param faceManager
+   * @param elementManager
+   * @return
+   */
+  realT CalculateTipNodeElasticModulus ( NodeManager & nodeManager,
+                                 EdgeManager & edgeManager,
+                                 FaceManager & faceManager,
+                                 ElementRegionManager & elementManager,
+                                 localIndex const & trailingFaceIndex,
+                                 localIndex const & nodeIndex);
+
+  /**
    * @brief Function to calculate f_disconnect and f_u.
    * @param edgeID
    * @param edgeLength

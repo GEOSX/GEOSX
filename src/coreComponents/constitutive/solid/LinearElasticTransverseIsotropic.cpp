@@ -109,7 +109,6 @@ void LinearElasticTransverseIsotropic::PostProcessInput()
   real64 const c44Default = Gat;
   real64 const c66Default = 0.5 * Et / ( 1 + Nut );
 
-
   this->getWrapper< array1d< real64 > >( viewKeyStruct::c11 )->
     setApplyDefaultValue( c11Default );
 

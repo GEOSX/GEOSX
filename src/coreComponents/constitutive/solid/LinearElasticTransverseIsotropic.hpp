@@ -130,6 +130,22 @@ public:
     c[5][5] = m_c66[k];
   }
 
+  void GetStiffness( localIndex const k, array2d< real64 > & c ) const
+  {
+    c[0][0] = m_c11[k];
+    c[0][1] = m_c11[k] - 2 * m_c66[k];
+    c[0][2] = m_c13[k];
+    c[1][0] = c[0][1];
+    c[1][1] = m_c11[k];
+    c[1][2] = m_c13[k];
+    c[2][0] = c[0][2];
+    c[2][1] = c[1][2];
+    c[2][2] = m_c33[k];
+    c[3][3] = m_c44[k];
+    c[4][4] = m_c44[k];
+    c[5][5] = m_c66[k];
+  }
+
   GEOSX_FORCE_INLINE
   GEOSX_HOST_DEVICE
   void setDiscretizationOps( localIndex const k,
@@ -484,7 +500,7 @@ public:
    *        data in this.
    * @return An instantiation of LinearElasticTransverseIsotropicUpdates.
    */
-  LinearElasticTransverseIsotropicUpdates createKernelUpdates()
+  LinearElasticTransverseIsotropicUpdates createKernelUpdates() const
   {
     return LinearElasticTransverseIsotropicUpdates( m_c11,
                                                     m_c13,
