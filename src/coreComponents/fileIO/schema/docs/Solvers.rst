@@ -9,6 +9,7 @@ CompositionalMultiphaseReservoir node               :ref:`XML_CompositionalMulti
 CompositionalMultiphaseWell      node               :ref:`XML_CompositionalMultiphaseWell`      
 EmbeddedSurfaceGenerator         node               :ref:`XML_EmbeddedSurfaceGenerator`         
 FlowProppantTransport            node               :ref:`XML_FlowProppantTransport`            
+GeochemicalModel                 node               :ref:`XML_GeochemicalModel`                 
 Hydrofracture                    node               :ref:`XML_Hydrofracture`                    
 LagrangianContact                node               :ref:`XML_LagrangianContact`                
 LaplaceFEM                       node               :ref:`XML_LaplaceFEM`                       

@@ -394,6 +394,7 @@
 			<xsd:element name="CompositionalMultiphaseWell" type="CompositionalMultiphaseWellType" />
 			<xsd:element name="EmbeddedSurfaceGenerator" type="EmbeddedSurfaceGeneratorType" />
 			<xsd:element name="FlowProppantTransport" type="FlowProppantTransportType" />
+			<xsd:element name="GeochemicalModel" type="GeochemicalModelType" />
 			<xsd:element name="Hydrofracture" type="HydrofractureType" />
 			<xsd:element name="LagrangianContact" type="LagrangianContactType" />
 			<xsd:element name="LaplaceFEM" type="LaplaceFEMType" />
@@ -459,6 +460,14 @@
 		</xsd:choice>
 		<!--discretization => Name of discretization object (defined in the :ref:`NumericalMethodsManager`) to use for this solver. For instance, if this is a Finite Element Solver, the name of a :ref:`FiniteElement` should be specified. If this is a Finite Volume Method, the name of a :ref:`FiniteVolume` discretization should be specified.-->
 		<xsd:attribute name="discretization" type="string" />
+		<!--maxStableDt => Value of the Maximum Stable Timestep for this solver.-->
+		<xsd:attribute name="maxStableDt" type="real64" />
+	</xsd:complexType>
+	<xsd:complexType name="GeochemicalModelType">
+		<xsd:choice minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="LinearSolverParameters" type="LinearSolverParametersType" maxOccurs="1" />
+			<xsd:element name="NonlinearSolverParameters" type="NonlinearSolverParametersType" maxOccurs="1" />
+		</xsd:choice>
 		<!--maxStableDt => Value of the Maximum Stable Timestep for this solver.-->
 		<xsd:attribute name="maxStableDt" type="real64" />
 	</xsd:complexType>
@@ -668,6 +677,7 @@
 			<xsd:element name="CompressibleSinglePhaseFluid" type="CompressibleSinglePhaseFluidType" />
 			<xsd:element name="Contact" type="ContactType" />
 			<xsd:element name="DamageLinearElasticIsotropic" type="DamageLinearElasticIsotropicType" />
+			<xsd:element name="EquilibratedChemicalFluid" type="EquilibratedChemicalFluidType" />
 			<xsd:element name="LinearElasticAnisotropic" type="LinearElasticAnisotropicType" />
 			<xsd:element name="LinearElasticIsotropic" type="LinearElasticIsotropicType" />
 			<xsd:element name="LinearElasticTransverseIsotropic" type="LinearElasticTransverseIsotropicType" />
@@ -836,6 +846,12 @@
 		<xsd:attribute name="strainEnergyDensity" type="real64_array2d" />
 		<!--stress => Material Stress-->
 		<xsd:attribute name="stress" type="real64_array3d" />
+	</xsd:complexType>
+	<xsd:complexType name="EquilibratedChemicalFluidType">
+		<!--dDependentConc_dConc => (no description available)-->
+		<xsd:attribute name="dDependentConc_dConc" type="real64_array3d" />
+		<!--dependentConc => (no description available)-->
+		<xsd:attribute name="dependentConc" type="real64_array2d" />
 	</xsd:complexType>
 	<xsd:complexType name="LinearElasticAnisotropicType">
 		<!--density => Material Density-->

@@ -13,7 +13,8 @@ set( constitutive_headers
      capillaryPressure/VanGenuchtenCapillaryPressure.hpp
      contact/ContactRelationBase.hpp
      contact/MohrCoulomb.hpp
-     fluid/MultiPhaseMultiComponentFluid.hpp
+     fluid/EquilibratedChemicalFluid.hpp
+     fluid/MultiPhaseMultiComponentFluid.hpp     
      fluid/PVTFunctions/BrineCO2DensityFunction.hpp
      fluid/PVTFunctions/BrineViscosityFunction.hpp
      fluid/PVTFunctions/CO2SolubilityFunction.hpp
@@ -33,6 +34,10 @@ set( constitutive_headers
      fluid/ProppantSlurryFluid.hpp
      fluid/ParticleFluidBase.hpp
      fluid/particleFluidSelector.hpp
+     fluid/ParticleFluid.hpp
+     fluid/ReactiveFluidBase.hpp     
+     fluid/ThermoDatabases/ThermoDatabaseBase.hpp
+     fluid/ThermoDatabases/EQ36Database.hpp     
      solid/Damage.hpp
      solid/LinearElasticAnisotropic.hpp
      solid/LinearElasticIsotropic.hpp
@@ -66,6 +71,7 @@ set( constitutive_sources
      contact/ContactRelationBase.cpp
      contact/MohrCoulomb.cpp
      fluid/CompressibleSinglePhaseFluid.cpp
+     fluid/EquilibratedChemicalFluid.cpp
      fluid/MultiPhaseMultiComponentFluid.cpp     
      fluid/PVTFunctions/BrineCO2DensityFunction.cpp
      fluid/PVTFunctions/BrineViscosityFunction.cpp 
@@ -80,6 +86,8 @@ set( constitutive_sources
      fluid/ProppantSlurryFluid.cpp
      fluid/ParticleFluidBase.cpp
      fluid/ParticleFluid.cpp               
+     fluid/ReactiveFluidBase.cpp
+     fluid/ThermoDatabases/EQ36Database.cpp          
      solid/Damage.cpp
      solid/LinearElasticAnisotropic.cpp
      solid/LinearElasticIsotropic.cpp

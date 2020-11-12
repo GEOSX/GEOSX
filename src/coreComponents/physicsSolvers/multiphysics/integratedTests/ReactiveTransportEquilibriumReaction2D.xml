@@ -1,0 +1,332 @@
+<?xml version="1.0" ?>
+<!--# # -->
+
+<Problem>
+
+  <Solvers
+    gravityVector="0.0,0.0,-9.81">
+    <ReactiveTransport
+      name="ReactiveTransport"
+      logLevel="1"
+      discretization="singlePhaseTPFA"
+      targetRegions="{ Region2 }"
+      fluidNames="{ water }"
+      reactiveFluidNames="{chem}"      
+      solidNames="{ rock }">
+      <NonlinearSolverParameters
+        newtonTol="1.0e-4"
+        newtonMaxIter="18"
+        lineSearchAction="None"
+        newtonMinIter="1"/>
+      <LinearSolverParameters
+        solverType="gmres"
+        krylovTol="1.0e-6"/>
+    </ReactiveTransport>
+
+    
+    <GeochemicalModel 
+      name="GeochemicalModel"
+      logLevel="1"
+      discretization="singlePhaseTPFA"
+      targetRegions="{Region2}"
+      fluidNames="{water}"
+      reactiveFluidNames="{chem}"
+      solidNames="{rock}"
+      >
+
+      <NonlinearSolverParameters
+        newtonTol="1.0e-6"
+        newtonMaxIter="20"/>
+      <LinearSolverParameters
+        solverType="gmres"
+        krylovTol="1.0e-4"/>          
+
+    </GeochemicalModel>
+
+    <SinglePhaseFVM
+      name="SinglePhaseFVM"
+      logLevel="1"
+      discretization="singlePhaseTPFA"
+      targetRegions="{ Region2 }"
+      fluidNames="{ water }"
+      solidNames="{ rock }">
+      <NonlinearSolverParameters
+        newtonTol="1.0e-4"
+        newtonMaxIter="12"
+        lineSearchAction="None"
+        newtonMinIter="1"/>
+      <LinearSolverParameters
+          solverType="gmres"
+        krylovTol="1.0e-6"/>
+    </SinglePhaseFVM>
+
+
+    <FlowReactiveTransport
+      name="FlowReactiveTransport"
+      reactiveTransportSolverName="ReactiveTransport"
+      flowSolverName="SinglePhaseFVM"
+      geochemicalModelName="GeochemicalModel"      
+      targetRegions="{ Region2 }"
+      logLevel="1">
+      <NonlinearSolverParameters
+        newtonMinIter="1"
+        newtonMaxIter="1"/>
+      <LinearSolverParameters/>
+    </FlowReactiveTransport>
+
+    
+  </Solvers>
+  
+  <Mesh>
+    <InternalMesh name="mesh1"
+                  elementTypes="{C3D8}" 
+                  xCoords="{0, 10}"
+                  yCoords="{0, 5}"
+                  zCoords="{0, 1}"
+                  nx="{20}"
+                  ny="{10}"
+                  nz="{1}"
+                  cellBlockNames="{cb1}"/>
+  </Mesh>
+
+  <Geometry>
+    <Box
+      name="source"
+      xMin="-0.01, 1.99, -0.01"
+      xMax=" 0.51, 3.01, 1.01"/>
+    <Box
+      name="sink"
+      xMin=" 9.49, -0.01, -0.01"
+      xMax=" 10.01, 10.01, 1.01"/>
+  </Geometry>
+
+
+  <Events maxTime="1e4">
+
+    <!-- This event is applied every cycle, and overrides the
+    solver time-step request -->
+    <PeriodicEvent name="solverApplications"
+                   forceDt="1e2"
+                   target="/Solvers/FlowReactiveTransport" />
+
+    <PeriodicEvent name="outputs"
+                   timeFrequency="1e3"
+                   targetExactTimestep="1"
+                   target="/Outputs/siloOutput" />
+
+    <PeriodicEvent
+      name="restarts"
+      timeFrequency="1e3"
+      targetExactTimestep="0"
+      target="/Outputs/sidreRestart"/>
+  </Events>
+
+  <NumericalMethods>
+    <FiniteVolume>
+      <TwoPointFluxApproximation name="singlePhaseTPFA"
+                                 fieldName="pressure"
+                                 coefficientName="permeability"/>
+    </FiniteVolume>
+  </NumericalMethods>
+
+  <ElementRegions>
+    <CellElementRegion name="Region2"
+                   cellBlocks="{cb1}"
+                   materialList="{water, chem, rock}"/>
+                   
+  </ElementRegions>
+
+  <Constitutive>
+    <CompressibleSinglePhaseFluid name="water"
+                                  defaultDensity="1000"
+                                  defaultViscosity="0.001"
+                                  referencePressure="0.0"
+                                  referenceDensity="1000"
+                                  compressibility="5e-20"
+                                  referenceViscosity="0.001"
+                                  viscosibility="0.0"/>
+
+    <PoreVolumeCompressibleSolid name="rock"
+                                 referencePressure="0.0"
+                                 compressibility="1e-9"/>
+
+    <EquilibratedChemicalFluid name="chem"
+                               databaseType="EQ36"
+                               databaseFile="thermo-databases/data0.shv"
+                               basisSpeciesNames="{Na+, Cl-, HCO3-, H+}"
+                               activityCoefModel="BDot"/>
+
+  </Constitutive>
+
+
+  <FieldSpecifications>
+    <FieldSpecification
+      name="permx"
+      component="0"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Region2/cb1"      
+      fieldName="permeability"
+      scale="1.0e-12"/>
+
+    <FieldSpecification
+      name="permy"
+      component="1"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Region2/cb1"
+      fieldName="permeability"
+      scale="1.0e-12"/>
+
+    <FieldSpecification
+      name="permz"
+      component="2"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Region2/cb1"
+      fieldName="permeability"
+      scale="1.0e-12"/>
+
+    <FieldSpecification
+      name="referencePorosity"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Region2/cb1"
+      fieldName="referencePorosity"
+      scale="0.1"/>
+
+    <FieldSpecification
+      name="initialPressure"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Region2/cb1"
+      fieldName="pressure"
+      scale="1e5"/>
+
+    <FieldSpecification
+      name="sourceTerm"
+      objectPath="ElementRegions/Region2/cb1"
+      fieldName="pressure"
+      scale="2e5"
+      setNames="{ source }"/>
+
+    <FieldSpecification
+      name="sinkTerm"
+      objectPath="ElementRegions/Region2/cb1"
+      fieldName="pressure"
+      scale="1e5"
+      setNames="{ sink }"/>
+    
+    <FieldSpecification name="temperature"
+               initialCondition="1"
+               setNames="{all}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="temperature"
+               scale="60.0"/>    
+
+    <FieldSpecification name="totalNa+"
+               initialCondition="1"
+               setNames="{all}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="0"           
+               scale="1.092"/>
+
+    <FieldSpecification name="totalCl-"
+               initialCondition="1"
+               setNames="{all}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="1"           
+               scale="1.12"/>
+
+    <FieldSpecification name="totalHCO3-"
+               initialCondition="1"
+               setNames="{all}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="2"           
+               scale="7e-3"/>
+
+    <FieldSpecification name="totalH+"
+               initialCondition="1"
+               setNames="{all}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="3"           
+               scale="7E-07"/>     
+
+
+    <FieldSpecification name="totalNa+2"
+               setNames="{source}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="0"           
+               scale="1.092"/>
+
+    <FieldSpecification name="totalCl-2"
+               setNames="{source}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="1"           
+               scale="1.12"/>
+
+    <FieldSpecification name="totalHCO3-2"
+               setNames="{source}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="2"           
+               scale="0.1161"/>
+
+    <FieldSpecification name="totalH+2"
+               setNames="{source}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="3"           
+               scale="1.13E-01"/>     
+
+    <FieldSpecification name="totalNa+3"
+               setNames="{sink}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="0"           
+               scale="1.092"/>
+
+    <FieldSpecification name="totalCl-3"
+               setNames="{sink}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="1"           
+               scale="1.12"/>
+
+    <FieldSpecification name="totalHCO3-3"
+               setNames="{sink}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="2"           
+               scale="7e-3"/>
+
+    <FieldSpecification name="totalH+3"
+               setNames="{sink}"
+               objectPath="ElementRegions/Region2/cb1"
+               fieldName="totalConcentration"
+               component="3"           
+               scale="7E-07"/>     
+
+
+    
+  </FieldSpecifications>
+
+  <Functions>
+  </Functions>
+
+  <Outputs>
+      <Silo name="siloOutput"/>
+
+      <Restart
+        name="sidreRestart"/>
+
+  </Outputs>
+
+
+</Problem>

@@ -8,6 +8,7 @@ CompositionalMultiphaseReservoir node :ref:`DATASTRUCTURE_CompositionalMultiphas
 CompositionalMultiphaseWell      node :ref:`DATASTRUCTURE_CompositionalMultiphaseWell`      
 EmbeddedSurfaceGenerator         node :ref:`DATASTRUCTURE_EmbeddedSurfaceGenerator`         
 FlowProppantTransport            node :ref:`DATASTRUCTURE_FlowProppantTransport`            
+GeochemicalModel                 node :ref:`DATASTRUCTURE_GeochemicalModel`                 
 Hydrofracture                    node :ref:`DATASTRUCTURE_Hydrofracture`                    
 LagrangianContact                node :ref:`DATASTRUCTURE_LagrangianContact`                
 LaplaceFEM                       node :ref:`DATASTRUCTURE_LaplaceFEM`                       

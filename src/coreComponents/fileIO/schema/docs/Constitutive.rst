@@ -11,6 +11,7 @@ CompositionalMultiphaseFluid          node         :ref:`XML_CompositionalMultip
 CompressibleSinglePhaseFluid          node         :ref:`XML_CompressibleSinglePhaseFluid`          
 Contact                               node         :ref:`XML_Contact`                               
 DamageLinearElasticIsotropic          node         :ref:`XML_DamageLinearElasticIsotropic`          
+EquilibratedChemicalFluid             node         :ref:`XML_EquilibratedChemicalFluid`             
 LinearElasticAnisotropic              node         :ref:`XML_LinearElasticAnisotropic`              
 LinearElasticIsotropic                node         :ref:`XML_LinearElasticIsotropic`                
 LinearElasticTransverseIsotropic      node         :ref:`XML_LinearElasticTransverseIsotropic`      

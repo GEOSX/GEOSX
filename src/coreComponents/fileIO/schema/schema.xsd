@@ -828,6 +828,7 @@ the relative residual norm satisfies:
 			<xsd:element name="CompositionalMultiphaseWell" type="CompositionalMultiphaseWellType" />
 			<xsd:element name="EmbeddedSurfaceGenerator" type="EmbeddedSurfaceGeneratorType" />
 			<xsd:element name="FlowProppantTransport" type="FlowProppantTransportType" />
+			<xsd:element name="GeochemicalModel" type="GeochemicalModelType" />
 			<xsd:element name="Hydrofracture" type="HydrofractureType" />
 			<xsd:element name="LagrangianContact" type="LagrangianContactType" />
 			<xsd:element name="LaplaceFEM" type="LaplaceFEMType" />
@@ -1001,6 +1002,36 @@ the relative residual norm satisfies:
 		<xsd:attribute name="logLevel" type="integer" default="0" />
 		<!--proppantSolverName => Name of the proppant transport solver to use in the flowProppantTransport solver-->
 		<xsd:attribute name="proppantSolverName" type="string" use="required" />
+		<!--targetRegions => Allowable regions that the solver may be applied to. Note that this does not indicate that the solver will be applied to these regions, only that allocation will occur such that the solver may be applied to these regions. The decision about what regions this solver will beapplied to rests in the EventManager.-->
+		<xsd:attribute name="targetRegions" type="string_array" use="required" />
+		<!--name => A name is required for any non-unique nodes-->
+		<xsd:attribute name="name" type="string" use="required" />
+	</xsd:complexType>
+	<xsd:complexType name="GeochemicalModelType">
+		<xsd:choice minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="LinearSolverParameters" type="LinearSolverParametersType" maxOccurs="1" />
+			<xsd:element name="NonlinearSolverParameters" type="NonlinearSolverParametersType" maxOccurs="1" />
+		</xsd:choice>
+		<!--cflFactor => Factor to apply to the `CFL condition <http://en.wikipedia.org/wiki/Courant-Friedrichs-Lewy_condition>`_ when calculating the maximum allowable time step. Values should be in the interval (0,1] -->
+		<xsd:attribute name="cflFactor" type="real64" default="0.5" />
+		<!--discretization => Name of discretization object to use for this solver.-->
+		<xsd:attribute name="discretization" type="string" use="required" />
+		<!--fluidNames => Names of fluid constitutive models for each region.-->
+		<xsd:attribute name="fluidNames" type="string_array" use="required" />
+		<!--initialDt => Initial time-step value required by the solver to the event manager.-->
+		<xsd:attribute name="initialDt" type="real64" default="1e+99" />
+		<!--inputFluxEstimate => Initial estimate of the input flux used only for residual scaling. This should be essentially equivalent to the input flux * dt.-->
+		<xsd:attribute name="inputFluxEstimate" type="real64" default="1" />
+		<!--logLevel => Log level-->
+		<xsd:attribute name="logLevel" type="integer" default="0" />
+		<!--meanPermCoeff => Coefficient to move between harmonic mean (1.0) and arithmetic mean (0.0) for the calculation of permeability between elements.-->
+		<xsd:attribute name="meanPermCoeff" type="real64" default="1" />
+		<!--outputSpeciesFileName => Output species to file-->
+		<xsd:attribute name="outputSpeciesFileName" type="string" default="" />
+		<!--reactiveFluidNames => Name of chemical system constitutive objects to use each target region.-->
+		<xsd:attribute name="reactiveFluidNames" type="string_array" use="required" />
+		<!--solidNames => Names of solid constitutive models for each region.-->
+		<xsd:attribute name="solidNames" type="string_array" use="required" />
 		<!--targetRegions => Allowable regions that the solver may be applied to. Note that this does not indicate that the solver will be applied to these regions, only that allocation will occur such that the solver may be applied to these regions. The decision about what regions this solver will beapplied to rests in the EventManager.-->
 		<xsd:attribute name="targetRegions" type="string_array" use="required" />
 		<!--name => A name is required for any non-unique nodes-->
@@ -1516,6 +1547,7 @@ the relative residual norm satisfies:
 			<xsd:element name="CompressibleSinglePhaseFluid" type="CompressibleSinglePhaseFluidType" />
 			<xsd:element name="Contact" type="ContactType" />
 			<xsd:element name="DamageLinearElasticIsotropic" type="DamageLinearElasticIsotropicType" />
+			<xsd:element name="EquilibratedChemicalFluid" type="EquilibratedChemicalFluidType" />
 			<xsd:element name="LinearElasticAnisotropic" type="LinearElasticAnisotropicType" />
 			<xsd:element name="LinearElasticIsotropic" type="LinearElasticIsotropicType" />
 			<xsd:element name="LinearElasticTransverseIsotropic" type="LinearElasticTransverseIsotropicType" />
@@ -1674,6 +1706,22 @@ the relative residual norm satisfies:
 		<xsd:attribute name="defaultShearModulus" type="real64" default="-1" />
 		<!--defaultYoungsModulus => Elastic Young's Modulus.-->
 		<xsd:attribute name="defaultYoungsModulus" type="real64" default="-1" />
+		<!--name => A name is required for any non-unique nodes-->
+		<xsd:attribute name="name" type="string" use="required" />
+	</xsd:complexType>
+	<xsd:complexType name="EquilibratedChemicalFluidType">
+		<!--activityCoefModel => Activity coefficient model-->
+		<xsd:attribute name="activityCoefModel" type="string" use="required" />
+		<!--basisSpeciesNames => Basis speciese name list-->
+		<xsd:attribute name="basisSpeciesNames" type="string_array" use="required" />
+		<!--databaseFile => Thermodynamic database file name-->
+		<xsd:attribute name="databaseFile" type="string" use="required" />
+		<!--databaseType => Thermodynamic database-->
+		<xsd:attribute name="databaseType" type="string" use="required" />
+		<!--logActH2O => logActH2O-->
+		<xsd:attribute name="logActH2O" type="real64" default="-0.0165676" />
+		<!--logFO2g => logFO2g-->
+		<xsd:attribute name="logFO2g" type="real64" default="-0.7" />
 		<!--name => A name is required for any non-unique nodes-->
 		<xsd:attribute name="name" type="string" use="required" />
 	</xsd:complexType>

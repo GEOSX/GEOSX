@@ -497,11 +497,13 @@ real64 SolverBase::NonlinearImplicitStep( real64 const & time_n,
       }
 
       // do line search in case residual has increased
-      if( m_nonlinearSolverParameters.m_lineSearchAction != NonlinearSolverParameters::LineSearchAction::None
+      /* disable line-search temporarily
+         if( m_nonlinearSolverParameters.m_lineSearchAction != NonlinearSolverParameters::LineSearchAction::None
           && residualNorm > lastResidual )
-      {
-        residualNorm = lastResidual;
-        bool lineSearchSuccess = LineSearch( time_n,
+         if( residualNorm > lastResidual )
+         {
+         residualNorm = lastResidual;
+         bool lineSearchSuccess = LineSearch( time_n,
                                              stepDt,
                                              cycleNumber,
                                              domain,
@@ -512,8 +514,8 @@ real64 SolverBase::NonlinearImplicitStep( real64 const & time_n,
                                              scaleFactor,
                                              residualNorm );
 
-        if( !lineSearchSuccess )
-        {
+         if( !lineSearchSuccess )
+         {
           if( m_nonlinearSolverParameters.m_lineSearchAction == NonlinearSolverParameters::LineSearchAction::Attempt )
           {
             GEOSX_LOG_LEVEL_RANK_0( 1, "        Line search failed to produce reduced residual. Accepting iteration." );
@@ -524,8 +526,9 @@ real64 SolverBase::NonlinearImplicitStep( real64 const & time_n,
             GEOSX_LOG_LEVEL_RANK_0( 1, "        Line search failed to produce reduced residual. Exiting Newton Loop." );
             break;
           }
-        }
-      }
+         }
+         }
+       */
 
       // if using adaptive Krylov tolerance scheme, update tolerance.
       LinearSolverParameters::Krylov & krylovParams = m_linearSolverParameters.get().krylov;
