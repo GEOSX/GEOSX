@@ -34,10 +34,30 @@ namespace geosx
 namespace constitutive
 {
 
+/**
+ * @class DamageSpectralUpdates
+ *
+ * Class to provide adjustments to linear elastic isotropic material updates, accounting for a damage parameter and Spectral Decomposition. They may be
+ * called from a kernel function.
+ */
+
 template< typename UPDATE_BASE >
 class DamageSpectralUpdates : public DamageUpdates< UPDATE_BASE >
 {
 public:
+
+    /**
+   * @brief Constructor
+   * @tparam PARAMS
+   * @param[in] inputDamage The qp damage values for the element.
+   * @param[in] inputStrainEnergyDensity The qp strain energy density values for the element.
+   * @param[in] inputLengthScale The material regularization lenght.
+   * @param[in] inputCriticalFractureEnergy The material critical fracture nergy release rate.
+   * @param[in] inputcriticalStrainEnergy The material critical strain energy.
+   * @param[in] baseParams Other parameters from base class.                   
+   */
+
+  
   template< typename ... PARAMS >
   DamageSpectralUpdates( arrayView2d< real64 > const & inputDamage,
                          arrayView2d< real64 > const & inputStrainEnergyDensity,
@@ -64,7 +84,12 @@ public:
 
   #if LORENTZ_SPECTRAL
 
-  //Lorentz type Degradation Function
+  /**
+   * @brief Lorentz type Degradation Function. Serves to degrade the stresses based on the damage variable. 
+   * @param[in] k Element index.
+   * @param[in] q Quadrature Point index.
+   * @return Degradation Function value.
+   */
 
   GEOSX_FORCE_INLINE
   GEOSX_HOST_DEVICE
@@ -83,6 +108,7 @@ public:
 
   GEOSX_FORCE_INLINE
   GEOSX_HOST_DEVICE
+  //Derivative of Degradation Function.
   virtual real64 GetDegradationDerivative( real64 const d ) const override
   {
     //std::cout<<"Lorentz derivative"<<std::endl;
@@ -97,6 +123,7 @@ public:
 
   GEOSX_FORCE_INLINE
   GEOSX_HOST_DEVICE
+  //Second Derivative of Degradation Function.
   virtual real64 GetDegradationSecondDerivative( real64 const d ) const override
   {
     //std::cout<<"Lorentz 2nd derivative"<<std::endl;
@@ -112,6 +139,12 @@ public:
   #else
   //Quadratic Degradation
 
+/**
+  * @brief Quadratic type Degradation Function. Serves to degrade the stresses based on the damage variable. 
+  * @param[in] k Element index.
+  * @param[in] q Quadrature Point index.
+  * @return Degradation Function value.
+  */  
   GEOSX_FORCE_INLINE
   GEOSX_HOST_DEVICE
   real64 GetDegradationValue( localIndex const k,
@@ -120,13 +153,15 @@ public:
     return (1 - m_damage( k, q ))*(1 - m_damage( k, q ));
   }
 
+  //Degradation Function Derivative.
   GEOSX_FORCE_INLINE
   GEOSX_HOST_DEVICE
   real64 GetDegradationDerivative( real64 const d ) const override
   {
     return -2*(1 - d);
   }
-
+  
+  //Degradation Function Second Derivative.
   GEOSX_FORCE_INLINE
   GEOSX_HOST_DEVICE
   real64 GetDegradationSecondDerivative( real64 const d ) const override
@@ -136,7 +171,11 @@ public:
   }
   #endif
 
-  //Modified GetStiffness function to account for Spectral Decomposition of Stresses.
+  /**
+   * @copydoc SolidBase::GetStiffness
+   *
+   *Modified GetStiffness function to account for Spectral Decomposition of Stresses.
+   */
   GEOSX_HOST_DEVICE inline
   virtual void GetStiffness( localIndex const k,
                              localIndex const q,
@@ -191,6 +230,14 @@ public:
   }
 
   //With Spectral Decomposition, only the Positive Part of the SED drives damage growth
+  /** 
+   * @brief This Function computes the part of the SED that drives Damage in the Damage Equation of a Damage Mechanics (or PF Fracture) Model.
+   * @param[in] k Element index.
+   * @param[in] q Quadrature Point index.
+   * @return Active SED.
+   *
+   * Obs: A history approach is used to keep the active SED nondecreasing.
+   */
   GEOSX_HOST_DEVICE
   virtual real64 calculateActiveStrainEnergyDensity( localIndex const k,
                                                      localIndex const q ) const override final
@@ -231,6 +278,11 @@ public:
   }
 
   //Modified getStress
+ /**
+   * @copydoc SolidBase::GetStress
+   *
+   *Modified GetStress function to account for Spectral Decomposition of Stresses.
+   */
   GEOSX_HOST_DEVICE
   virtual void getStress( localIndex const k,
                           localIndex const q,
@@ -294,6 +346,12 @@ public:
 
 };
 
+/**
+ * @class DamageSpectral
+ *
+ * Class to provide a linear elastic isotropic material response, with a damage parameter, and Spectral Decomposition of Stesses.
+ */
+
 template< typename BASE >
 class DamageSpectral : public Damage< BASE >
 {
@@ -301,7 +359,6 @@ public:
 
   /// @typedef Alias for LinearElasticIsotropicUpdates
   using KernelWrapper = DamageSpectralUpdates< typename BASE::KernelWrapper >;
-
   using Damage< BASE >::m_damage;
   using Damage< BASE >::m_strainEnergyDensity;
   using Damage< BASE >::m_criticalFractureEnergy;

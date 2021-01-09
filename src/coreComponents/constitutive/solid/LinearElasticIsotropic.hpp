@@ -343,7 +343,6 @@ public:
    * Default Destructor
    */
   virtual ~LinearElasticIsotropic() override;
-
   /**
    * @name Static Factory Catalog members and functions
    */

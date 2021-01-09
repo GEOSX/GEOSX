@@ -33,7 +33,12 @@
 namespace geosx
 {
 
-//get the positive part only of tensor T using spectral split
+/**
+ *@brief Get the positive part only of a symmetric, 3x3, tensor T using spectral split. The eigenvectors and eigenvalues of T must be passed in.
+ *@param[in] eigs Array of eigenvalues of T.
+ *@param[in] eigevecs 3x3 array with the eigenvectors of T as rows.
+ *@param[out] positivePart Array that stores the positive part of T in Voigt Notation.
+ */
 GEOSX_HOST_DEVICE inline
 void PositivePartOfTensor( real64 (& eigs)[3], real64 (& eigvecs)[3][3], real64 (& positivePart)[6] )
 {
@@ -45,7 +50,12 @@ void PositivePartOfTensor( real64 (& eigs)[3], real64 (& eigvecs)[3][3], real64 
   LvArray::tensorOps::Rij_eq_AikSymBklAjl< 3 >( positivePart, eigvecs, positiveEigs );
 }
 
-//get the negative part only of tensor T using spectral split
+/**
+ *@brief Get the negative part only of a symmetric, 3x3, tensor T using spectral split. The eigenvectors and eigenvalues of T must be passed in.
+ *@param[in] eigs Array of eigenvalues of T.
+ *@param[in] eigevecs 3x3 array with the eigenvectors of T as rows.
+ *@param[out] negativePart Array that stores the negative part of T in Voigt Notation.
+ */
 GEOSX_HOST_DEVICE inline
 void NegativePartOfTensor( real64 (& eigs)[3], real64 (& eigvecs)[3][3], real64 (& negativePart)[6] )
 {
@@ -57,7 +67,12 @@ void NegativePartOfTensor( real64 (& eigs)[3], real64 (& eigvecs)[3][3], real64 
   LvArray::tensorOps::Rij_eq_AikSymBklAjl< 3 >( negativePart, eigvecs, negativeEigs );
 }
 
-//implements the : operator between two second-order tensors in voigt form
+/**
+ *@brief Implements the : (double contraction) operator between two symmetric, 3x3, second-order tensors in voigt form.
+ *@param[in] A First operand in Voigt notation.
+ *@param[in] B Second operand in Voigt notation.
+ *@return Result of the operation.
+ */
 GEOSX_HOST_DEVICE inline
 real64 doubleContraction( real64 (& A)[6], real64 (& B)[6] )
 {
@@ -76,13 +91,20 @@ real64 doubleContraction( real64 (& A)[6], real64 (& B)[6] )
   return ans;
 }
 
-//compute strain from stresses using SSLE
+/**
+ *@brief Compute strain from stresses using SSLE.
+ *@tparam USD
+ *@param[in] stress The stress tensor.
+ *@param[in] K The bulk modulus.
+ *@param[in] mu The shear modulus.
+ *@param[out] strain The strain tensor in Voigt notaion.
+ */
 template< int USD >
 GEOSX_HOST_DEVICE inline
 void recoverStrainFromStress( arraySlice1d< real64 const, USD > const & stress,
-                              real64 (& strain)[6],
                               real64 const K,
-                              real64 const mu )
+                              real64 const mu,
+			      real64 (& strain)[6])
 {
   real64 E = 9*K*mu / (3*K + mu);
   real64 nu = (3*K - 2*mu) / (6*K + 2*mu);
@@ -94,7 +116,11 @@ void recoverStrainFromStress( arraySlice1d< real64 const, USD > const & stress,
   strain[5] = (1 + nu)*stress[5]/E;
 }
 
-//heaviside function, return 1 for positive, 0 for negatives and 0.5 if argument is zero or very close
+/**
+ *@brief Heaviside function, return 1 for positive, 0 for negatives and 0.5 if argument is zero or very close.
+ *@param[in] x The argument (real number).
+ *@return The result.
+ */
 GEOSX_HOST_DEVICE inline
 real64 heaviside( real64 x )
 {
@@ -114,7 +140,11 @@ real64 heaviside( real64 x )
   return 1000000;
 }
 
-//computes a tensor that enters the calculation of the Jacobian of the Spectral Split - check reference paper for more details
+/**
+ *@brief Computes a tensor that enters the calculation of the Jacobian of the Spectral Split - check reference paper for more details.
+ *@param[in] eigvector One of the eigenvectors of the tensor being studied.
+ *@param[out] Q The 4th-order tensor that results of the operation, in Voigt form.
+ */
 GEOSX_HOST_DEVICE inline
 void QTensor( real64 const (&eigvector)[3], real64 (& Q)[6][6] )
 {
@@ -129,7 +159,12 @@ void QTensor( real64 const (&eigvector)[3], real64 (& Q)[6][6] )
   }
 }
 
-//computes another tensor that enters the calculation of the Jacobian of the Spectral Split - check reference paper for more details
+/**
+ *@brief Computes another tensor that enters the calculation of the Jacobian of the Spectral Split - check reference paper for more details.
+ *@param[in] eigvec1 One of the eigenvectors of the tensor being studied.
+ *@param[in] eigvec2 Another eigenvector.
+ *@param[out] G The 4th-order tensor that results of the operation, in Voigt form.
+ */
 GEOSX_HOST_DEVICE inline
 void GTensor( real64 (& eigvec1)[3], real64 (& eigvec2)[3], real64 (& G)[6][6] )
 {
@@ -177,9 +212,8 @@ void GTensor( real64 (& eigvec1)[3], real64 (& eigvec2)[3], real64 (& G)[6][6] )
   G[5][5] = M1[0]*M2[1] + M1[5]*M2[5];
 }
 
-//this function takes the eigenvectors and eigenvalues of a tensor and builds the associated positive projector
 /**
- *@brief This function takes the eigen-decomposition of a tensor and builds the 4th Positive Projector associated with it
+ *@brief This function takes the eigen-decomposition of a tensor and builds the 4th order Positive Projector associated with it
  *@param[in] eigs array with the 3 eigenvalues of a tensor
  *@param[in] eigvecs 3x3 array with the 3 eigenvectors of a tensor (in rows)
  *@param[out] PositiveProjector empty array that will be populated with the voigt form of the Positive Projector
@@ -267,6 +301,17 @@ void PositiveProjectorTensor( real64 (& eigs)[3], real64 (& eigvecs)[3][3], real
 }
 
 //This is the negative projector, check the documentation of the positive projector for more details.
+/**
+ *@brief This function takes the eigen-decomposition of a tensor and builds the 4th order Negative Projector associated with it
+ *@param[in] eigs array with the 3 eigenvalues of a tensor
+ *@param[in] eigvecs 3x3 array with the 3 eigenvectors of a tensor (in rows)
+ *@param[out] NegativeProjector empty array that will be populated with the voigt form of the Negative Projector
+ *
+ * Given a symmetric tensor T, the negative projector is defined as P- = variation(T-)/variation(T). That is, if we
+ * define the function f- to be the negative spectral part of T, then, P- is just the variational derivative of f-.
+ * Note that we don't take the tensor T as a parameter, only its eigenvectors and eigenvalues.
+ *
+ */
 GEOSX_HOST_DEVICE inline
 void NegativeProjectorTensor( real64 (& eigs)[3], real64 (& eigvecs)[3][3], real64 (& NegativeProjector)[6][6] )
 {
@@ -344,7 +389,12 @@ void NegativeProjectorTensor( real64 (& eigs)[3], real64 (& eigvecs)[3][3], real
 
 }
 
-//this function tests the GetStiffness function from DamageSpectral.hpp
+/**
+ *@brief This function tests the GetStiffness function from DamageSpectral.hpp.
+ *@param[in] c 4th order constitutive tensor in Voigt form.
+ *@param[in] strain Strain tensor in Voigt form.
+ *@param[in] damage Scalar damage value.
+ */
 GEOSX_HOST_DEVICE inline
 void GetStiffnessTest( real64 (& c)[6][6], real64 (& strain)[6], real64 damage )
 {
@@ -389,7 +439,11 @@ void GetStiffnessTest( real64 (& c)[6][6], real64 (& strain)[6], real64 damage )
 
 }
 
-//this function tests the GetStress function of DamageSpectral.hpp
+/**
+ *@brief This function tests the GetStress function from DamageSpectral.hpp.
+ *@param[in] strain Strain tensor in Voigt form.
+ *@param[in] stress Stress tensor in Voigt form.
+ */
 GEOSX_HOST_DEVICE inline
 void getTestStress( real64 (& strain)[6], real64 (& stress)[6] )
 {
