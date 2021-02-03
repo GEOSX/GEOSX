@@ -16,10 +16,13 @@
         maxTimeStepCuts="10"
         lineSearchAction="None"
         newtonMaxIter="20"/>
-      <!-- Note that the direct solver is quite slow -->
-      <!-- This block will be updated when Hypre becomes the default  -->
       <LinearSolverParameters
-        solverType="direct"/>
+        solverType="fgmres"
+        preconditionerType="mgr"
+        krylovTol="1e-4"
+        krylovAdaptiveTol="1"
+        krylovWeakestTol="1e-2"/>
+
     </CompositionalMultiphaseReservoir>
 
     <CompositionalMultiphaseFlow
@@ -81,7 +84,7 @@
         referenceElevation="3710.03"    
         targetBHP="6.8948e9"
         targetTotalRate="1e-3"
-        injectionStream="{ 0.0, 0.0, 1.0 }"/>
+        injectionStream="{ 0.0, 1.0 }"/>
     </CompositionalMultiphaseWell>
   </Solvers>
 
@@ -203,7 +206,9 @@
 
   <!-- SPHINX_TUT_DEAD_OIL_BOTTOM_SPE10_EVENTS -->
   <Events
-    maxTime="1.5e7">
+    maxTime="2e6">
+    <!-- Increase maxTime to 1e7 or 1.5e7 to see more water -->
+    <!-- propagating in the domain -->
 
     <PeriodicEvent
       name="vtk"
@@ -318,17 +323,17 @@
     <BlackOilFluid
       name="fluid"
       fluidType="DeadOil"
-      phaseNames="{ oil, gas, water }"
-      surfaceDensities="{ 848.9, 0.9907, 1025.2 }"
-      componentMolarWeight="{ 114e-3, 16e-3, 18e-3 }"
-      tableFiles="{ pvdo.txt, pvdg.txt, pvtw.txt }"/>
+      phaseNames="{ oil, water }"
+      surfaceDensities="{ 848.9, 1025.2 }"
+      componentMolarWeight="{ 114e-3, 18e-3 }"
+      tableFiles="{ pvdo.txt, pvtw.txt }"/>
 
     <BrooksCoreyRelativePermeability
       name="relperm"
-      phaseNames="{ oil, gas, water }"
-      phaseMinVolumeFraction="{ 0.2, 0.0, 0.2 }"
-      phaseRelPermExponent="{ 2.0, 2.0, 2.0 }"
-      phaseRelPermMaxValue="{ 0.1, 1.0, 1.0 }"/>
+      phaseNames="{ oil, water }"
+      phaseMinVolumeFraction="{ 0.2, 0.2 }"
+      phaseRelPermExponent="{ 2.0, 2.0 }"
+      phaseRelPermMaxValue="{ 1.0, 1.0 }"/>
 
     <PoreVolumeCompressibleSolid
       name="rock"
@@ -357,21 +362,12 @@
       scale="1.0"/>
 
     <FieldSpecification
-      name="initialComposition_gas"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/reservoir/DEFAULT_HEX"
-      fieldName="globalCompFraction"
-      component="1"
-      scale="0.0"/>
-
-    <FieldSpecification
       name="initialComposition_water"
       initialCondition="1"
       setNames="{ all }"
       objectPath="ElementRegions/reservoir/DEFAULT_HEX"
       fieldName="globalCompFraction"
-      component="2"
+      component="1"
       scale="0.0"/>
   </FieldSpecifications>
   <!-- SPHINX_TUT_DEAD_OIL_BOTTOM_SPE10_FIELD_SPECS_END -->

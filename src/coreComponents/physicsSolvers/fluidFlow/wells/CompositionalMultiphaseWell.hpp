@@ -396,6 +396,9 @@ private:
   /// flag indicating whether local (cell-wise) chopping of negative compositions is allowed
   integer m_allowCompDensChopping;
 
+  /// current time step size (used in the normalizer of the well residual)
+  real64 m_currentDt;
+
   /// index of the target phase, used to impose the phase rate constraint
   localIndex m_targetPhaseIndex;
 

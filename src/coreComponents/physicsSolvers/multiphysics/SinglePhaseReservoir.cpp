@@ -24,7 +24,8 @@
 #include "SinglePhaseReservoir.hpp"
 
 #include "common/TimingMacros.hpp"
-#include "physicsSolvers/fluidFlow/SinglePhaseBase.hpp"
+#include "physicsSolvers/fluidFlow/SinglePhaseFVM.hpp"
+#include "physicsSolvers/fluidFlow/SinglePhaseHybridFVM.hpp"
 #include "physicsSolvers/fluidFlow/wells/SinglePhaseWell.hpp"
 #include "physicsSolvers/fluidFlow/SinglePhaseFVM.hpp"
 
@@ -41,6 +42,23 @@ SinglePhaseReservoir::SinglePhaseReservoir( const string & name,
 
 SinglePhaseReservoir::~SinglePhaseReservoir()
 {}
+
+void SinglePhaseReservoir::postProcessInput()
+{
+  ReservoirSolverBase::postProcessInput();
+  if( dynamic_cast< SinglePhaseHybridFVM const * >(m_flowSolver) )
+  {
+    m_linearSolverParameters.get().mgr.strategy = "SinglePhaseReservoirHybridFVM";
+  }
+  else if( dynamic_cast< SinglePhaseFVM< SinglePhaseBase > const * >(m_flowSolver) )
+  {
+    m_linearSolverParameters.get().mgr.strategy = "SinglePhaseReservoirFVM";
+  }
+  else
+  {
+    GEOSX_ERROR( "Unknown flow solver type for " << m_flowSolverName );
+  }
+}
 
 void SinglePhaseReservoir::setupSystem( DomainPartition & domain,
                                         DofManager & dofManager,

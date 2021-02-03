@@ -12,17 +12,19 @@
       targetRegions="{ reservoir, wellRegion1, wellRegion2, wellRegion3, wellRegion4, wellRegion5, wellRegion6, wellRegion7, wellRegion8, wellRegion9, wellRegion10, wellRegion11, wellRegion12 }">
       <NonlinearSolverParameters
         newtonTol="1.0e-4"
-        newtonMaxIter="10"
+        newtonMaxIter="20"
         newtonMinIter="1"
         dtCutIterLimit="0.9"
         dtIncIterLimit="0.6"
         timestepCutFactor="0.1"
         maxTimeStepCuts="10"
         lineSearchAction="None"/>
-      <!-- Note that the direct solver is going to be quite slow -->
-      <!-- This block will be updated when Hypre becomes the default  -->
       <LinearSolverParameters
-        solverType="direct"/>
+        solverType="fgmres"
+        preconditionerType="mgr"
+        krylovTol="1e-4"
+        krylovAdaptiveTol="1"
+        krylovWeakestTol="1e-2"/>
     </CompositionalMultiphaseReservoir>
 
     <CompositionalMultiphaseFlow
@@ -85,7 +87,7 @@
         referenceElevation="20" 
         targetBHP="9e7"
         targetTotalRate="8e-3"
-        injectionStream="{ 0.0, 0.0, 1.0 }"/>
+        injectionStream="{ 0.0, 1.0 }"/>
       <WellControls
         name="wellControls6"
         type="injector"
@@ -93,7 +95,7 @@
         referenceElevation="20" 
         targetBHP="9e7"
         targetTotalRate="8e-3"
-        injectionStream="{ 0.0, 0.0, 1.0 }"/>
+        injectionStream="{ 0.0, 1.0 }"/>
       <WellControls
         name="wellControls7"
         type="injector"
@@ -101,7 +103,7 @@
         referenceElevation="40" 
         targetBHP="9e7"
         targetTotalRate="8e-3"
-        injectionStream="{ 0.0, 0.0, 1.0 }"/>
+        injectionStream="{ 0.0, 1.0 }"/>
       <WellControls
         name="wellControls8"
         type="injector"
@@ -109,7 +111,7 @@
         referenceElevation="20" 
         targetBHP="9e7"
         targetTotalRate="8e-3"
-        injectionStream="{ 0.0, 0.0, 1.0 }"/>
+        injectionStream="{ 0.0, 1.0 }"/>
       <WellControls
         name="wellControls9"
         type="injector"
@@ -117,7 +119,7 @@
         referenceElevation="20" 
         targetBHP="9e7"
         targetTotalRate="8e-3"
-        injectionStream="{ 0.0, 0.0, 1.0 }"/>
+        injectionStream="{ 0.0, 1.0 }"/>
       <WellControls
         name="wellControls10"
         type="injector"
@@ -125,7 +127,7 @@
         referenceElevation="20" 
         targetBHP="9e7"
         targetTotalRate="8e-3"
-        injectionStream="{ 0.0, 0.0, 1.0 }"/>
+        injectionStream="{ 0.0, 1.0 }"/>
       <WellControls
         name="wellControls11"
         type="injector"
@@ -133,7 +135,7 @@
         referenceElevation="20" 
         targetBHP="9e7"
         targetTotalRate="8e-3"
-        injectionStream="{ 0.0, 0.0, 1.0 }"/>
+        injectionStream="{ 0.0, 1.0 }"/>
       <WellControls
         name="wellControls12"
         type="injector"
@@ -141,19 +143,21 @@
         referenceElevation="20"
         targetBHP="9e7"
         targetTotalRate="8e-3"
-        injectionStream="{ 0.0, 0.0, 1.0 }"/>
+        injectionStream="{ 0.0, 1.0 }"/>
     </CompositionalMultiphaseWell>
   </Solvers>
 
   <!-- SPHINX_TUT_DEAD_OIL_EGG_SOLVERS_END -->
   <!-- SPHINX_TUT_DEAD_OIL_EGG_MESH -->
   <Mesh>
+
     <PAMELAMeshGenerator
       name="mesh"
       file="../../../../../../../GEOSXDATA/DataSets/Egg/egg.msh"
       fieldsToImport="{ PERM }"
       fieldNamesInGEOSX="{ permeability }"/>
 
+    
     <InternalWell
       name="wellProducer1"
       wellRegionName="wellRegion1"
@@ -235,7 +239,7 @@
         distanceFromHead="2"/>
       <Perforation
         name="producer3_perf2"
-        distanceFromHead="8"/>
+        distanceFromHead="6"/>
       <Perforation
         name="producer3_perf3"
         distanceFromHead="10"/>
@@ -592,25 +596,25 @@
 
     <PeriodicEvent
       name="timeHistoryCollection1"
-      timeFrequency="4e5"
+      timeFrequency="1e6"
       targetExactTimestep="1"
       target="/Tasks/wellRateCollection1" />
 
     <PeriodicEvent
       name="timeHistoryCollection2"
-      timeFrequency="4e5"
+      timeFrequency="1e6"
       targetExactTimestep="1"
       target="/Tasks/wellRateCollection2" />
 
     <PeriodicEvent
       name="timeHistoryCollection3"
-      timeFrequency="4e5"
+      timeFrequency="1e6"
       targetExactTimestep="1"
       target="/Tasks/wellRateCollection3" />
 
     <PeriodicEvent
       name="timeHistoryCollection4"
-      timeFrequency="4e5"
+      timeFrequency="1e6"
       targetExactTimestep="1"
       target="/Tasks/wellRateCollection4" />
     
@@ -690,17 +694,17 @@
     <BlackOilFluid
       name="fluid"
       fluidType="DeadOil"
-      phaseNames="{ oil, gas, water }"
-      surfaceDensities="{ 848.9, 0.9907, 1025.2 }"
-      componentMolarWeight="{ 114e-3, 16e-3, 18e-3 }"
-      tableFiles="{ pvdo.txt, pvdg.txt, pvtw.txt }"/>
+      phaseNames="{ oil, water }"
+      surfaceDensities="{ 848.9, 1025.2 }"
+      componentMolarWeight="{ 114e-3, 18e-3 }"
+      tableFiles="{ pvdo.txt, pvtw.txt }"/>
 
     <BrooksCoreyRelativePermeability
       name="relperm"
-      phaseNames="{ oil, gas, water }"
-      phaseMinVolumeFraction="{ 0.1, 0.0, 0.2 }"
-      phaseRelPermExponent="{ 4.0, 2.0, 3.0 }"
-      phaseRelPermMaxValue="{ 0.8, 1.0, 0.75 }"/>
+      phaseNames="{ oil, water }"
+      phaseMinVolumeFraction="{ 0.1, 0.2 }"
+      phaseRelPermExponent="{ 4.0, 3.0 }"
+      phaseRelPermMaxValue="{ 0.8, 0.75 }"/>
 
     <PoreVolumeCompressibleSolid
       name="rock"
@@ -734,16 +738,7 @@
       objectPath="ElementRegions/reservoir/DEFAULT_HEX"
       fieldName="globalCompFraction"
       component="0"
-      scale="1.0"/>
-
-    <FieldSpecification
-      name="initialComposition_gas"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/reservoir/DEFAULT_HEX"
-      fieldName="globalCompFraction"
-      component="1"
-      scale="0.0"/>
+      scale="0.9"/>
 
     <FieldSpecification
       name="initialComposition_water"
@@ -751,8 +746,8 @@
       setNames="{ all }"
       objectPath="ElementRegions/reservoir/DEFAULT_HEX"
       fieldName="globalCompFraction"
-      component="2"
-      scale="0.0"/>
+      component="1"
+      scale="0.1"/>
   </FieldSpecifications>
   <!-- SPHINX_TUT_DEAD_OIL_EGG_FIELD_SPECS_END -->
   

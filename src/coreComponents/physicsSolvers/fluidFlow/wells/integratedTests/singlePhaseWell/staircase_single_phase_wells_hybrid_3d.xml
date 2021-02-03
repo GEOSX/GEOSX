@@ -12,8 +12,8 @@
         lineSearchAction="None"
         newtonMaxIter="40"/>
       <LinearSolverParameters
-        solverType="direct"
-        directParallel="0"
+        solverType="fgmres"
+	preconditionerType="mgr"
         logLevel="0"/>
     </SinglePhaseReservoir>
 
