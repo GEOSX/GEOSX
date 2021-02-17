@@ -10,6 +10,8 @@ set(testSources
     testH1_Wedge_Lagrange1_Gauss6.cpp
     testH1_Pyramid_Lagrange1_Gauss5.cpp
     testH1_TriangleFace_Lagrange1_Gauss1.cpp
+    testQ3_Hexahedron_Lagrange_GaussLobatto.cpp
+    testQ5_Hexahedron_Lagrange_GaussLobatto.cpp
    )
 
 set( dependencyList gtest )
@@ -42,7 +44,7 @@ foreach(test ${testSources})
                         OUTPUT_DIR ${TEST_OUTPUT_DIRECTORY}
                         DEPENDS_ON ${dependencyList} )
 
-    blt_add_test( NAME ${test_name} 
+    blt_add_test( NAME ${test_name}
                   COMMAND ${test_name}
                   )
 
@@ -54,5 +56,5 @@ endforeach()
 
 if ( ENABLE_CUDA )
 #blt_add_target_compile_flags( TO testShapeFunctionKernel
-#                              FLAGS "--maxrregcount=64") 
+#                              FLAGS "--maxrregcount=64")
 endif()
