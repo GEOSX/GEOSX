@@ -9,7 +9,7 @@ Before jumping to the installation process, we want to first address some freque
 Frequently Asked Questions
 ==========================
 
-Does GEOSX have a graphical user interface?:
+Does GEOSX have a graphical user interface?
 ------------------------------------------------
 Given the focus on rapid development and HPC environments, GEOSX does not have a graphical user interface.
 This is consistent with many other high performance computing packages, but we recognize it can be a deal-breaker for certain users.
@@ -22,14 +22,14 @@ This may be done in a terminal of your local machine or by submitting a job to a
 The resulting output files can then be visualized by any number of graphical visualization programs (typically `VisIt <https://wci.llnl.gov/simulation/computer-codes/visit/>`_ or `paraview <https://www.paraview.org/>`_).
 Thus, while GEOSX is GUI free, the typical workflow is not.
 
-Do I need to be a code developer to use GEOSX?:
+Do I need to be a code developer to use GEOSX?
 ------------------------------------------------
 For the moment, most users will
 need to download and compile the code from source, which we readily admit this requires
 a certain level of development expertise.  We try to make this process as easy as
 possible, and we are working on additional deployment options to make this process easier.  Once installed, however, our goal is to make GEOSX accessible to developers and non-developers alike.  Our target audience includes engineers and scientists who want to solve tough application problems, but could care less about the insides of the tool.  For those of you who *are* interested in scientific computing, however, GEOSX is an open source project and we welcome external contributions.
 
-What are the system requirements?:
+What are the system requirements?
 ------------------------------------------------
 GEOSX is primarily written in C++, with a focus on standards compliance and platform-to-platform portability.
 It is designed to run on everything from commodity laptops to the world's most powerful supercomputers.
@@ -39,7 +39,7 @@ We do have developers working in Windows environments, but they use a Virtual Ma
 In the instructions below, we assume you have access to fairly standard development tools.
 Using advanced features of GEOSX, like GPU-acceleration, will of course introduce additional hardware and software requirements.
 
-Help, I get errors while trying to download/compile/run!:
+Help, I get errors while trying to download/compile/run!
 ---------------------------------------------------------
 Unfortunately, no set of instructions is foolproof.  It is simply impossible to anticipate every system configuration or user.  If you run into problems during the installation, we recommend the following five-step process:
 
@@ -57,11 +57,9 @@ Repository Organization
 ==============================
 The source for GEOSX and related tools are hosted on `Github <https://github.com>`_.
 We use `Git workflows <https://git-scm.com>`_ to version control our code and manage the entire development process.
-On Github, we have a `GEOSX <https://github.com/GEOSX>`_ organization that hosts several related repositories:
+On Github, we have a `GEOSX Organization <https://github.com/GEOSX>`_ that hosts several related repositories.
 
-`GEOSX Organization <https://github.com/GEOSX>`_
-
-You should sign up for a free Github account, particularly if you are interested in posting issues to our issue tracker and communicating with the developers. The main repository of interest is obviously GEOSX itself: `GEOSX <https://github.com/GEOSX/GEOSX>`_
+You should sign up for a free Github account, particularly if you are interested in posting issues to our issue tracker and communicating with the developers. The main repository of interest is obviously the `GEOSX repository <https://github.com/GEOSX/GEOSX>`_ itself.
 
 We also rely on two types of dependencies: first-party and third-party.
 First-party dependencies are projects directly associated with the GEOSX effort, but kept in separate repositories because they form stand-alone tools.
@@ -79,14 +77,14 @@ You are welcome to tune your configuration, however, to point to different versi
 If you work on an HPC platform, for example, common packages may already be available and optimized for platform hardware.
 For new users, however, it may be safer to begin with the TPL mirror.
 
-*Note*: If you are working on an HPC platform with several other GEOSX users, we often compile the TPLs in a shared location so individual users don't have to waste their storage quota. Inquire with your institution's point-of-contact whether this option already exists. For all LLNL systems, the answer is yes.
+.. note::
+   If you are working on an HPC platform with several other GEOSX users, we often compile the TPLs in a shared location so individual users don't have to waste their storage quota. Inquire with your institution's point-of-contact whether this option already exists. For all LLNL systems, the answer is yes.
 
 Finally, there are also several private repositories only accessible to the core development team, which we use for behind-the-scene testing and maintenance of the code.
 
 Username and Authentication
 =============================
 New users should sign up for a free `Github account <https://github.com>`_.
-
 If you intend to develop in the GEOSX codebase, you may benefit from setting up your git credentials (see :ref:`GitWorkflow`).
 
 
@@ -100,8 +98,7 @@ This makes it much easier to stay up to date with the latest releases and bug fi
 If you are not familiar with the basics of Git, `here is a helpful resource <https://git-scm.com>`_ to get you started.
 
 The tutorial here assumes you will use a https clone with no specific credentials.
-Using an ssh connection pattern requires a very slight modification.
-See the **Additional Notes** at the end of this section for details.
+Using an ssh connection pattern requires a very slight modification (described in the notes below).
 
 If you do not already have Git installed on your system, you will need to install it.
 We recommend using a relatively recent version of Git, as there have been some notable improvements over the past few years.
@@ -147,26 +144,33 @@ Inside this directory, we can clone the GEOSX repository.  We will also use some
 
 If all goes well, you should have a complete copy of the GEOSX source at this point.
 The most common errors people encounter here have to do with Github not recognizing their authentication settings and/or repository permissions.
-See the previous section for tips on ensuring your SSH is working properly.
 
-*Note*: The integratedTests submodule is not publicly available, with access limited to the core development team.  This may cause the ``git submodule update`` command to fail
-if you forget the ``git submodule deinit integratedTests`` step above.
-This submodule is not required for building GEOSX. If you see an error message here, however, you may need to initialize and update the submodules manually:
 
-.. code-block:: sh
+.. note::
+   To use SSH instead, the clone step becomes ``git clone git@github.com:GEOSX/GEOSX.git``. See the previous section for tips on ensuring your SSH is working properly.  Alternatively, you may want to insert credentials in the command line (though less secure) ``git clone https://${USER}:${TOKEN}@github.com/GEOSX/GEOSX.git``.
 
-   cd GEOSX
-   git submodule init src/coreComponents/LvArray
-   git submodule init src/coreComponents/fileIO/coupling/hdf5_interface
-   git submodule init src/coreComponents/physicsSolvers/GEOSX_PTP
-   git submodule init src/externalComponents/PAMELA
-   git submodule init src/externalComponents/PVTPackage
-   git submodule update src/coreComponents/LvArray
-   git submodule update src/coreComponents/fileIO/coupling/hdf5_interface
-   git submodule update src/coreComponents/physicsSolvers/GEOSX_PTP
-   git submodule update src/externalComponents/PAMELA
-   git submodule update src/externalComponents/PVTPackage
-   cd ..
+.. note::
+   The integratedTests submodule is not publicly available, with access limited to the core development team.  This may cause the ``git submodule update`` command to fail
+   if you forget the ``git submodule deinit integratedTests`` step above.
+   This submodule is not required for building GEOSX. If you see an error message here, however, you may need to initialize and update the submodules manually:
+
+   .. code-block:: sh
+
+      cd GEOSX
+      git submodule init src/coreComponents/LvArray
+      git submodule init src/coreComponents/fileIO/coupling/hdf5_interface
+      git submodule init src/coreComponents/physicsSolvers/GEOSX_PTP
+      git submodule init src/externalComponents/PAMELA
+      git submodule init src/externalComponents/PVTPackage
+      git submodule update src/coreComponents/LvArray
+      git submodule update src/coreComponents/fileIO/coupling/hdf5_interface
+      git submodule update src/coreComponents/physicsSolvers/GEOSX_PTP
+      git submodule update src/externalComponents/PAMELA
+      git submodule update src/externalComponents/PVTPackage
+      cd ..
+
+.. note::
+   ``git-lfs`` may not function properly (or may be very slow) if your version of git and git-lfs are not current. If you are using an older version, you may need to add ``git lfs pull`` after ``git pull`` in the above procedures.
 
 Once we have grabbed GEOSX, we do the same for the thirdPartyLibs repository.  From the ``codes`` directory, type
 
@@ -182,11 +186,6 @@ Once we have grabbed GEOSX, we do the same for the thirdPartyLibs repository.  F
 
 Again, if all goes well you should now have a copy of all necessary TPL packages.
 
-**Additional Notes:**
-
-#. ``git-lfs`` may not function properly (or may be very slow) if your version of git and git-lfs are not current. If you are using an older version, you may need to add ``git lfs pull`` after ``git pull`` in the above procedures.
-
-#. You can adapt the commands if you use an ssh connection instead. The clone ``https://github.com/GEOSX/GEOSX.git`` becomes ``git clone git@github.com:GEOSX/GEOSX.git``. You may also be willing to insert your credentials in the command line (less secure) ``git clone https://${USER}:${TOKEN}@github.com/GEOSX/GEOSX.git``.
 
 Configuration
 ================
@@ -250,7 +249,8 @@ We maintain host configs (ending in ``.cmake``) for HPC systems at various insti
 
 The various ``set()`` commands are used to set environment variables that control the build.  You will see in the above example that we set the C++ compiler to ``/user/bin/clang++`` and so forth.  We also disable CUDA and OpenMP, but enable PAMELA and PVTPackage.  The final line is related to our unit test suite.  See the :ref:`BuildGuide` for more details on available options.
 
-**Note**: If you develop a new ``host-config`` for a particular platform that may be useful for other users, please consider sharing it with the developer team.
+.. note::
+   If you develop a new ``host-config`` for a particular platform that may be useful for other users, please consider sharing it with the developer team.
 
 Compilation
 ==================
@@ -347,4 +347,5 @@ It is wise to run our unit test suite as an additional check that everything is 
 
 This will run a large suite of simple tests that check various components of the code.  If you have access, you may also consider running the integrated tests.  Please refer to :ref:`IntegratedTests` for further information.
 
-**Note:** If *all* of the unit tests fail, there is likely something wrong with your installation.  Refer to the FAQs above for how best to proceed in this situation.  If only a few tests fail, it is possible that your platform configuration has exposed some issue that our existing platform tests do not catch.  If you suspect this is the case, please consider posting an issue to our issue tracker (after first checking whether other users have encountered a similar issue).
+.. note::
+   If *all* of the unit tests fail, there is likely something wrong with your installation.  Refer to the FAQs above for how best to proceed in this situation.  If only a few tests fail, it is possible that your platform configuration has exposed some issue that our existing platform tests do not catch.  If you suspect this is the case, please consider posting an issue to our issue tracker (after first checking whether other users have encountered a similar issue).

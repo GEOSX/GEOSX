@@ -1,4 +1,4 @@
-Solid Mechanics Models
+Solid Models
 ======================
 
 Solid mechanics constitutive models govern the relationship between measures of 
@@ -138,14 +138,12 @@ shear components.
 
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
-   LinearElasticIsotropic
-
-   LinearElasticAnisotropic
-
-   PoroLinearElasticIsotropic
-
-   PoroLinearElasticAnisotropic
+   LinearElastic
    
    TwoInvariantPlasticity
+
+   PoroElastic
+   
+   DamageModel

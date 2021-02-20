@@ -1,11 +1,13 @@
 .. _TwoInvariantPlasticity:
 
 ############################################
-Two-invariant plasticity solid models
+Plasticity models
 ############################################
 
+Two-invariant plasticity solid models
+=========================================
 Overview
-=======================
+-----------------
 According to the `theory of plasticity  <https://en.wikipedia.org/wiki/Flow_plasticity_theory>`__, total strain :math:`\boldsymbol{\epsilon}` can be additively split into elastic (:math:`\boldsymbol{\epsilon}^e`) and plastic :math:`\boldsymbol{\epsilon}^p`) strains:
 
 .. math::
@@ -24,7 +26,7 @@ in which :math:`\dot{\lambda} \geq 0` is the magnitude of plastic strain rate an
 where :math:`\tensor{C}^e` is the fourth order elastic stiffness tensor. The Cauchy stress tensor is related to the total strain as
 
 .. math::
-  \dot{\boldsymbol\sigma}} = \boldsymbol{C}^{ep} \cdot \dot{\boldsymbol{\epsilon}},
+  \dot{\boldsymbol{\sigma}} = \boldsymbol{C}^{ep} \cdot \dot{\boldsymbol{\epsilon}}, 
   
 in which :math:`\tensor{C}^{ep}` is the fourth order elasto-plastic stiffness tensor.
 
@@ -39,11 +41,11 @@ Two-invariant plasticity models use the first invariant of the Cauchy stress ten
 `Delft-Egg`_
 
 Two-invariant decomposition 
-===============================
-Here we use the following stress invariants to define the yield surface:  von Mises stress, :math:`q = \sqrt{3J_2} = \sqrt{3/2}\norm{\boldsymbol{s}}` and mean normal stress :math:`p = I_1/3`. :math:`I_1` and :math:`J_2` are the first invariant of the stress tensor and second invariant of the deviatoric stress, defined as
+----------------------------------
+Here we use the following stress invariants to define the yield surface:  von Mises stress, :math:`q = \sqrt{3J_2} = \sqrt{3/2} \|\boldsymbol{s}\|` and mean normal stress :math:`p = I_1/3`. :math:`I_1` and :math:`J_2` are the first invariant of the stress tensor and second invariant of the deviatoric stress, defined as
 
 .. math::
-   I_1 = tr(\tensor{\sigma})/3 \, , \quad J_2 = \frac{1}{2} \|\boldsymbol{s}\|^2 \, , \quad \boldsymbol{s}=\boldsymbol{\sigma}-p \boldsymbol{1} \, ,
+   I_1 = tr(\boldsymbol{\sigma})/3 \, , \quad J_2 = \frac{1}{2} \|\boldsymbol{s}\|^2 \, , \quad \boldsymbol{s}=\boldsymbol{\sigma}-p \boldsymbol{1} \, ,
 
 in which :math:`\boldsymbol{1}` is the identity tensor. 
 
@@ -60,10 +62,10 @@ Stress and strain tensors can then be recomposed from the invariants as:
 .. math::
    \boldsymbol{\epsilon} = \frac{1}{3} \epsilon_v \boldsymbol{1} + \sqrt{\frac{3}{2}}\epsilon_s \hat{\boldsymbol{n}}
 
-in which :math:`\hat{\boldsymbol{n}} = \boldsymbol{e}/{\|\boldsymbol{e}\|`.
+in which :math:`\hat{\boldsymbol{n}} = \boldsymbol{e}/\|\boldsymbol{e}\|`.
 
 Drucker-Prager 
-========================
+-------------------
 This model may be used to represent a solid material with plastic response to loading according to the `Drucker-Prager <https://en.wikipedia.org/wiki/Drucker%E2%80%93Prager_yield_criterion>`__ yield criterion below:
 
 .. math::
@@ -111,7 +113,7 @@ where :math:`g_0` is a constant and :math:`b \leq B` is the dilatancy parameter.
 .. math::
    b = \frac{6  \, \sin\psi}{3 \pm \sin\psi},
    
- where :math:`\psi \leq \phi` is the dilation angle. If :math:`\psi > 0`, then the plastic flow is dilative.
+where :math:`\psi \leq \phi` is the dilation angle. If :math:`\psi > 0`, then the plastic flow is dilative.
 
 A hardening rule is defined which determines how the yield surface will change as a result of plastic deformations. Here we use linear hardening for the cohesion parameter, :math:`A`, 
 
@@ -121,14 +123,14 @@ A hardening rule is defined which determines how the yield surface will change a
 where :math:`h` is the hardening parameter. 
 
 Parameters 
---------------------------
+~~~~~~~~~~~~~~~~~~~~
 
 The following attributes are supported:
 
 .. include:: /coreComponents/fileIO/schema/docs/DruckerPrager.rst
 
 Example
--------------------
+~~~~~~~~~~~~~~~
 
 .. code-block:: xml
 
@@ -145,13 +147,13 @@ Example
   
 
 J2 plasticity 
-=========================
+----------------------
 
 J2 yield criterion can be obtained as a special case of the `Drucker-Prager`_ model by setting the friction and dilation angles to zero, i.e. :math:`\phi = \psi = 0`.
 
 
 Modified Cam-Clay 
-=========================
+-----------------------
 
 This model may be used to represent a solid material with plastic response to loading according to the `Modified Cam-Clay  (MCC) <https://en.wikipedia.org/wiki/Critical_state_soil_mechanics>`__ critical state model . This model is derived by setting :math:`\alpha = 1` in `Delft-Egg`_ model. The MCC yield function is defined as:
 
@@ -201,14 +203,14 @@ The hardening law describes evolution of the preconsolidation pressure :math:`p_
 where :math:`c_c` is the virgin compressibility index and we have :math:` 0 < c_r < c_c`.
 
 Parameters
--------------------------
+~~~~~~~~~~~~~~~~
 
 The following attributes are supported:
 
 .. include:: /coreComponents/fileIO/schema/docs/CamClay.rst
 
 Example
------------------------
+~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: xml
 
@@ -225,7 +227,7 @@ Example
   </Constitutive>
 
 Delft-Egg 
-=========================
+-----------------------
 `Delft-Egg  <https://link.springer.com/chapter/10.1007%2F978-94-011-1046-4_10>`__  plasticity model is a generalization of the `Modified Cam-Clay`_ (MCC) model, with the yield function defined as 
 
 .. math::
@@ -236,14 +238,14 @@ where :math:`\alpha \geq 1` is the shape parameter. For :math:`\alpha = 1`, the 
 Here we use a single implementation which is called Modified Cam-Clay and can accommodate both MCC and Delft-Egg models. 
 
 Parameters
--------------------------------------
+~~~~~~~~~~~~~~~~~~~~
 
 The following attributes are supported:
 
 .. include:: /coreComponents/fileIO/schema/docs/CamClay.rst
 
 Example
-----------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: xml
 

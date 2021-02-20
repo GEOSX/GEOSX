@@ -48,7 +48,7 @@ Docker images contract
 GEOSX will find a compiled version of the third party libraries.
 
 As part of the contract provided by the TPL, the docker images also defines several environment variables.
-The 
+The
 
 .. code-block:: sh
 
@@ -79,22 +79,3 @@ But there should be no reason to access or use them explicitly.
 
     OMPI_CC=$CC
     OMPI_CXX=$CXX
-
-Using the TPL precompiled binaries
-----------------------------------
-
-For development purposes, you may want to use the publicly available docker images or the OSX tarball instead of compiling them yourself.
-While this is surely possible, please note that *this is not supported by the GEOSX team that reserves the right to modify its workflow or delete elements on which you may have build your own workflow*.
-
-There are multiple options to use the exposed docker images.
-
-- A lot of IDE now provide remote development modes (e.g. `CLion <https://www.jetbrains.com/help/clion/remote-projects-support.html>`_, `VS Code <https://code.visualstudio.com/docs/remote/remote-overview>`_, `Eclipse Che <https://www.eclipse.org/che/>`_ and surely others).
-  Depending on your choice, please read their documentation carefully so you can add their own requirements on top the TPL images that are already available.
-  Feel free to share them :)
-- Another option is to develop directly inside the container (*i.e.* not remotely).
-  Install your favorite development inside the image (be mindful of X display issues), connect to the running container and start hacking!
-
-Please use the environment variables provided in the :ref:`Docker_images_contract` to develop.
-
-Please be aware of how to retrieve back your code: you may want to bind mount volumes (``-v``/``--volume=`` options of `docker run <https://docs.docker.com/engine/reference/run/>`_).
-Think about opening ports too.
