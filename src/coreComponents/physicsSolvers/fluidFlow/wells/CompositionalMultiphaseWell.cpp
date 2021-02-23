@@ -34,6 +34,7 @@
 #include "mesh/MeshForLoopInterface.hpp"
 #include "meshUtilities/PerforationData.hpp"
 #include "meshUtilities/ComputationalGeometry.hpp"
+#include "physicsSolvers/fluidFlow/IsothermalCompositionalMultiphaseFlowKernels.hpp"
 #include "physicsSolvers/fluidFlow/CompositionalMultiphaseFlowKernels.hpp"
 #include "physicsSolvers/fluidFlow/wells/CompositionalMultiphaseWellKernels.hpp"
 #include "physicsSolvers/fluidFlow/wells/SinglePhaseWellKernels.hpp"
@@ -691,12 +692,12 @@ void CompositionalMultiphaseWell::updateFluidModel( WellElementSubRegion & subRe
   {
     typename TYPEOFREF( castedFluid ) ::KernelWrapper fluidWrapper = castedFluid.createKernelWrapper();
 
-    CompositionalMultiphaseFlowKernels::FluidUpdateKernel::launch< serialPolicy >( subRegion.size(),
-                                                                                   fluidWrapper,
-                                                                                   pres,
-                                                                                   dPres,
-                                                                                   m_temperature,
-                                                                                   compFrac );
+    IsothermalCompositionalMultiphaseFlowKernels::FluidUpdateKernel::launch< serialPolicy >( subRegion.size(),
+                                                                                             fluidWrapper,
+                                                                                             pres,
+                                                                                             dPres,
+                                                                                             m_temperature,
+                                                                                             compFrac );
   } );
 }
 
@@ -732,21 +733,22 @@ void CompositionalMultiphaseWell::updatePhaseVolumeFraction( WellElementSubRegio
   arrayView3d< real64 const > const & dPhaseDens_dPres = fluid.dPhaseDensity_dPressure();
   arrayView4d< real64 const > const & dPhaseDens_dComp = fluid.dPhaseDensity_dGlobalCompFraction();
 
-  CompositionalMultiphaseFlowKernels::KernelLaunchSelector2< CompositionalMultiphaseFlowKernels::PhaseVolumeFractionKernel
-                                                             >( numFluidComponents(), numFluidPhases(),
-                                                                subRegion.size(),
-                                                                compDens,
-                                                                dCompDens,
-                                                                dCompFrac_dCompDens,
-                                                                phaseDens,
-                                                                dPhaseDens_dPres,
-                                                                dPhaseDens_dComp,
-                                                                phaseFrac,
-                                                                dPhaseFrac_dPres,
-                                                                dPhaseFrac_dComp,
-                                                                phaseVolFrac,
-                                                                dPhaseVolFrac_dPres,
-                                                                dPhaseVolFrac_dCompDens );
+  IsothermalCompositionalMultiphaseFlowKernels::KernelLaunchSelector2
+  < IsothermalCompositionalMultiphaseFlowKernels::PhaseVolumeFractionKernel >( numFluidComponents(),
+                                                                               numFluidPhases(),
+                                                                               subRegion.size(),
+                                                                               compDens,
+                                                                               dCompDens,
+                                                                               dCompFrac_dCompDens,
+                                                                               phaseDens,
+                                                                               dPhaseDens_dPres,
+                                                                               dPhaseDens_dComp,
+                                                                               phaseFrac,
+                                                                               dPhaseFrac_dPres,
+                                                                               dPhaseFrac_dComp,
+                                                                               phaseVolFrac,
+                                                                               dPhaseVolFrac_dPres,
+                                                                               dPhaseVolFrac_dCompDens );
 }
 
 void CompositionalMultiphaseWell::updateTotalMassDensity( WellElementSubRegion & subRegion, localIndex const targetIndex ) const
@@ -884,11 +886,11 @@ void CompositionalMultiphaseWell::initializeWells( DomainPartition & domain )
     {
       typename TYPEOFREF( castedFluid ) ::KernelWrapper fluidWrapper = castedFluid.createKernelWrapper();
 
-      CompositionalMultiphaseFlowKernels::FluidUpdateKernel::launch< serialPolicy >( subRegion.size(),
-                                                                                     fluidWrapper,
-                                                                                     wellElemPressure,
-                                                                                     m_temperature,
-                                                                                     wellElemCompFrac );
+      IsothermalCompositionalMultiphaseFlowKernels::FluidUpdateKernel::launch< serialPolicy >( subRegion.size(),
+                                                                                               fluidWrapper,
+                                                                                               wellElemPressure,
+                                                                                               m_temperature,
+                                                                                               wellElemCompFrac );
     } );
 
     CompDensInitializationKernel::launch< parallelDevicePolicy<> >( subRegion.size(),

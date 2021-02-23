@@ -223,7 +223,15 @@ void MultiFluidPVTPackageWrapperUpdate::compute( real64 pressure,
                                                  real64 & totalDensity,
                                                  real64 & dTotalDensity_dPressure,
                                                  real64 & dTotalDensity_dTemperature,
-                                                 arraySlice1d< real64, 0 > const & dTotalDensity_dGlobalCompFraction ) const
+                                                 arraySlice1d< real64, 0 > const & dTotalDensity_dGlobalCompFraction,
+                                                 arraySlice1d< real64 > const & phaseEnthalpy,
+                                                 arraySlice1d< real64 > const & dPhaseEnthalpy_dPressure,
+                                                 arraySlice1d< real64 > const & dPhaseEnthalpy_dTemperature,
+                                                 arraySlice2d< real64 > const & dPhaseEnthalpy_dGlobalCompFraction,
+                                                 arraySlice1d< real64 > const & phaseInternalEnergy,
+                                                 arraySlice1d< real64 > const & dPhaseInternalEnergy_dPressure,
+                                                 arraySlice1d< real64 > const & dPhaseInternalEnergy_dTemperature,
+                                                 arraySlice2d< real64 > const & dPhaseInternalEnergy_dGlobalCompFraction ) const
 {
 // 0. make shortcut structs to avoid long names (TODO maybe remove)
   CompositionalVarContainer< 1 > phaseFrac{
@@ -267,6 +275,15 @@ void MultiFluidPVTPackageWrapperUpdate::compute( real64 pressure,
     dTotalDensity_dTemperature,
     dTotalDensity_dGlobalCompFraction
   };
+
+  GEOSX_UNUSED_VAR( phaseEnthalpy );
+  GEOSX_UNUSED_VAR( dPhaseEnthalpy_dPressure );
+  GEOSX_UNUSED_VAR( dPhaseEnthalpy_dTemperature );
+  GEOSX_UNUSED_VAR( dPhaseEnthalpy_dGlobalCompFraction );
+  GEOSX_UNUSED_VAR( phaseInternalEnergy );
+  GEOSX_UNUSED_VAR( dPhaseInternalEnergy_dPressure );
+  GEOSX_UNUSED_VAR( dPhaseInternalEnergy_dTemperature );
+  GEOSX_UNUSED_VAR( dPhaseInternalEnergy_dGlobalCompFraction );
 
 #if defined(__CUDACC__)
   // For some reason nvcc thinks these aren't used.

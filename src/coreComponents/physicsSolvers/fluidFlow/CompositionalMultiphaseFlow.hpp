@@ -277,11 +277,15 @@ public:
   {
     static constexpr char const * dofFieldString() { return "compositionalVariables"; }
 
-
-    // inputs
     static constexpr char const * temperatureString() { return "temperature"; }
 
+    static constexpr char const * deltaTemperatureString() { return "deltaTemperature"; }
+
     static constexpr char const * useMassFlagString() { return "useMass"; }
+
+    static constexpr char const * isothermalFlagString()  { return "isothermal"; }
+
+    static constexpr char const * uniformTemperatureString() { return "uniformTemperature"; }
 
     static constexpr char const * relPermNamesString() { return "relPermNames"; }
 
@@ -304,12 +308,13 @@ public:
 
     static constexpr char const * dGlobalCompFraction_dGlobalCompDensityString() { return "dGlobalCompFraction_dGlobalCompDensity"; }
 
-    // intermediate values for saturations
     static constexpr char const * phaseVolumeFractionString() { return "phaseVolumeFraction"; }
 
     static constexpr char const * dPhaseVolumeFraction_dPressureString() { return "dPhaseVolumeFraction_dPressure"; }
 
     static constexpr char const * dPhaseVolumeFraction_dGlobalCompDensityString() { return "dPhaseVolumeFraction_dGlobalCompDensity"; }
+
+    static constexpr char const * dPhaseVolumeFraction_dTemperatureString() { return "dPhaseVolumeFraction_dTemperature"; }
 
     // intermediate values for mobilities
     static constexpr char const * phaseMobilityString() { return "phaseMobility"; }
@@ -317,6 +322,8 @@ public:
     static constexpr char const * dPhaseMobility_dPressureString() { return "dPhaseMobility_dPressure"; }
 
     static constexpr char const * dPhaseMobility_dGlobalCompDensityString() { return "dPhaseMobility_dGlobalCompDensity"; }
+
+    static constexpr char const * dPhaseMobility_dTemperatureString() { return "dPhaseMobility_dTemperature"; }
 
     // these are used to store last converged time step values
     static constexpr char const * phaseVolumeFractionOldString() { return "phaseVolumeFractionOld"; }
@@ -326,6 +333,10 @@ public:
     static constexpr char const * phaseComponentFractionOldString() { return "phaseComponentFractionOld"; }
 
     static constexpr char const * porosityOldString() { return "porosityOld"; }
+
+    static constexpr char const * phaseInternalEnergyOldString() { return "phaseInternalEnergyOld"; }
+
+    static constexpr char const * rockInternalEnergyOldString()  { return "rockInternalEnergyOld"; }
 
     // these are allocated on faces for BC application until we can get constitutive models on faces
     static constexpr char const * phaseViscosityString() { return "phaseViscosity"; }
@@ -426,7 +437,10 @@ private:
   localIndex m_numComponents;
 
   /// the (uniform) temperature
-  real64 m_temperature;
+  real64 m_uniformTemperature;
+
+  /// flag indicating if the problem is isothermal
+  integer m_isothermalFlag;
 
   /// flag indicating whether mass or molar formulation should be used
   integer m_useMass;
@@ -453,25 +467,38 @@ private:
   ElementRegionManager::ElementViewAccessor< arrayView1d< real64 const > > m_pressure;
   ElementRegionManager::ElementViewAccessor< arrayView1d< real64 const > > m_deltaPressure;
 
+  ElementRegionManager::ElementViewAccessor< arrayView1d< real64 const > > m_temperature;
+  ElementRegionManager::ElementViewAccessor< arrayView1d< real64 const > > m_deltaTemperature;
+
   ElementRegionManager::ElementViewAccessor< arrayView3d< real64 const > > m_dCompFrac_dCompDens;
 
+  ElementRegionManager::ElementViewAccessor< arrayView2d< real64 const > > m_phaseVolFrac;
   ElementRegionManager::ElementViewAccessor< arrayView2d< real64 const > > m_dPhaseVolFrac_dPres;
+  ElementRegionManager::ElementViewAccessor< arrayView2d< real64 const > > m_dPhaseVolFrac_dTemp;
   ElementRegionManager::ElementViewAccessor< arrayView3d< real64 const > > m_dPhaseVolFrac_dCompDens;
 
   ElementRegionManager::ElementViewAccessor< arrayView2d< real64 const > > m_phaseMob;
   ElementRegionManager::ElementViewAccessor< arrayView2d< real64 const > > m_dPhaseMob_dPres;
+  ElementRegionManager::ElementViewAccessor< arrayView2d< real64 const > > m_dPhaseMob_dTemp;
   ElementRegionManager::ElementViewAccessor< arrayView3d< real64 const > > m_dPhaseMob_dCompDens;
 
   ElementRegionManager::ElementViewAccessor< arrayView3d< real64 const > > m_phaseMassDens;
   ElementRegionManager::ElementViewAccessor< arrayView3d< real64 const > > m_dPhaseMassDens_dPres;
+  ElementRegionManager::ElementViewAccessor< arrayView3d< real64 const > > m_dPhaseMassDens_dTemp;
   ElementRegionManager::ElementViewAccessor< arrayView4d< real64 const > > m_dPhaseMassDens_dComp;
 
   ElementRegionManager::ElementViewAccessor< arrayView4d< real64 const > > m_phaseCompFrac;
   ElementRegionManager::ElementViewAccessor< arrayView4d< real64 const > > m_dPhaseCompFrac_dPres;
+  ElementRegionManager::ElementViewAccessor< arrayView4d< real64 const > > m_dPhaseCompFrac_dTemp;
   ElementRegionManager::ElementViewAccessor< arrayView5d< real64 const > > m_dPhaseCompFrac_dComp;
 
   ElementRegionManager::ElementViewAccessor< arrayView3d< real64 const > > m_phaseCapPressure;
   ElementRegionManager::ElementViewAccessor< arrayView4d< real64 const > > m_dPhaseCapPressure_dPhaseVolFrac;
+
+  ElementRegionManager::ElementViewAccessor< arrayView3d< real64 const > > m_phaseEnthalpy;
+  ElementRegionManager::ElementViewAccessor< arrayView3d< real64 const > > m_dPhaseEnthalpy_dPres;
+  ElementRegionManager::ElementViewAccessor< arrayView3d< real64 const > > m_dPhaseEnthalpy_dTemp;
+  ElementRegionManager::ElementViewAccessor< arrayView4d< real64 const > > m_dPhaseEnthalpy_dComp;
 
 };
 

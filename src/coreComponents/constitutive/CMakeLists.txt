@@ -18,6 +18,10 @@ set( constitutive_headers
      fluid/PVTFunctions/BrineViscosityFunction.hpp
      fluid/PVTFunctions/CO2SolubilityFunction.hpp
      fluid/PVTFunctions/FenghourCO2ViscosityFunction.hpp
+     fluid/PVTFunctions/BrineEnthalpyFunction.hpp
+     fluid/PVTFunctions/BrineInternalEnergyFunction.hpp
+     fluid/PVTFunctions/CO2EnthalpyFunction.hpp
+     fluid/PVTFunctions/CO2InternalEnergyFunction.hpp
      fluid/PVTFunctions/FlashModelBase.hpp
      fluid/PVTFunctions/PVTFunctionBase.hpp
      fluid/PVTFunctions/SpanWagnerCO2DensityFunction.hpp
@@ -78,7 +82,11 @@ set( constitutive_sources
      fluid/PVTFunctions/BrineViscosityFunction.cpp 
      fluid/PVTFunctions/CO2SolubilityFunction.cpp
      fluid/PVTFunctions/FenghourCO2ViscosityFunction.cpp
-     fluid/PVTFunctions/SpanWagnerCO2DensityFunction.cpp    
+     fluid/PVTFunctions/SpanWagnerCO2DensityFunction.cpp
+     fluid/PVTFunctions/BrineEnthalpyFunction.cpp
+     fluid/PVTFunctions/BrineInternalEnergyFunction.cpp
+     fluid/PVTFunctions/CO2EnthalpyFunction.cpp
+     fluid/PVTFunctions/CO2InternalEnergyFunction.cpp    
      fluid/PVTFunctions/UtilityFunctions.cpp
      fluid/SingleFluidBase.cpp
      fluid/MultiFluidBase.cpp

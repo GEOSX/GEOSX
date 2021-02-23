@@ -1,0 +1,270 @@
+<?xml version="1.0" ?>
+
+<Problem>
+
+  <Solvers>
+    <CompositionalMultiphaseFlow
+      name="compositionalMultiphaseFlow"
+      targetRegions="{ Reservoir }"
+      discretization="fluidTPFA"
+      fluidNames="{ fluid }"
+      solidNames="{ rock }"
+      relPermNames="{ relperm }"
+      temperature="368.15"
+      maxCompFractionChange="0.2"
+      logLevel="1"
+      useMass="1"
+      isothermal="0"/>
+  </Solvers>  
+
+ <Mesh>
+    <InternalMesh
+      name="mesh1"
+      elementTypes="{ C3D8 }"
+      xCoords="{ 0, 100 }"
+      yCoords="{ 0, 1 }"
+      zCoords="{ 0, 1 }"
+      nx="{ 100 }"
+      ny="{ 1 }"
+      nz="{ 1 }"
+      cellBlockNames="{ cb1 }"/>
+  </Mesh>
+
+  <Geometry>
+    <Box
+      name="source"
+      xMin="-0.01, -0.01, -0.01"
+      xMax=" 1.01, 1.01, 1.01"/>
+
+    <Box
+      name="sink"
+      xMin=" 8.99, -0.01, -0.01"
+      xMax="10.01, 1.01, 1.01"/>
+  </Geometry>
+  
+
+  <ElementRegions>
+    <CellElementRegion
+      name="Reservoir"
+      cellBlocks="{ cb1 }"
+      materialList="{ fluid, rock, relperm }"/>
+  </ElementRegions>
+
+  <Events
+    maxTime="2e7">
+    <PeriodicEvent
+      name="outputs"
+      timeFrequency="1e6"
+      targetExactTimestep="1"
+      target="/Outputs/vtkOutput"/>
+
+    <PeriodicEvent
+      name="solverApplications1"
+      forceDt="1e3"
+      beginTime="0"
+      endTime="1e4"
+      target="/Solvers/compositionalMultiphaseFlow"/>
+
+    <PeriodicEvent
+      name="solverApplications2"
+      forceDt="1e4"
+      beginTime="1e4"
+      endTime="1e5"
+      target="/Solvers/compositionalMultiphaseFlow"/>
+
+    <PeriodicEvent
+      name="solverApplications3"
+      forceDt="1e5"
+      beginTime="1e5"
+      target="/Solvers/compositionalMultiphaseFlow"/>
+
+    <PeriodicEvent
+      name="restarts"
+      timeFrequency="1e7"
+      targetExactTimestep="0"
+      target="/Outputs/restartOutput"/>
+  </Events>
+
+  <NumericalMethods>
+    <FiniteVolume>
+      <TwoPointFluxApproximation
+        name="fluidTPFA"
+        targetRegions="{ Reservoir }"
+        fieldName="pressure"
+        coefficientName="permeability"/>
+    </FiniteVolume>
+  </NumericalMethods>
+
+  <Constitutive>
+    <MultiPhaseMultiComponentFluid
+      name="fluid"
+      phaseNames="{ gas, water }"
+      componentNames="{ co2, water }"
+      componentMolarWeight="{ 44e-3, 18e-3 }"
+      phasePVTParaFiles="{ pvt_tables/pvtgas.txt, pvt_tables/pvtliquid.txt }"
+      flashModelParaFile="pvt_tables/co2flash.txt"/>
+
+    <PoreVolumeCompressibleSolid
+      name="rock"
+      referencePressure="1e6"
+      compressibility="4.5e-10"/>
+
+    <BrooksCoreyRelativePermeability
+      name="relperm"
+      phaseNames="{ gas, water }"
+      phaseMinVolumeFraction="{ 0.05, 0.30 }"
+      phaseRelPermExponent="{ 2.0, 2.0 }"
+      phaseRelPermMaxValue="{ 1.0, 1.0 }"/>
+  </Constitutive>
+
+  <FieldSpecifications>
+    <FieldSpecification
+      name="permx"
+      initialCondition="1"
+      component="0"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="permeability"
+      scale="1e-16"/>
+
+    <FieldSpecification
+      name="permy"
+      initialCondition="1"
+      component="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="permeability"
+      scale="1e-16"/>
+
+    <FieldSpecification
+      name="permz"
+      initialCondition="1"
+      component="2"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="permeability"
+      scale="1e-16"/>
+
+    <FieldSpecification
+      name="referencePorosity"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="referencePorosity"
+      scale="0.1"/>
+      
+    <!-- Initial conditions -->
+    <FieldSpecification
+      name="initialPressure"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="pressure"
+      scale="5e6"/>
+      
+    <FieldSpecification
+      name="initialTemperature"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="temperature"
+      scale="368.15"/>
+      
+    <FieldSpecification
+      name="initialComposition_co2"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="globalCompFraction"
+      component="0"
+      scale="0.0001"/>
+
+    <FieldSpecification
+      name="initialComposition_water"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="globalCompFraction"
+      component="1"
+      scale="0.9999"/>
+      
+    <!-- Injection p, T and stream composition -->
+    <FieldSpecification
+      name="sourcePressure"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="pressure"
+      scale="1e7"/>
+      
+    <FieldSpecification
+      name="sourceTemperature"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="temperature"
+      scale="400"/>
+
+    <FieldSpecification
+      name="source_co2"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="globalCompFraction"
+      component="0"
+      scale="0.999"/>
+
+    <FieldSpecification
+      name="source_water"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="globalCompFraction"
+      component="1"
+      scale="0.001"/>
+    
+    <!-- Production pressure:  -->
+    <FieldSpecification
+      name="sinkPressure"
+      objectPath="ElementRegions/Region1/block1"
+      fieldName="pressure"
+      scale="1e6"
+      setNames="{ sink }"/>
+      
+    <!-- Production temperature:  -->
+    <FieldSpecification
+      name="sinkTemperature"
+      objectPath="ElementRegions/Region1/block1"
+      fieldName="pressure"
+      scale="368.15"
+      setNames="{ sink }"/>
+
+    <!-- Production stream: same as initial (should not matter due to upwinding) -->
+    <FieldSpecification
+      name="sink_co2"
+      setNames="{ sink }"
+      objectPath="ElementRegions/Region1/block1"
+      fieldName="globalCompFraction"
+      component="0"
+      scale="0.0001"/>
+
+    <FieldSpecification
+      name="sink_water"
+      setNames="{ sink }"
+      objectPath="ElementRegions/Region1/block1"
+      fieldName="globalCompFraction"
+      component="1"
+      scale="0.9999"/>
+
+  </FieldSpecifications>
+
+  <Outputs>
+    <VTK
+      name="vtkOutput"/>
+
+    <Restart
+      name="restartOutput"/>
+
+  </Outputs>
+  
+</Problem>

@@ -100,6 +100,25 @@ MultiFluidBase::MultiFluidBase( string const & name, Group * const parent )
   registerWrapper( viewKeyStruct::useMassString(), &m_useMass ).
     setRestartFlags( RestartFlags::NO_WRITE );
 
+  registerWrapper( viewKeyStruct::phaseEnthalpyString(), &m_phaseEnthalpy ).
+    setPlotLevel( PlotLevel::LEVEL_0 );
+  registerWrapper( viewKeyStruct::dPhaseEnthalpy_dPressureString(), &m_dPhaseEnthalpy_dPressure ).
+    setRestartFlags( RestartFlags::NO_WRITE );
+  registerWrapper( viewKeyStruct::dPhaseEnthalpy_dTemperatureString(), &m_dPhaseEnthalpy_dTemperature ).
+    setRestartFlags( RestartFlags::NO_WRITE );
+  registerWrapper( viewKeyStruct::dPhaseEnthalpy_dGlobalCompFractionString(), &m_dPhaseEnthalpy_dGlobalCompFraction ).
+    setRestartFlags( RestartFlags::NO_WRITE );
+
+
+  registerWrapper( viewKeyStruct::phaseInternalEnergyString(), &m_phaseInternalEnergy ).
+    setPlotLevel( PlotLevel::LEVEL_0 );
+  registerWrapper( viewKeyStruct::dPhaseInternalEnergy_dPressureString(), &m_dPhaseInternalEnergy_dPressure ).
+    setRestartFlags( RestartFlags::NO_WRITE );
+  registerWrapper( viewKeyStruct::dPhaseInternalEnergy_dTemperatureString(), &m_dPhaseInternalEnergy_dTemperature ).
+    setRestartFlags( RestartFlags::NO_WRITE );
+  registerWrapper( viewKeyStruct::dPhaseInternalEnergy_dGlobalCompFractionString(), &m_dPhaseInternalEnergy_dGlobalCompFraction ).
+    setRestartFlags( RestartFlags::NO_WRITE );
+  
 }
 
 void MultiFluidBase::resizeFields( localIndex const size, localIndex const numPts )
@@ -136,6 +155,18 @@ void MultiFluidBase::resizeFields( localIndex const size, localIndex const numPt
   m_dTotalDensity_dPressure.resize( size, numPts );
   m_dTotalDensity_dTemperature.resize( size, numPts );
   m_dTotalDensity_dGlobalCompFraction.resize( size, numPts, NC );
+
+  m_phaseEnthalpy.resize( size, numPts, NP );
+  m_dPhaseEnthalpy_dPressure.resize( size, numPts, NP );
+  m_dPhaseEnthalpy_dTemperature.resize( size, numPts, NP );
+  m_dPhaseEnthalpy_dGlobalCompFraction.resize( size, numPts, NP, NC );
+
+  m_phaseInternalEnergy.resize( size, numPts, NP );
+  m_dPhaseInternalEnergy_dPressure.resize( size, numPts, NP );
+  m_dPhaseInternalEnergy_dTemperature.resize( size, numPts, NP );
+  m_dPhaseInternalEnergy_dGlobalCompFraction.resize( size, numPts, NP, NC );
+  
+
 }
 
 void MultiFluidBase::allocateConstitutiveData( dataRepository::Group & parent,

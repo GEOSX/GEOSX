@@ -28,7 +28,7 @@ namespace geosx
 namespace PVTProps
 {
 
-enum class PVTFuncType {UNKNOWN, DENSITY, VISCOSITY};
+enum class PVTFuncType {UNKNOWN, DENSITY, VISCOSITY, ENTHALPY, INTERNALENR};
 
 class PVTFunction
 {

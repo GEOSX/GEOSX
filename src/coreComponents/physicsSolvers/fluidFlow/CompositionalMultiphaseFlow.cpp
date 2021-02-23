@@ -35,6 +35,8 @@
 #include "mpiCommunications/CommunicationTools.hpp"
 #include "mpiCommunications/MpiWrapper.hpp"
 #include "physicsSolvers/fluidFlow/CompositionalMultiphaseFlowKernels.hpp"
+#include "physicsSolvers/fluidFlow/IsothermalCompositionalMultiphaseFlowKernels.hpp"
+#include "constitutive/solid/SolidBase.hpp"
 
 #if defined( __INTEL_COMPILER )
 #pragma GCC optimize "O0"
@@ -45,7 +47,6 @@ namespace geosx
 
 using namespace dataRepository;
 using namespace constitutive;
-using namespace CompositionalMultiphaseFlowKernels;
 
 static constexpr real64 minDensForDivision = 1e-10;
 
@@ -61,9 +62,14 @@ CompositionalMultiphaseFlow::CompositionalMultiphaseFlow( const string & name,
   m_allowCompDensChopping( 1 )
 {
 //START_SPHINX_INCLUDE_00
-  this->registerWrapper( viewKeyStruct::temperatureString(), &m_temperature ).
+  this->registerWrapper( viewKeyStruct::uniformTemperatureString(), &m_uniformTemperature ).
     setInputFlag( InputFlags::REQUIRED ).
-    setDescription( "Temperature" );
+    setDescription( "Uniform temperature for isothermal simulations." );
+
+  this->registerWrapper( viewKeyStruct::isothermalFlagString(), &m_isothermalFlag ).
+    setApplyDefaultValue( 1 ).
+    setInputFlag( InputFlags::OPTIONAL ).
+    setDescription( "Flag indicating whether the problem  is isothermal or not." );
 
   this->registerWrapper( viewKeyStruct::useMassFlagString(), &m_useMass ).
     setApplyDefaultValue( 0 ).
@@ -152,10 +158,26 @@ void CompositionalMultiphaseFlow::registerDataOnMesh( Group & meshBodies )
       elementSubRegion.registerWrapper< array3d< real64 > >( viewKeyStruct::dPhaseMobility_dGlobalCompDensityString() ).
         setRestartFlags( RestartFlags::NO_WRITE );
 
-      elementSubRegion.registerWrapper< array2d< real64 > >( viewKeyStruct::phaseVolumeFractionOldString() );
-      elementSubRegion.registerWrapper< array2d< real64 > >( viewKeyStruct::phaseDensityOldString() );
-      elementSubRegion.registerWrapper< array3d< real64 > >( viewKeyStruct::phaseComponentFractionOldString() );
-      elementSubRegion.registerWrapper< array1d< real64 > >( viewKeyStruct::porosityOldString() );
+      if( m_isothermalFlag == 0 )
+      {
+        elementSubRegion.registerWrapper< array1d< real64 > >( viewKeyStruct::temperatureString() ).
+          setPlotLevel( PlotLevel::LEVEL_0 );
+
+        elementSubRegion.registerWrapper< array1d< real64 > >( viewKeyStruct::deltaTemperatureString() ).
+          setRestartFlags( RestartFlags::NO_WRITE );
+
+        elementSubRegion.registerWrapper< array2d< real64 > >( viewKeyStruct::dPhaseVolumeFraction_dTemperatureString() ).
+          setRestartFlags( RestartFlags::NO_WRITE );
+
+        elementSubRegion.registerWrapper< array2d< real64 > >( viewKeyStruct::dPhaseMobility_dTemperatureString() ).
+          setRestartFlags( RestartFlags::NO_WRITE );
+
+        elementSubRegion.registerWrapper< array2d< real64 > >( viewKeyStruct::phaseInternalEnergyOldString() ).
+          setRestartFlags( RestartFlags::NO_WRITE );
+
+        elementSubRegion.registerWrapper< array1d< real64 > >( viewKeyStruct::rockInternalEnergyOldString() ).
+          setRestartFlags( RestartFlags::NO_WRITE );
+      }
     } );
   } );
 }
@@ -240,7 +262,16 @@ void CompositionalMultiphaseFlow::initializePreSubGroups()
   MultiFluidBase const & fluid0 = cm.getConstitutiveRelation< MultiFluidBase >( m_fluidModelNames[0] );
   m_numPhases     = fluid0.numFluidPhases();
   m_numComponents = fluid0.numFluidComponents();
-  m_numDofPerCell = m_numComponents + 1;
+  if( m_isothermalFlag )
+  {
+    // Nc + pressure
+    m_numDofPerCell = m_numComponents + 1;
+  }
+  else
+  {
+    // Nc + pressure + tempertature
+    m_numDofPerCell = m_numComponents + 2;
+  }
 
   // 2. Validate various models against each other (must have same phases and components)
   validateConstitutiveModels( cm );
@@ -293,6 +324,16 @@ void CompositionalMultiphaseFlow::resizeFields( MeshLevel & meshLevel ) const
     subRegion.getReference< array2d< real64 > >( viewKeyStruct::phaseDensityOldString() ).resizeDimension< 1 >( NP );
     subRegion.getReference< array3d< real64 > >( viewKeyStruct::phaseComponentFractionOldString() ).resizeDimension< 1, 2 >( NP, NC );
   } );
+
+  if( m_isothermalFlag == 0 )
+  {
+    forTargetSubRegions( meshLevel, [&]( localIndex const, ElementSubRegionBase & subRegion )
+    {
+      subRegion.getReference< array2d< real64 > >( viewKeyStruct::dPhaseVolumeFraction_dTemperatureString() ).resizeDimension< 1 >( NP );
+      subRegion.getReference< array2d< real64 > >( viewKeyStruct::dPhaseMobility_dTemperatureString() ).resizeDimension< 1 >( NP );
+      subRegion.getReference< array2d< real64 > >( viewKeyStruct::phaseInternalEnergyOldString() ).resizeDimension< 1 >( NP );
+    } );
+  }
 }
 
 void CompositionalMultiphaseFlow::updateComponentFraction( Group & dataGroup ) const
@@ -315,12 +356,13 @@ void CompositionalMultiphaseFlow::updateComponentFraction( Group & dataGroup ) c
   arrayView2d< real64 const > const dCompDens =
     dataGroup.getReference< array2d< real64 > >( viewKeyStruct::deltaGlobalCompDensityString() );
 
-  KernelLaunchSelector1< ComponentFractionKernel >( m_numComponents,
-                                                    dataGroup.size(),
-                                                    compDens,
-                                                    dCompDens,
-                                                    compFrac,
-                                                    dCompFrac_dCompDens );
+  CompositionalMultiphaseFlowKernels::KernelLaunchSelector1
+  < CompositionalMultiphaseFlowKernels::ComponentFractionKernel >( m_numComponents,
+                                                                   dataGroup.size(),
+                                                                   compDens,
+                                                                   dCompDens,
+                                                                   compFrac,
+                                                                   dCompFrac_dCompDens );
 }
 
 void CompositionalMultiphaseFlow::updatePhaseVolumeFraction( Group & dataGroup,
@@ -360,20 +402,53 @@ void CompositionalMultiphaseFlow::updatePhaseVolumeFraction( Group & dataGroup,
   arrayView3d< real64 const > const & dPhaseDens_dPres = fluid.dPhaseDensity_dPressure();
   arrayView4d< real64 const > const & dPhaseDens_dComp = fluid.dPhaseDensity_dGlobalCompFraction();
 
-  KernelLaunchSelector2< PhaseVolumeFractionKernel >( m_numComponents, m_numPhases,
-                                                      dataGroup.size(),
-                                                      compDens,
-                                                      dCompDens,
-                                                      dCompFrac_dCompDens,
-                                                      phaseDens,
-                                                      dPhaseDens_dPres,
-                                                      dPhaseDens_dComp,
-                                                      phaseFrac,
-                                                      dPhaseFrac_dPres,
-                                                      dPhaseFrac_dComp,
-                                                      phaseVolFrac,
-                                                      dPhaseVolFrac_dPres,
-                                                      dPhaseVolFrac_dComp );
+  if( m_isothermalFlag )
+  {
+    IsothermalCompositionalMultiphaseFlowKernels::KernelLaunchSelector2
+    < IsothermalCompositionalMultiphaseFlowKernels::PhaseVolumeFractionKernel >( m_numComponents, m_numPhases,
+                                                                                 dataGroup.size(),
+                                                                                 compDens,
+                                                                                 dCompDens,
+                                                                                 dCompFrac_dCompDens,
+                                                                                 phaseDens,
+                                                                                 dPhaseDens_dPres,
+                                                                                 dPhaseDens_dComp,
+                                                                                 phaseFrac,
+                                                                                 dPhaseFrac_dPres,
+                                                                                 dPhaseFrac_dComp,
+                                                                                 phaseVolFrac,
+                                                                                 dPhaseVolFrac_dPres,
+                                                                                 dPhaseVolFrac_dComp );
+  }
+  else
+  {
+    // Get thermal views
+    arrayView3d< real64 const > const & dPhaseFrac_dTemp = fluid.dPhaseFraction_dTemperature();
+    arrayView3d< real64 const > const & dPhaseDens_dTemp = fluid.dPhaseDensity_dTemperature();
+
+    arrayView2d< real64 > const dPhaseVolFrac_dTemp =
+      dataGroup.getReference< array2d< real64 > >( viewKeyStruct::dPhaseVolumeFraction_dTemperatureString() );
+
+    CompositionalMultiphaseFlowKernels::KernelLaunchSelector2
+    < CompositionalMultiphaseFlowKernels::PhaseVolumeFractionKernel >( m_numComponents, m_numPhases,
+                                                                       dataGroup.size(),
+                                                                       compDens,
+                                                                       dCompDens,
+                                                                       dCompFrac_dCompDens,
+                                                                       phaseDens,
+                                                                       dPhaseDens_dPres,
+                                                                       dPhaseDens_dTemp,
+                                                                       dPhaseDens_dComp,
+                                                                       phaseFrac,
+                                                                       dPhaseFrac_dPres,
+                                                                       dPhaseFrac_dTemp,
+                                                                       dPhaseFrac_dComp,
+                                                                       phaseVolFrac,
+                                                                       dPhaseVolFrac_dPres,
+                                                                       dPhaseVolFrac_dTemp,
+                                                                       dPhaseVolFrac_dComp );
+
+  }
 }
 
 void CompositionalMultiphaseFlow::updatePhaseMobility( Group & dataGroup, localIndex const targetIndex ) const
@@ -417,22 +492,61 @@ void CompositionalMultiphaseFlow::updatePhaseMobility( Group & dataGroup, localI
   arrayView3d< real64 const > const & phaseRelPerm = relperm.phaseRelPerm();
   arrayView4d< real64 const > const & dPhaseRelPerm_dPhaseVolFrac = relperm.dPhaseRelPerm_dPhaseVolFraction();
 
-  KernelLaunchSelector2< PhaseMobilityKernel >( m_numComponents, m_numPhases,
-                                                dataGroup.size(),
-                                                dCompFrac_dCompDens,
-                                                phaseDens,
-                                                dPhaseDens_dPres,
-                                                dPhaseDens_dComp,
-                                                phaseVisc,
-                                                dPhaseVisc_dPres,
-                                                dPhaseVisc_dComp,
-                                                phaseRelPerm,
-                                                dPhaseRelPerm_dPhaseVolFrac,
-                                                dPhaseVolFrac_dPres,
-                                                dPhaseVolFrac_dComp,
-                                                phaseMob,
-                                                dPhaseMob_dPres,
-                                                dPhaseMob_dComp );
+  if( m_isothermalFlag )
+  {
+    IsothermalCompositionalMultiphaseFlowKernels::KernelLaunchSelector2
+    < IsothermalCompositionalMultiphaseFlowKernels::PhaseMobilityKernel >( m_numComponents, m_numPhases,
+                                                                           dataGroup.size(),
+                                                                           dCompFrac_dCompDens,
+                                                                           phaseDens,
+                                                                           dPhaseDens_dPres,
+                                                                           dPhaseDens_dComp,
+                                                                           phaseVisc,
+                                                                           dPhaseVisc_dPres,
+                                                                           dPhaseVisc_dComp,
+                                                                           phaseRelPerm,
+                                                                           dPhaseRelPerm_dPhaseVolFrac,
+                                                                           dPhaseVolFrac_dPres,
+                                                                           dPhaseVolFrac_dComp,
+                                                                           phaseMob,
+                                                                           dPhaseMob_dPres,
+                                                                           dPhaseMob_dComp );
+  }
+  else
+  {
+    // get thermal views
+    arrayView3d< real64 const > const & dPhaseDens_dTemp = fluid.dPhaseDensity_dTemperature();
+    arrayView3d< real64 const > const & dPhaseVisc_dTemp = fluid.dPhaseViscosity_dTemperature();
+
+    arrayView2d< real64 > const dPhaseMob_dTemp =
+      dataGroup.getReference< array2d< real64 > >( viewKeyStruct::dPhaseMobility_dTemperatureString() );
+
+    arrayView2d< real64 const > const dPhaseVolFrac_dTemp =
+      dataGroup.getReference< array2d< real64 > >( viewKeyStruct::dPhaseVolumeFraction_dTemperatureString() );
+
+    CompositionalMultiphaseFlowKernels::KernelLaunchSelector2
+    < CompositionalMultiphaseFlowKernels::PhaseMobilityKernel >( m_numComponents, m_numPhases,
+                                                                 dataGroup.size(),
+                                                                 dCompFrac_dCompDens,
+                                                                 phaseDens,
+                                                                 dPhaseDens_dPres,
+                                                                 dPhaseDens_dTemp,
+                                                                 dPhaseDens_dComp,
+                                                                 phaseVisc,
+                                                                 dPhaseVisc_dPres,
+                                                                 dPhaseVisc_dTemp,
+                                                                 dPhaseVisc_dComp,
+                                                                 phaseRelPerm,
+                                                                 dPhaseRelPerm_dPhaseVolFrac,
+                                                                 dPhaseVolFrac_dPres,
+                                                                 dPhaseVolFrac_dTemp,
+                                                                 dPhaseVolFrac_dComp,
+                                                                 phaseMob,
+                                                                 dPhaseMob_dPres,
+                                                                 dPhaseMob_dTemp,
+                                                                 dPhaseMob_dComp );
+  }
+
 }
 
 void CompositionalMultiphaseFlow::updateFluidModel( Group & dataGroup, localIndex const targetIndex ) const
@@ -450,12 +564,29 @@ void CompositionalMultiphaseFlow::updateFluidModel( Group & dataGroup, localInde
     typename TYPEOFREF( castedFluid ) ::KernelWrapper fluidWrapper = castedFluid.createKernelWrapper();
 
     // MultiFluid models are not thread-safe or device-capable yet
-    FluidUpdateKernel::launch< serialPolicy >( dataGroup.size(),
-                                               fluidWrapper,
-                                               pres,
-                                               dPres,
-                                               m_temperature,
-                                               compFrac );
+    if( m_isothermalFlag )
+    {
+      IsothermalCompositionalMultiphaseFlowKernels::FluidUpdateKernel::launch< serialPolicy >( dataGroup.size(),
+                                                                                               fluidWrapper,
+                                                                                               pres,
+                                                                                               dPres,
+                                                                                               m_uniformTemperature,
+                                                                                               compFrac );
+    }
+    else
+    {
+      arrayView1d< real64 const > const temperature  = dataGroup.getReference< array1d< real64 > >( viewKeyStruct::temperatureString() );
+      arrayView1d< real64 const > const dTemperature = dataGroup.getReference< array1d< real64 > >( viewKeyStruct::deltaTemperatureString() );
+
+      CompositionalMultiphaseFlowKernels::FluidUpdateKernel::launch< serialPolicy >( dataGroup.size(),
+                                                                                     fluidWrapper,
+                                                                                     pres,
+                                                                                     dPres,
+                                                                                     temperature,
+                                                                                     dTemperature,
+                                                                                     compFrac );
+    }
+
   } );
 }
 
@@ -485,9 +616,9 @@ void CompositionalMultiphaseFlow::updateRelPermModel( Group & dataGroup, localIn
   {
     typename TYPEOFREF( castedRelPerm ) ::KernelWrapper relPermWrapper = castedRelPerm.createKernelWrapper();
 
-    RelativePermeabilityUpdateKernel::launch< parallelDevicePolicy<> >( dataGroup.size(),
-                                                                        relPermWrapper,
-                                                                        phaseVolFrac );
+    CompositionalMultiphaseFlowKernels::RelativePermeabilityUpdateKernel::launch< parallelDevicePolicy<> >( dataGroup.size(),
+                                                                                                            relPermWrapper,
+                                                                                                            phaseVolFrac );
   } );
 }
 
@@ -505,9 +636,9 @@ void CompositionalMultiphaseFlow::updateCapPressureModel( Group & dataGroup, loc
     {
       typename TYPEOFREF( castedCapPres ) ::KernelWrapper capPresWrapper = castedCapPres.createKernelWrapper();
 
-      CapillaryPressureUpdateKernel::launch< parallelDevicePolicy<> >( dataGroup.size(),
-                                                                       capPresWrapper,
-                                                                       phaseVolFrac );
+      CompositionalMultiphaseFlowKernels::CapillaryPressureUpdateKernel::launch< parallelDevicePolicy<> >( dataGroup.size(),
+                                                                                                           capPresWrapper,
+                                                                                                           phaseVolFrac );
     } );
   }
 }
@@ -662,6 +793,41 @@ void CompositionalMultiphaseFlow::backupFields( MeshLevel & mesh ) const
       poroOld[ei] = poroRef[ei] * pvMult[ei][0];
     } );
   } );
+
+  //  backup thermal fields
+  if( m_isothermalFlag == 0 )
+  {
+    forTargetSubRegions( mesh, [&]( localIndex const targetIndex, ElementSubRegionBase & subRegion )
+    {
+      MultiFluidBase const & fluid = getConstitutiveModel< MultiFluidBase >( subRegion, fluidModelNames()[targetIndex] );
+      SolidBase const & solid = getConstitutiveModel< SolidBase >( subRegion, solidModelNames()[targetIndex] );
+
+      arrayView1d< integer const > const elemGhostRank = subRegion.ghostRank();
+
+      arrayView3d< real64 const > const phaseInternalEnergy = fluid.phaseInternalEnergy();
+      arrayView2d< real64 const > const rockInternalEnergy = solid.internalEnergy();
+
+      arrayView2d< real64 > const phaseInternalEnergyOld =
+        subRegion.getReference< array2d< real64 > >( viewKeyStruct::phaseInternalEnergyOldString() );
+      arrayView1d< real64 > rockInternalEnergyOld =
+        subRegion.getReference< array1d< real64 > >( viewKeyStruct::rockInternalEnergyOldString() );
+
+      localIndex const NP = m_numPhases;
+
+      forAll< parallelDevicePolicy<> >( subRegion.size(), [=] GEOSX_HOST_DEVICE ( localIndex const ei )
+      {
+        if( elemGhostRank[ei] >= 0 )
+          return;
+
+        for( localIndex ip = 0; ip < NP; ++ip )
+        {
+          phaseInternalEnergyOld[ei][ip] = phaseInternalEnergy[ei][0][ip];
+          rockInternalEnergyOld[ei] = rockInternalEnergy[ei][0];
+        }
+
+      } );
+    } );
+  }
 }
 
 void
@@ -759,7 +925,8 @@ void CompositionalMultiphaseFlow::assembleAccumulationTerms( DomainPartition con
     arrayView3d< real64 const > const & phaseCompFracOld =
       subRegion.getReference< array3d< real64 > >( viewKeyStruct::phaseComponentFractionOldString() );
 
-    ConstitutiveBase const & solid = getConstitutiveModel( subRegion, solidModelNames()[targetIndex] );
+    SolidBase const & solid = getConstitutiveModel< SolidBase >( subRegion, solidModelNames()[targetIndex] );
+
     arrayView2d< real64 const > const & pvMult =
       solid.getReference< array2d< real64 > >( ConstitutiveBase::viewKeyStruct::poreVolumeMultiplierString() );
     arrayView2d< real64 const > const & dPvMult_dPres =
@@ -773,32 +940,99 @@ void CompositionalMultiphaseFlow::assembleAccumulationTerms( DomainPartition con
     arrayView4d< real64 const > const & dPhaseCompFrac_dPres = fluid.dPhaseCompFraction_dPressure();
     arrayView5d< real64 const > const & dPhaseCompFrac_dComp = fluid.dPhaseCompFraction_dGlobalCompFraction();
 
-    KernelLaunchSelector1< AccumulationKernel >( m_numComponents,
-                                                 m_numPhases,
-                                                 subRegion.size(),
-                                                 dofManager.rankOffset(),
-                                                 dofNumber,
-                                                 elemGhostRank,
-                                                 volume,
-                                                 porosityOld,
-                                                 porosityRef,
-                                                 pvMult,
-                                                 dPvMult_dPres,
-                                                 dCompFrac_dCompDens,
-                                                 phaseVolFracOld,
-                                                 phaseVolFrac,
-                                                 dPhaseVolFrac_dPres,
-                                                 dPhaseVolFrac_dCompDens,
-                                                 phaseDensOld,
-                                                 phaseDens,
-                                                 dPhaseDens_dPres,
-                                                 dPhaseDens_dComp,
-                                                 phaseCompFracOld,
-                                                 phaseCompFrac,
-                                                 dPhaseCompFrac_dPres,
-                                                 dPhaseCompFrac_dComp,
-                                                 localMatrix,
-                                                 localRhs );
+    if( m_isothermalFlag )
+    {
+      IsothermalCompositionalMultiphaseFlowKernels::KernelLaunchSelector1
+      < IsothermalCompositionalMultiphaseFlowKernels::AccumulationKernel >( m_numComponents,
+                                                                            m_numPhases,
+                                                                            subRegion.size(),
+                                                                            dofManager.rankOffset(),
+                                                                            dofNumber,
+                                                                            elemGhostRank,
+                                                                            volume,
+                                                                            porosityOld,
+                                                                            porosityRef,
+                                                                            pvMult,
+                                                                            dPvMult_dPres,
+                                                                            dCompFrac_dCompDens,
+                                                                            phaseVolFracOld,
+                                                                            phaseVolFrac,
+                                                                            dPhaseVolFrac_dPres,
+                                                                            dPhaseVolFrac_dCompDens,
+                                                                            phaseDensOld,
+                                                                            phaseDens,
+                                                                            dPhaseDens_dPres,
+                                                                            dPhaseDens_dComp,
+                                                                            phaseCompFracOld,
+                                                                            phaseCompFrac,
+                                                                            dPhaseCompFrac_dPres,
+                                                                            dPhaseCompFrac_dComp,
+                                                                            localMatrix,
+                                                                            localRhs );
+    }
+    else
+    {
+
+      arrayView2d< real64 const > const & dPhaseVolFrac_dTemp =
+        subRegion.getReference< array2d< real64 > >( viewKeyStruct::dPhaseVolumeFraction_dTemperatureString() );
+
+      arrayView3d< real64 const > const & dPhaseDens_dTemp = fluid.dPhaseDensity_dTemperature();
+      arrayView4d< real64 const > const & dPhaseCompFrac_dTemp = fluid.dPhaseCompFraction_dTemperature();
+
+      arrayView2d< real64 const > const & phaseInternalEnergyOld =
+        subRegion.getReference< array2d< real64 > >( viewKeyStruct::phaseInternalEnergyOldString() );
+      arrayView3d< real64 const > const & phaseInternalEnergy = fluid.phaseInternalEnergy();
+      arrayView3d< real64 const > const & dPhaseInternalEnergy_dPres = fluid.dPhaseInternalEnergy_dPressure();
+      arrayView3d< real64 const > const & dPhaseInternalEnergy_dTemp = fluid.dPhaseInternalEnergy_dTemperature();
+      arrayView4d< real64 const > const & dPhaseInternalEnergy_dComp = fluid.dPhaseInternalEnergy_dGlobalCompFraction();
+
+      arrayView1d< real64 const > const & rockInternalEnergyOld =
+        subRegion.getReference< array1d< real64 > >( viewKeyStruct::rockInternalEnergyOldString() );
+      arrayView2d< real64 const > const & rockInternalEnergy = solid.internalEnergy();
+      arrayView2d< real64 const > const & dRockInternalEnergy_dTemp = solid.dInternalEnergy_dTemperature();
+      arrayView2d< real64 const > const & rockDensity = solid.getDensity();
+
+      CompositionalMultiphaseFlowKernels::KernelLaunchSelector1
+      < CompositionalMultiphaseFlowKernels::AccumulationKernel >( m_numComponents,
+                                                                  m_numPhases,
+                                                                  subRegion.size(),
+                                                                  dofManager.rankOffset(),
+                                                                  dofNumber,
+                                                                  elemGhostRank,
+                                                                  volume,
+                                                                  porosityOld,
+                                                                  porosityRef,
+                                                                  pvMult,
+                                                                  dPvMult_dPres,
+                                                                  dCompFrac_dCompDens,
+                                                                  phaseVolFracOld,
+                                                                  phaseVolFrac,
+                                                                  dPhaseVolFrac_dPres,
+                                                                  dPhaseVolFrac_dTemp,
+                                                                  dPhaseVolFrac_dCompDens,
+                                                                  phaseDensOld,
+                                                                  phaseDens,
+                                                                  dPhaseDens_dPres,
+                                                                  dPhaseDens_dTemp,
+                                                                  dPhaseDens_dComp,
+                                                                  phaseCompFracOld,
+                                                                  phaseCompFrac,
+                                                                  dPhaseCompFrac_dPres,
+                                                                  dPhaseCompFrac_dTemp,
+                                                                  dPhaseCompFrac_dComp,
+                                                                  phaseInternalEnergyOld,
+                                                                  phaseInternalEnergy,
+                                                                  dPhaseInternalEnergy_dPres,
+                                                                  dPhaseInternalEnergy_dTemp,
+                                                                  dPhaseInternalEnergy_dComp,
+                                                                  rockInternalEnergyOld,
+                                                                  rockInternalEnergy,
+                                                                  dRockInternalEnergy_dTemp,
+                                                                  rockDensity,
+                                                                  localMatrix,
+                                                                  localRhs );
+    }
+
   } );
 }
 
@@ -865,33 +1099,79 @@ void CompositionalMultiphaseFlow::assembleFluxTerms( real64 const dt,
 
   fluxApprox.forAllStencils( mesh, [&] ( auto const & stencil )
   {
-    KernelLaunchSelector1< FluxKernel >( m_numComponents,
-                                         m_numPhases,
-                                         stencil,
-                                         dofManager.rankOffset(),
-                                         elemDofNumber.toNestedViewConst(),
-                                         m_elemGhostRank.toNestedViewConst(),
-                                         m_pressure.toNestedViewConst(),
-                                         m_deltaPressure.toNestedViewConst(),
-                                         m_gravCoef.toNestedViewConst(),
-                                         m_phaseMob.toNestedViewConst(),
-                                         m_dPhaseMob_dPres.toNestedViewConst(),
-                                         m_dPhaseMob_dCompDens.toNestedViewConst(),
-                                         m_dPhaseVolFrac_dPres.toNestedViewConst(),
-                                         m_dPhaseVolFrac_dCompDens.toNestedViewConst(),
-                                         m_dCompFrac_dCompDens.toNestedViewConst(),
-                                         m_phaseMassDens.toNestedViewConst(),
-                                         m_dPhaseMassDens_dPres.toNestedViewConst(),
-                                         m_dPhaseMassDens_dComp.toNestedViewConst(),
-                                         m_phaseCompFrac.toNestedViewConst(),
-                                         m_dPhaseCompFrac_dPres.toNestedViewConst(),
-                                         m_dPhaseCompFrac_dComp.toNestedViewConst(),
-                                         m_phaseCapPressure.toNestedViewConst(),
-                                         m_dPhaseCapPressure_dPhaseVolFrac.toNestedViewConst(),
-                                         m_capPressureFlag,
-                                         dt,
-                                         localMatrix.toViewConstSizes(),
-                                         localRhs.toView() );
+    if( m_isothermalFlag )
+    {
+      IsothermalCompositionalMultiphaseFlowKernels::KernelLaunchSelector1
+      < IsothermalCompositionalMultiphaseFlowKernels::FluxKernel >( m_numComponents,
+                                                                    m_numPhases,
+                                                                    stencil,
+                                                                    dofManager.rankOffset(),
+                                                                    elemDofNumber.toNestedViewConst(),
+                                                                    m_elemGhostRank.toNestedViewConst(),
+                                                                    m_pressure.toNestedViewConst(),
+                                                                    m_deltaPressure.toNestedViewConst(),
+                                                                    m_gravCoef.toNestedViewConst(),
+                                                                    m_phaseMob.toNestedViewConst(),
+                                                                    m_dPhaseMob_dPres.toNestedViewConst(),
+                                                                    m_dPhaseMob_dCompDens.toNestedViewConst(),
+                                                                    m_dPhaseVolFrac_dPres.toNestedViewConst(),
+                                                                    m_dPhaseVolFrac_dCompDens.toNestedViewConst(),
+                                                                    m_dCompFrac_dCompDens.toNestedViewConst(),
+                                                                    m_phaseMassDens.toNestedViewConst(),
+                                                                    m_dPhaseMassDens_dPres.toNestedViewConst(),
+                                                                    m_dPhaseMassDens_dComp.toNestedViewConst(),
+                                                                    m_phaseCompFrac.toNestedViewConst(),
+                                                                    m_dPhaseCompFrac_dPres.toNestedViewConst(),
+                                                                    m_dPhaseCompFrac_dComp.toNestedViewConst(),
+                                                                    m_phaseCapPressure.toNestedViewConst(),
+                                                                    m_dPhaseCapPressure_dPhaseVolFrac.toNestedViewConst(),
+                                                                    m_capPressureFlag,
+                                                                    dt,
+                                                                    localMatrix.toViewConstSizes(),
+                                                                    localRhs.toView()  );
+    }
+    else
+    {
+      CompositionalMultiphaseFlowKernels::KernelLaunchSelector1
+      < CompositionalMultiphaseFlowKernels::FluxKernel >( m_numComponents,
+                                                          m_numPhases,
+                                                          stencil,
+                                                          dofManager.rankOffset(),
+                                                          elemDofNumber.toNestedViewConst(),
+                                                          m_elemGhostRank.toNestedViewConst(),
+                                                          m_pressure.toNestedViewConst(),
+                                                          m_deltaPressure.toNestedViewConst(),
+                                                          m_gravCoef.toNestedViewConst(),
+                                                          m_phaseMob.toNestedViewConst(),
+                                                          m_dPhaseMob_dPres.toNestedViewConst(),
+                                                          m_dPhaseMob_dTemp.toNestedViewConst(),
+                                                          m_dPhaseMob_dCompDens.toNestedViewConst(),
+                                                          m_phaseVolFrac.toNestedViewConst(),
+                                                          m_dPhaseVolFrac_dPres.toNestedViewConst(),
+                                                          m_dPhaseVolFrac_dTemp.toNestedViewConst(),
+                                                          m_dPhaseVolFrac_dCompDens.toNestedViewConst(),
+                                                          m_dCompFrac_dCompDens.toNestedViewConst(),
+                                                          m_phaseMassDens.toNestedViewConst(),
+                                                          m_dPhaseMassDens_dPres.toNestedViewConst(),
+                                                          m_dPhaseMassDens_dTemp.toNestedViewConst(),
+                                                          m_dPhaseMassDens_dComp.toNestedViewConst(),
+                                                          m_phaseCompFrac.toNestedViewConst(),
+                                                          m_dPhaseCompFrac_dPres.toNestedViewConst(),
+                                                          m_dPhaseCompFrac_dTemp.toNestedViewConst(),
+                                                          m_dPhaseCompFrac_dComp.toNestedViewConst(),
+                                                          m_phaseCapPressure.toNestedViewConst(),
+                                                          m_dPhaseCapPressure_dPhaseVolFrac.toNestedViewConst(),
+                                                          m_temperature.toNestedViewConst(),
+                                                          m_deltaTemperature.toNestedViewConst(),
+                                                          m_phaseEnthalpy.toNestedViewConst(),
+                                                          m_dPhaseEnthalpy_dPres.toNestedViewConst(),
+                                                          m_dPhaseEnthalpy_dTemp.toNestedViewConst(),
+                                                          m_dPhaseEnthalpy_dComp.toNestedViewConst(),
+                                                          m_capPressureFlag,
+                                                          dt,
+                                                          localMatrix.toViewConstSizes(),
+                                                          localRhs.toView()  );
+    }
   } );
 }
 
@@ -927,20 +1207,46 @@ void CompositionalMultiphaseFlow::assembleVolumeBalanceTerms( DomainPartition co
     arrayView2d< real64 const > const & dPvMult_dPres =
       solid.getReference< array2d< real64 > >( ConstitutiveBase::viewKeyStruct::dPVMult_dPresString() );
 
-    KernelLaunchSelector2< VolumeBalanceKernel >( m_numComponents, m_numPhases,
-                                                  subRegion.size(),
-                                                  dofManager.rankOffset(),
-                                                  dofNumber,
-                                                  elemGhostRank,
-                                                  volume,
-                                                  porosityRef,
-                                                  pvMult,
-                                                  dPvMult_dPres,
-                                                  phaseVolFrac,
-                                                  dPhaseVolFrac_dPres,
-                                                  dPhaseVolFrac_dCompDens,
-                                                  localMatrix.toViewConstSizes(),
-                                                  localRhs.toView() );
+    if( m_isothermalFlag )
+    {
+      IsothermalCompositionalMultiphaseFlowKernels::KernelLaunchSelector2
+      < IsothermalCompositionalMultiphaseFlowKernels::VolumeBalanceKernel >( m_numComponents, m_numPhases,
+                                                                             subRegion.size(),
+                                                                             dofManager.rankOffset(),
+                                                                             dofNumber,
+                                                                             elemGhostRank,
+                                                                             volume,
+                                                                             porosityRef,
+                                                                             pvMult,
+                                                                             dPvMult_dPres,
+                                                                             phaseVolFrac,
+                                                                             dPhaseVolFrac_dPres,
+                                                                             dPhaseVolFrac_dCompDens,
+                                                                             localMatrix.toViewConstSizes(),
+                                                                             localRhs.toView() );
+    }
+    else
+    {
+      arrayView2d< real64 const > const & dPhaseVolFrac_dTemp =
+        subRegion.getReference< array2d< real64 > >( viewKeyStruct::dPhaseVolumeFraction_dTemperatureString() );
+
+      CompositionalMultiphaseFlowKernels::KernelLaunchSelector2
+      < CompositionalMultiphaseFlowKernels::VolumeBalanceKernel >( m_numComponents, m_numPhases,
+                                                                   subRegion.size(),
+                                                                   dofManager.rankOffset(),
+                                                                   dofNumber,
+                                                                   elemGhostRank,
+                                                                   volume,
+                                                                   porosityRef,
+                                                                   pvMult,
+                                                                   dPvMult_dPres,
+                                                                   phaseVolFrac,
+                                                                   dPhaseVolFrac_dPres,
+                                                                   dPhaseVolFrac_dTemp,
+                                                                   dPhaseVolFrac_dCompDens,
+                                                                   localMatrix.toViewConstSizes(),
+                                                                   localRhs.toView() );
+    }
   } );
 }
 
@@ -1132,11 +1438,12 @@ void CompositionalMultiphaseFlow::applyDirichletBC( real64 const time,
       typename TYPEOFREF( castedFluid ) ::KernelWrapper fluidWrapper = castedFluid.createKernelWrapper();
 
       // MultiFluid models are not thread-safe or device-capable yet
-      FluidUpdateKernel::launch< serialPolicy >( targetSet,
-                                                 fluidWrapper,
-                                                 bcPres,
-                                                 m_temperature,
-                                                 compFrac );
+
+      IsothermalCompositionalMultiphaseFlowKernels::FluidUpdateKernel::launch< serialPolicy >( targetSet,
+                                                                                               fluidWrapper,
+                                                                                               bcPres,
+                                                                                               m_uniformTemperature,
+                                                                                               compFrac );
     } );
 
     forAll< parallelDevicePolicy<> >( targetSet.size(), [=] GEOSX_HOST_DEVICE ( localIndex const a )
@@ -1178,52 +1485,111 @@ real64 CompositionalMultiphaseFlow::calculateResidualNorm( DomainPartition const
                                                            DofManager const & dofManager,
                                                            arrayView1d< real64 const > const & localRhs )
 {
-  localIndex const NDOF = m_numComponents + 1;
 
   MeshLevel const & mesh = domain.getMeshBody( 0 ).getMeshLevel( 0 );
-  real64 localResidualNorm = 0.0;
 
   globalIndex const rankOffset = dofManager.rankOffset();
   string const dofKey = dofManager.getKey( viewKeyStruct::dofFieldString() );
 
-  forTargetSubRegions( mesh, [&]( localIndex const targetIndex, ElementSubRegionBase const & subRegion )
+  real64 residual;
+
+  if( m_isothermalFlag )
   {
-    MultiFluidBase const & fluid = getConstitutiveModel< MultiFluidBase >( subRegion, m_fluidModelNames[targetIndex] );
+    localIndex const NDOF = m_numComponents + 1;
 
-    arrayView1d< globalIndex const > dofNumber = subRegion.getReference< array1d< globalIndex > >( dofKey );
-    arrayView1d< integer const > const & elemGhostRank = subRegion.ghostRank();
-    arrayView1d< real64 const > const & volume = subRegion.getElementVolume();
-    arrayView1d< real64 const > const & refPoro = subRegion.getReference< array1d< real64 > >( viewKeyStruct::referencePorosityString() );
-    arrayView2d< real64 const > const & totalDens = fluid.totalDensity();
+    real64 localResidualNorm = 0.0;
 
-    RAJA::ReduceSum< parallelDeviceReduce, real64 > localSum( 0.0 );
-
-    forAll< parallelDevicePolicy<> >( subRegion.size(), [=] GEOSX_HOST_DEVICE ( localIndex const ei )
+    forTargetSubRegions( mesh, [&]( localIndex const targetIndex, ElementSubRegionBase const & subRegion )
     {
-      if( elemGhostRank[ei] < 0 )
-      {
-        localIndex const localRow = dofNumber[ei] - rankOffset;
-        real64 const normalizer = totalDens[ei][0] * refPoro[ei] * volume[ei];
+      MultiFluidBase const & fluid = getConstitutiveModel< MultiFluidBase >( subRegion, m_fluidModelNames[targetIndex] );
 
-        for( localIndex idof = 0; idof < NDOF; ++idof )
+      arrayView1d< globalIndex const > dofNumber = subRegion.getReference< array1d< globalIndex > >( dofKey );
+      arrayView1d< integer const > const & elemGhostRank = subRegion.ghostRank();
+      arrayView1d< real64 const > const & volume = subRegion.getElementVolume();
+      arrayView1d< real64 const > const & refPoro = subRegion.getReference< array1d< real64 > >( viewKeyStruct::referencePorosityString() );
+      arrayView2d< real64 const > const & totalDens = fluid.totalDensity();
+
+      RAJA::ReduceSum< parallelDeviceReduce, real64 > localSum( 0.0 );
+
+      forAll< parallelDevicePolicy<> >( subRegion.size(), [=] GEOSX_HOST_DEVICE ( localIndex const ei )
+      {
+        if( elemGhostRank[ei] < 0 )
         {
-          real64 const val = localRhs[localRow + idof] / normalizer;
-          localSum += val * val;
+          localIndex const localRow = dofNumber[ei] - rankOffset;
+          real64 const normalizer = totalDens[ei][0] * refPoro[ei] * volume[ei];
+
+          for( localIndex idof = 0; idof < NDOF; ++idof )
+          {
+            real64 const val = localRhs[localRow + idof] / normalizer;
+            localSum += val * val;
+          }
         }
-      }
+      } );
+
+      localResidualNorm += localSum.get();
     } );
 
-    localResidualNorm += localSum.get();
-  } );
+    // compute global residual norm
+    residual = std::sqrt( MpiWrapper::sum( localResidualNorm ) );
 
-  // compute global residual norm
-  real64 const residual = std::sqrt( MpiWrapper::sum( localResidualNorm ) );
-
-  if( getLogLevel() >= 1 && logger::internal::rank==0 )
+    if( getLogLevel() >= 1 && logger::internal::rank==0 )
+    {
+      char output[200] = {0};
+      sprintf( output, "    ( Rfluid ) = (%4.2e) ; ", residual );
+      std::cout<<output;
+    }
+  }
+  else
   {
-    char output[200] = {0};
-    sprintf( output, "    ( Rfluid ) = (%4.2e) ; ", residual );
-    std::cout<<output;
+    localIndex const numFlowDOF = m_numComponents + 1;
+
+    real64 localFlowResidualNorm = 0.0;
+    real64 localEnergyResidualNorm = 0.0;
+
+    forTargetSubRegions( mesh, [&]( localIndex const targetIndex, ElementSubRegionBase const & subRegion )
+    {
+      MultiFluidBase const & fluid = getConstitutiveModel< MultiFluidBase >( subRegion, m_fluidModelNames[targetIndex] );
+
+      arrayView1d< globalIndex const > dofNumber = subRegion.getReference< array1d< globalIndex > >( dofKey );
+      arrayView1d< integer const > const & elemGhostRank = subRegion.ghostRank();
+      arrayView1d< real64 const > const & volume = subRegion.getElementVolume();
+      arrayView1d< real64 const > const & refPoro = subRegion.getReference< array1d< real64 > >( viewKeyStruct::referencePorosityString() );
+      arrayView2d< real64 const > const & totalDens = fluid.totalDensity();
+
+      RAJA::ReduceSum< parallelDeviceReduce, real64 > localFlowSum( 0.0 );
+      RAJA::ReduceSum< parallelDeviceReduce, real64 > localEnergySum( 0.0 );
+
+      forAll< parallelDevicePolicy<> >( subRegion.size(), [=] GEOSX_HOST_DEVICE ( localIndex const ei )
+      {
+        if( elemGhostRank[ei] < 0 )
+        {
+          localIndex const localRow = dofNumber[ei] - rankOffset;
+          real64 const normalizer = totalDens[ei][0] * refPoro[ei] * volume[ei];
+
+          for( localIndex idof = 0; idof < numFlowDOF; ++idof )
+          {
+            real64 const val = localRhs[localRow + idof] / normalizer;
+            localFlowSum += val * val;
+          }
+          real64 const val = localRhs[localRow + numFlowDOF];
+          localEnergySum += val*val;
+        }
+      } );
+      localFlowResidualNorm += localFlowSum.get();
+      localEnergyResidualNorm += localEnergySum.get();
+    } );
+
+    // compute global residual norm
+    real64 const flowResidual   = std::sqrt( MpiWrapper::sum( localFlowResidualNorm ) );
+    real64 const energyResidual = std::sqrt( MpiWrapper::sum( localEnergyResidualNorm ) );
+
+    residual = ( flowResidual + energyResidual ) / 2;
+    if( getLogLevel() >= 1 && logger::internal::rank==0 )
+    {
+      char output[200] = {0};
+      sprintf( output, "    ( Rflow ) = (%4.2e) - ( Renergy ) = (%4.2e)  ; ", flowResidual, energyResidual );
+      std::cout<<output;
+    }
   }
 
   return residual;
@@ -1413,8 +1779,15 @@ void CompositionalMultiphaseFlow::applySystemSolution( DofManager const & dofMan
   }
 
   std::map< string, string_array > fieldNames;
+
   fieldNames["elems"].emplace_back( string( viewKeyStruct::deltaPressureString() ) );
   fieldNames["elems"].emplace_back( string( viewKeyStruct::deltaGlobalCompDensityString() ) );
+
+  if( m_isothermalFlag == 0 )
+  {
+    fieldNames["elems"].emplace_back( string( viewKeyStruct::deltaTemperatureString() ) );
+  }
+
   getGlobalState().getCommunicationTools().synchronizeFields( fieldNames, mesh, domain.getNeighbors(), true );
 
   forTargetSubRegions( mesh, [&]( localIndex const targetIndex, ElementSubRegionBase & subRegion )
@@ -1458,18 +1831,38 @@ void CompositionalMultiphaseFlow::resetStateToBeginningOfStep( DomainPartition &
 {
   MeshLevel & mesh = domain.getMeshBody( 0 ).getMeshLevel( 0 );
 
-  forTargetSubRegions( mesh, [&]( localIndex const targetIndex, ElementSubRegionBase & subRegion )
+  if( m_isothermalFlag )
   {
-    arrayView1d< real64 > const & dPres =
-      subRegion.getReference< array1d< real64 > >( viewKeyStruct::deltaPressureString() );
-    arrayView2d< real64 > const & dCompDens =
-      subRegion.getReference< array2d< real64 > >( viewKeyStruct::deltaGlobalCompDensityString() );
+    forTargetSubRegions( mesh, [&]( localIndex const targetIndex, ElementSubRegionBase & subRegion )
+    {
+      arrayView1d< real64 > const & dPres =
+        subRegion.getReference< array1d< real64 > >( viewKeyStruct::deltaPressureString() );
+      arrayView2d< real64 > const & dCompDens =
+        subRegion.getReference< array2d< real64 > >( viewKeyStruct::deltaGlobalCompDensityString() );
+      dPres.setValues< parallelDevicePolicy<> >( 0.0 );
+      dCompDens.setValues< parallelDevicePolicy<> >( 0.0 );
 
-    dPres.setValues< parallelDevicePolicy<> >( 0.0 );
-    dCompDens.setValues< parallelDevicePolicy<> >( 0.0 );
+      updateState( subRegion, targetIndex );
+    } );
+  }
+  else
+  {
+    forTargetSubRegions( mesh, [&]( localIndex const targetIndex, ElementSubRegionBase & subRegion )
+    {
+      arrayView1d< real64 > const & dPres =
+        subRegion.getReference< array1d< real64 > >( viewKeyStruct::deltaPressureString() );
+      arrayView2d< real64 > const & dCompDens =
+        subRegion.getReference< array2d< real64 > >( viewKeyStruct::deltaGlobalCompDensityString() );
+      arrayView1d< real64 > const & dTemp =
+        subRegion.getReference< array1d< real64 > >( viewKeyStruct::deltaTemperatureString() );
 
-    updateState( subRegion, targetIndex );
-  } );
+      dPres.setValues< parallelDevicePolicy<> >( 0.0 );
+      dCompDens.setValues< parallelDevicePolicy<> >( 0.0 );
+      dTemp.setValues< parallelDevicePolicy<> >( 0.0 );
+
+      updateState( subRegion, targetIndex );
+    } );
+  }
 }
 
 void CompositionalMultiphaseFlow::implicitStepComplete( real64 const & GEOSX_UNUSED_PARAM( time ),
@@ -1501,6 +1894,22 @@ void CompositionalMultiphaseFlow::implicitStepComplete( real64 const & GEOSX_UNU
       }
     } );
   } );
+
+  if( m_isothermalFlag == 0 )
+  {
+    forTargetSubRegions( mesh, [&]( localIndex const, ElementSubRegionBase & subRegion )
+    {
+      arrayView1d< real64 const > const dTemp =
+        subRegion.getReference< array1d< real64 > >( viewKeyStruct::deltaTemperatureString() );
+      arrayView1d< real64 > const temp =
+        subRegion.getReference< array1d< real64 > >( viewKeyStruct::temperatureString() );
+
+      forAll< parallelDevicePolicy<> >( subRegion.size(), [=] GEOSX_HOST_DEVICE ( localIndex const ei )
+      {
+        temp[ei] += dTemp[ei];
+      } );
+    } );
+  }
 }
 
 void CompositionalMultiphaseFlow::resetViews( MeshLevel & mesh )
@@ -1519,6 +1928,10 @@ void CompositionalMultiphaseFlow::resetViews( MeshLevel & mesh )
   m_dCompFrac_dCompDens.clear();
   m_dCompFrac_dCompDens = elemManager.constructArrayViewAccessor< real64, 3 >( viewKeyStruct::dGlobalCompFraction_dGlobalCompDensityString() );
   m_dCompFrac_dCompDens.setName( getName() + "/accessors/" + viewKeyStruct::dGlobalCompFraction_dGlobalCompDensityString() );
+
+  m_phaseVolFrac.clear();
+  m_phaseVolFrac = elemManager.constructArrayViewAccessor< real64, 2 >( viewKeyStruct::phaseVolumeFractionString() );
+  m_phaseVolFrac.setName( getName() + "/accessors/" + viewKeyStruct::phaseVolumeFractionString() );
 
   m_dPhaseVolFrac_dPres.clear();
   m_dPhaseVolFrac_dPres = elemManager.constructArrayViewAccessor< real64, 2 >( viewKeyStruct::dPhaseVolumeFraction_dPressureString() );
@@ -1594,6 +2007,70 @@ void CompositionalMultiphaseFlow::resetViews( MeshLevel & mesh )
                                                                                                      targetRegionNames(),
                                                                                                      capPresModelNames() );
     m_dPhaseCapPressure_dPhaseVolFrac.setName( getName() + "/accessors/" + keys::dPhaseCapPressure_dPhaseVolFractionString() );
+  }
+  if( m_isothermalFlag == 0 )
+  {
+    using keys = MultiFluidBase::viewKeyStruct;
+
+    m_temperature.clear();
+    m_temperature = elemManager.constructArrayViewAccessor< real64, 1 >( viewKeyStruct::temperatureString() );
+    m_temperature.setName( getName() + "/accessors/" + viewKeyStruct::temperatureString() );
+
+    m_deltaTemperature.clear();
+    m_deltaTemperature = elemManager.constructArrayViewAccessor< real64, 1 >( viewKeyStruct::deltaTemperatureString() );
+    m_deltaTemperature.setName( getName() + "/accessors/" + viewKeyStruct::deltaTemperatureString() );
+
+    m_dPhaseVolFrac_dTemp.clear();
+    m_dPhaseVolFrac_dTemp = elemManager.constructArrayViewAccessor< real64, 2 >( viewKeyStruct::dPhaseVolumeFraction_dTemperatureString() );
+    m_dPhaseVolFrac_dTemp.setName( getName() + "/accessors/" + viewKeyStruct::dPhaseVolumeFraction_dTemperatureString() );
+
+    m_dPhaseMob_dTemp.clear();
+    m_dPhaseMob_dTemp = elemManager.constructArrayViewAccessor< real64, 2 >( viewKeyStruct::dPhaseMobility_dTemperatureString() );
+    m_dPhaseMob_dTemp.setName( getName() + "/accessors/" + viewKeyStruct::dPhaseMobility_dTemperatureString() );
+
+    m_dPhaseMassDens_dTemp.clear();
+    m_dPhaseMassDens_dTemp = elemManager.constructMaterialArrayViewAccessor< real64, 3 >( keys::dPhaseMassDensity_dTemperatureString(),
+                                                                                          targetRegionNames(),
+                                                                                          fluidModelNames() );
+    m_dPhaseMassDens_dTemp.setName( getName() + "/accessors/" + keys::dPhaseMassDensity_dTemperatureString() );
+
+    m_dPhaseCompFrac_dTemp.clear();
+    m_dPhaseCompFrac_dTemp = elemManager.constructMaterialArrayViewAccessor< real64, 4 >( keys::dPhaseCompFraction_dTemperatureString(),
+                                                                                          targetRegionNames(),
+                                                                                          fluidModelNames() );
+    m_dPhaseCompFrac_dTemp.setName( getName() + "/accessors/" + keys::dPhaseCompFraction_dTemperatureString() );
+
+    m_dPhaseMob_dTemp.clear();
+    m_dPhaseMob_dTemp = elemManager.constructArrayViewAccessor< real64, 2 >( viewKeyStruct::dPhaseMobility_dTemperatureString() );
+    m_dPhaseMob_dTemp.setName( getName() + "/accessors/" + viewKeyStruct::dPhaseMobility_dTemperatureString() );
+
+
+    m_phaseEnthalpy.clear();
+    m_phaseEnthalpy = elemManager.constructMaterialArrayViewAccessor< real64, 3 >( keys::phaseEnthalpyString(),
+                                                                                   targetRegionNames(),
+                                                                                   fluidModelNames() );
+    m_phaseEnthalpy.setName( getName() + "/accessors/" + keys::phaseEnthalpyString() );
+
+    m_dPhaseEnthalpy_dPres.clear();
+    m_dPhaseEnthalpy_dPres = elemManager.constructMaterialArrayViewAccessor< real64, 3 >( keys::dPhaseEnthalpy_dPressureString(),
+                                                                                          targetRegionNames(),
+                                                                                          fluidModelNames() );
+    m_dPhaseEnthalpy_dPres.setName( getName() + "/accessors/" + keys::dPhaseEnthalpy_dPressureString() );
+
+    m_dPhaseEnthalpy_dTemp.clear();
+    m_dPhaseEnthalpy_dTemp = elemManager.constructMaterialArrayViewAccessor< real64, 3 >( keys::dPhaseEnthalpy_dTemperatureString(),
+                                                                                          targetRegionNames(),
+                                                                                          fluidModelNames() );
+    m_dPhaseEnthalpy_dTemp.setName( getName() + "/accessors/" + keys::dPhaseEnthalpy_dTemperatureString() );
+
+    m_dPhaseEnthalpy_dComp.clear();
+    m_dPhaseEnthalpy_dComp = elemManager.constructMaterialArrayViewAccessor< real64, 4 >( keys::dPhaseEnthalpy_dGlobalCompFractionString(),
+                                                                                          targetRegionNames(),
+                                                                                          fluidModelNames() );
+    m_dPhaseEnthalpy_dComp.setName( getName() + "/accessors/" + keys::dPhaseEnthalpy_dGlobalCompFractionString() );
+
+
+
   }
 }
 

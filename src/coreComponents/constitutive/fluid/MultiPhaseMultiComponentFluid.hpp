@@ -54,6 +54,7 @@ public:
 
   MultiPhaseMultiComponentFluidUpdate( std::vector< std::shared_ptr< PVTProps::PVTFunction const > > const & phaseDensityFuns,
                                        std::vector< std::shared_ptr< PVTProps::PVTFunction const > > const & phaseViscosityFuns,
+                                       std::vector< std::shared_ptr< PVTProps::PVTFunction const > > const & phaseEnthalpyFuns,
                                        std::shared_ptr< PVTProps::FlashModel const > const & flashModel,
                                        arrayView1d< real64 const > const & componentMolarWeight,
                                        bool useMass,
@@ -80,7 +81,15 @@ public:
                                        arrayView2d< real64 > const & totalDensity,
                                        arrayView2d< real64 > const & dTotalDensity_dPressure,
                                        arrayView2d< real64 > const & dTotalDensity_dTemperature,
-                                       arrayView3d< real64 > const & dTotalDensity_dGlobalCompFraction )
+                                       arrayView3d< real64 > const & dTotalDensity_dGlobalCompFraction,
+                                       arrayView3d< real64 > const & phaseEnthalpy,
+                                       arrayView3d< real64 > const & dPhaseEnthalpy_dPressure,
+                                       arrayView3d< real64 > const & dPhaseEnthalpy_dTemperature,
+                                       arrayView4d< real64 > const & dPhaseEnthalpy_dGlobalCompFraction,
+                                       arrayView3d< real64 > const & phaseInternalEnergy,
+                                       arrayView3d< real64 > const & dPhaseInternalEnergy_dPressure,
+                                       arrayView3d< real64 > const & dPhaseInternalEnergy_dTemperature,
+                                       arrayView4d< real64 > const & dPhaseInternalEnergy_dGlobalCompFraction )
     : MultiFluidBaseUpdate( componentMolarWeight,
                             useMass,
                             phaseFraction,
@@ -106,9 +115,18 @@ public:
                             totalDensity,
                             dTotalDensity_dPressure,
                             dTotalDensity_dTemperature,
-                            dTotalDensity_dGlobalCompFraction ),
+                            dTotalDensity_dGlobalCompFraction,
+                            phaseEnthalpy,
+                            dPhaseEnthalpy_dPressure,
+                            dPhaseEnthalpy_dTemperature,
+                            dPhaseEnthalpy_dGlobalCompFraction,
+                            phaseInternalEnergy,
+                            dPhaseInternalEnergy_dPressure,
+                            dPhaseInternalEnergy_dTemperature,
+                            dPhaseInternalEnergy_dGlobalCompFraction ),
     m_phaseDensityFuns( phaseDensityFuns ),
     m_phaseViscosityFuns( phaseViscosityFuns ),
+    m_phaseEnthalpyFuns( phaseEnthalpyFuns ),
     m_flashModel( flashModel )
   {}
 
@@ -160,7 +178,15 @@ public:
                         real64 & totalDensity,
                         real64 & dTotalDensity_dPressure,
                         real64 & dTotalDensity_dTemperature,
-                        arraySlice1d< real64 > const & dTotalDensity_dGlobalCompFraction ) const override;
+                        arraySlice1d< real64 > const & dTotalDensity_dGlobalCompFraction,
+                        arraySlice1d< real64 > const & phaseEnthalpy,
+                        arraySlice1d< real64 > const & dPhaseEnthalpy_dPressure,
+                        arraySlice1d< real64 > const & dPhaseEnthalpy_dTemperature,
+                        arraySlice2d< real64 > const & dPhaseEnthalpy_dGlobalCompFraction,
+                        arraySlice1d< real64 > const & phaseInternalEnergy,
+                        arraySlice1d< real64 > const & dPhaseInternalEnergy_dPressure,
+                        arraySlice1d< real64 > const & dPhaseInternalEnergy_dTemperature,
+                        arraySlice2d< real64 > const & dPhaseInternalEnergy_dGlobalCompFraction ) const override;
 
   GEOSX_FORCE_INLINE
   virtual void update( localIndex const k,
@@ -195,13 +221,22 @@ public:
              m_totalDensity[k][q],
              m_dTotalDensity_dPressure[k][q],
              m_dTotalDensity_dTemperature[k][q],
-             m_dTotalDensity_dGlobalCompFraction[k][q] );
+             m_dTotalDensity_dGlobalCompFraction[k][q],
+             m_phaseEnthalpy[k][q],
+             m_dPhaseEnthalpy_dPressure[k][q],
+             m_dPhaseEnthalpy_dTemperature[k][q],
+             m_dPhaseEnthalpy_dGlobalCompFraction[k][q],
+             m_phaseInternalEnergy[k][q],
+             m_dPhaseInternalEnergy_dPressure[k][q],
+             m_dPhaseInternalEnergy_dTemperature[k][q],
+             m_dPhaseInternalEnergy_dGlobalCompFraction[k][q] );
   }
 
 private:
 
   std::vector< std::shared_ptr< PVTProps::PVTFunction const > > m_phaseDensityFuns;
   std::vector< std::shared_ptr< PVTProps::PVTFunction const > > m_phaseViscosityFuns;
+  std::vector< std::shared_ptr< PVTProps::PVTFunction const > > m_phaseEnthalpyFuns;
   std::shared_ptr< PVTProps::FlashModel const > m_flashModel;
 
 };
@@ -234,6 +269,7 @@ public:
   {
     return KernelWrapper( m_phaseDensityFuns,
                           m_phaseViscosityFuns,
+                          m_phaseEnthalpyFuns,
                           m_flashModel,
                           m_componentMolarWeight.toViewConst(),
                           m_useMass,
@@ -260,7 +296,15 @@ public:
                           m_totalDensity,
                           m_dTotalDensity_dPressure,
                           m_dTotalDensity_dTemperature,
-                          m_dTotalDensity_dGlobalCompFraction );
+                          m_dTotalDensity_dGlobalCompFraction,
+                          m_phaseEnthalpy,
+                          m_dPhaseEnthalpy_dPressure,
+                          m_dPhaseEnthalpy_dTemperature,
+                          m_dPhaseEnthalpy_dGlobalCompFraction,
+                          m_phaseInternalEnergy,
+                          m_dPhaseInternalEnergy_dPressure,
+                          m_dPhaseInternalEnergy_dTemperature,
+                          m_dPhaseInternalEnergy_dGlobalCompFraction );
   }
 
   struct viewKeyStruct : MultiFluidBase::viewKeyStruct
@@ -287,6 +331,7 @@ private:
   // number of entries corrosponds to number of phases
   std::vector< std::shared_ptr< PVTProps::PVTFunction const > > m_phaseDensityFuns;
   std::vector< std::shared_ptr< PVTProps::PVTFunction const > > m_phaseViscosityFuns;
+  std::vector< std::shared_ptr< PVTProps::PVTFunction const > > m_phaseEnthalpyFuns;
 
   std::shared_ptr< PVTProps::FlashModel const > m_flashModel;
 
