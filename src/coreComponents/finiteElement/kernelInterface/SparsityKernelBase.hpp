@@ -248,6 +248,7 @@ real64 fillSparsity( MeshLevel & mesh,
                                    targetRegions,
                                    discretizationName,
                                    arrayView1d< string const >(),
+                                   "SparsityHelper< KERNEL_TEMPLATE >::template Kernel",
                                    inputDofNumber,
                                    rankOffset,
                                    inputSparsityPattern );

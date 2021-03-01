@@ -25,9 +25,9 @@
 #include "constitutive/ConstitutivePassThru.hpp"
 #include "finiteElement/FiniteElementDispatch.hpp"
 #include "mesh/ElementRegionManager.hpp"
+#include "mesh/MeshLevel.hpp"
 #include "rajaInterface/GEOS_RAJA_Interface.hpp"
-
-
+#include "LvArray/src/jitti/Cache.hpp"
 
 #if defined(__APPLE__)
 /// Use camp::tuple to hold constructor params.
@@ -318,6 +318,68 @@ protected:
 //*****************************************************************************
 //*****************************************************************************
 
+jitti::CompilationInfo getCompilationInfo();
+
+template< typename POLICY,
+          typename SUB_REGION,
+          typename CONSTITUTIVE_TYPE,
+          typename FE_TYPE,
+          template< typename,
+                    typename,
+                    typename > class KERNEL_TEMPLATE,
+          typename KERNEL_CONSTRUCTOR_PARAMS >
+real64 fooBar( NodeManager & nodeManager,
+               EdgeManager & edgeManager,
+               FaceManager & faceManager,
+               KERNEL_CONSTRUCTOR_PARAMS const & kernelConstructorParamsTuple,
+               ElementSubRegionBase & subRegionBase,
+               localIndex const numElems,
+               constitutive::ConstitutiveBase & constitutiveBase,
+               FiniteElementBase const & feBase )
+{
+  // Define an alias for the kernel type for easy use.
+  using KERNEL_TYPE = KERNEL_TEMPLATE< SUB_REGION, CONSTITUTIVE_TYPE, FE_TYPE >;
+
+  SUB_REGION & elementSubRegion = dynamicCast< SUB_REGION & >( subRegionBase );
+  FE_TYPE const & finiteElement = dynamicCast< FE_TYPE const & >( feBase );
+  CONSTITUTIVE_TYPE & castedConstitutiveRelation = dynamicCast< CONSTITUTIVE_TYPE & >( constitutiveBase );
+
+  // 1) Combine the tuple containing the physics kernel specific constructor parameters with
+  // the parameters common to all physics kernels that use this interface,
+  // 2) Instantiate the kernel.
+  // note: have two options, using std::tuple and camp::tuple. Due to a bug in the OSX
+  // implementation of std::tuple_cat, we must use camp on OSX. In the future, we should
+  // only use one option...most likely camp since we can easily fix bugs.
+#if CONSTRUCTOR_PARAM_OPTION==1
+  auto temp = std::forward_as_tuple( nodeManager,
+                                     edgeManager,
+                                     faceManager,
+                                     elementSubRegion,
+                                     finiteElement,
+                                     castedConstitutiveRelation );
+
+  auto fullKernelComponentConstructorArgs = std::tuple_cat( temp,
+                                                            kernelConstructorParamsTuple );
+
+  KERNEL_TYPE kernelComponent = std::make_from_tuple< KERNEL_TYPE >( fullKernelComponentConstructorArgs );
+
+#elif CONSTRUCTOR_PARAM_OPTION==2
+  auto temp = camp::forward_as_tuple( nodeManager,
+                                      edgeManager,
+                                      faceManager,
+                                      elementSubRegion,
+                                      finiteElement,
+                                      castedConstitutiveRelation );
+  auto fullKernelComponentConstructorArgs = camp::tuple_cat_pair( temp,
+                                                                  kernelConstructorParamsTuple );
+  KERNEL_TYPE kernelComponent = camp::make_from_tuple< KERNEL_TYPE >( fullKernelComponentConstructorArgs );
+
+#endif
+
+  // Call the kernelLaunch function, and store the maximum contribution to the residual.
+  return KERNEL_TYPE::template kernelLaunch< POLICY, KERNEL_TYPE >( numElems, kernelComponent );
+}
+
 //START_regionBasedKernelApplication
 /**
  * @brief Performs a loop over specific regions (by type and name) and calls
@@ -369,17 +431,10 @@ real64 regionBasedKernelApplication( MeshLevel & mesh,
                                      arrayView1d< string const > const & targetRegions,
                                      string const & finiteElementName,
                                      arrayView1d< string const > const & constitutiveNames,
+                                     string const & kernelName,
                                      KERNEL_CONSTRUCTOR_PARAMS && ... kernelConstructorParams )
 {
   GEOSX_MARK_FUNCTION;
-  // save the maximum residual contribution for scaling residuals for convergence criteria.
-  real64 maxResidualContribution = 0;
-
-  NodeManager & nodeManager = mesh.getNodeManager();
-  EdgeManager & edgeManager = mesh.getEdgeManager();
-  FaceManager & faceManager = mesh.getFaceManager();
-  ElementRegionManager & elementRegionManager = mesh.getElemManager();
-
 
   // Create a tuple that contains the kernelConstructorParams, as the lambda does not properly catch the parameter pack
   // until c++20
@@ -389,6 +444,25 @@ real64 regionBasedKernelApplication( MeshLevel & mesh,
   camp::tuple< KERNEL_CONSTRUCTOR_PARAMS &... > kernelConstructorParamsTuple = camp::forward_as_tuple( kernelConstructorParams ... );
 #endif
 
+  using JIT_FUNCTION_TYPE = real64 (*)( NodeManager &,
+                                        EdgeManager &,
+                                        FaceManager &,
+                                        decltype( kernelConstructorParamsTuple ) const &,
+                                        ElementSubRegionBase &,
+                                        localIndex const,
+                                        constitutive::ConstitutiveBase &,
+                                        FiniteElementBase const & );
+
+  jitti::CompilationInfo info = getCompilationInfo();
+  static jitti::Cache< JIT_FUNCTION_TYPE > s_jitCache( info.compilationTime, "./lib/jitti" );
+
+  // save the maximum residual contribution for scaling residuals for convergence criteria.
+  real64 maxResidualContribution = 0;
+
+  NodeManager & nodeManager = mesh.getNodeManager();
+  EdgeManager & edgeManager = mesh.getEdgeManager();
+  FaceManager & faceManager = mesh.getFaceManager();
+  ElementRegionManager & elementRegionManager = mesh.getElemManager();
 
   // Loop over all sub-regions in regiongs of type REGION_TYPE, that are listed in the targetRegions array.
   elementRegionManager.forElementSubRegions< REGION_TYPE >( targetRegions,
@@ -398,7 +472,9 @@ real64 regionBasedKernelApplication( MeshLevel & mesh,
                                                              &edgeManager,
                                                              &faceManager,
                                                              &kernelConstructorParamsTuple,
-                                                             &finiteElementName]
+                                                             &finiteElementName,
+                                                             &kernelName,
+                                                             &info]
                                                               ( localIndex const targetRegionIndex, auto & elementSubRegion )
   {
     localIndex const numElems = elementSubRegion.size();
@@ -419,84 +495,28 @@ real64 regionBasedKernelApplication( MeshLevel & mesh,
       constitutiveRelation = nullConstitutiveModel;
     }
 
-    // Call the constitutive dispatch which converts the type of constitutive model into a compile time constant.
-    constitutive::ConstitutivePassThru< CONSTITUTIVE_BASE >::execute( *constitutiveRelation,
-                                                                      [&maxResidualContribution,
-                                                                       &nodeManager,
-                                                                       &edgeManager,
-                                                                       &faceManager,
-                                                                       &kernelConstructorParamsTuple,
-                                                                       &elementSubRegion,
-                                                                       &finiteElementName,
-                                                                       numElems]
-                                                                        ( auto & castedConstitutiveRelation )
-    {
-      // Create an alias for the type of constitutive model.
-      using CONSTITUTIVE_TYPE = TYPEOFREF( castedConstitutiveRelation );
+    FiniteElementBase &
+    subRegionFE = elementSubRegion.template getReference< FiniteElementBase >( finiteElementName );
 
+    info.templateParams = LvArray::system::demangleType< POLICY >() + ", " +
+                          LvArray::system::demangleType< SUBREGIONTYPE >() + ", " +
+                          LvArray::system::demangleType( *constitutiveRelation ) + ", " +
+                          LvArray::system::demangleType( subRegionFE ) + ", " +
+                          kernelName + ", " +
+                          LvArray::system::demangleType( kernelConstructorParamsTuple );
 
-      string const elementTypeString = elementSubRegion.getElementTypeString();
+    auto const & jitFunction = s_jitCache.getOrLoadOrCompile( info );
 
-      FiniteElementBase &
-      subRegionFE = elementSubRegion.template getReference< FiniteElementBase >( finiteElementName );
-
-      finiteElement::dispatch3D( subRegionFE,
-                                 [&maxResidualContribution,
-                                  &nodeManager,
-                                  &edgeManager,
-                                  &faceManager,
-                                  &kernelConstructorParamsTuple,
-                                  &elementSubRegion,
-                                  &numElems,
-                                  &castedConstitutiveRelation] ( auto const finiteElement )
-      {
-        using FE_TYPE = TYPEOFREF( finiteElement );
-
-        // Define an alias for the kernel type for easy use.
-        using KERNEL_TYPE = KERNEL_TEMPLATE< SUBREGIONTYPE,
-                                             CONSTITUTIVE_TYPE,
-                                             FE_TYPE >;
-
-        // 1) Combine the tuple containing the physics kernel specific constructor parameters with
-        // the parameters common to all phsyics kernels that use this interface,
-        // 2) Instantiate the kernel.
-        // note: have two options, using std::tuple and camp::tuple. Due to a bug in the OSX
-        // implementation of std::tuple_cat, we must use camp on OSX. In the future, we should
-        // only use one option...most likely camp since we can easily fix bugs.
-#if CONSTRUCTOR_PARAM_OPTION==1
-        auto temp = std::forward_as_tuple( nodeManager,
-                                           edgeManager,
-                                           faceManager,
-                                           elementSubRegion,
-                                           finiteElement,
-                                           castedConstitutiveRelation );
-
-        auto fullKernelComponentConstructorArgs = std::tuple_cat( temp,
-                                                                  kernelConstructorParamsTuple );
-
-        KERNEL_TYPE kernelComponent = std::make_from_tuple< KERNEL_TYPE >( fullKernelComponentConstructorArgs );
-
-#elif CONSTRUCTOR_PARAM_OPTION==2
-        auto temp = camp::forward_as_tuple( nodeManager,
-                                            edgeManager,
-                                            faceManager,
-                                            elementSubRegion,
-                                            finiteElement,
-                                            castedConstitutiveRelation );
-        auto fullKernelComponentConstructorArgs = camp::tuple_cat_pair( temp,
-                                                                        kernelConstructorParamsTuple );
-        KERNEL_TYPE kernelComponent = camp::make_from_tuple< KERNEL_TYPE >( fullKernelComponentConstructorArgs );
-
-#endif
-
-        // Call the kernelLaunch function, and store the maximum contribution to the residual.
-        maxResidualContribution =
-          std::max( maxResidualContribution,
-                    KERNEL_TYPE::template kernelLaunch< POLICY,
-                                                        KERNEL_TYPE >( numElems,
-                                                                       kernelComponent ) );
-      } );
-    } );
+    maxResidualContribution =
+      std::max( maxResidualContribution,
+                jitFunction( nodeManager,
+                             edgeManager,
+                             faceManager,
+                             kernelConstructorParamsTuple,
+                             elementSubRegion,
+                             numElems,
+                             *constitutiveRelation,
+                             subRegionFE ) );
 
     // Remove the null constitutive model (not required, but cleaner)
     if( nullConstitutiveModel )
@@ -513,6 +533,6 @@ real64 regionBasedKernelApplication( MeshLevel & mesh,
 } // namespace finiteElement
 } // namespace geosx
 
-
+#include "physicsSolvers/solidMechanics/SolidMechanicsSmallStrainExplicitNewmarkKernel.hpp"
 
 #endif /* GEOSX_FINITEELEMENT_KERNELBASE_HPP_ */

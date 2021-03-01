@@ -262,7 +262,11 @@ void SolidMechanicsLagrangianFEM::initializePreSubGroups()
 
 
 template< typename ... PARAMS >
-real64 SolidMechanicsLagrangianFEM::explicitKernelDispatch( PARAMS && ... params )
+real64 SolidMechanicsLagrangianFEM::explicitKernelDispatch( MeshLevel & mesh,
+                                                            arrayView1d< string const > const & targetRegions,
+                                                            string const & finiteElementName,
+                                                            arrayView1d< string const > const & constitutiveNames,
+                                                            PARAMS && ... params )
 {
   GEOSX_MARK_FUNCTION;
   real64 rval = 0;
@@ -272,7 +276,12 @@ real64 SolidMechanicsLagrangianFEM::explicitKernelDispatch( PARAMS && ... params
              regionBasedKernelApplication< parallelDevicePolicy< 32 >,
                                            constitutive::SolidBase,
                                            CellElementSubRegion,
-                                           SolidMechanicsLagrangianFEMKernels::ExplicitSmallStrain >( std::forward< PARAMS >( params )... );
+                                           SolidMechanicsLagrangianFEMKernels::ExplicitSmallStrain >( mesh,
+                                                                                                      targetRegions,
+                                                                                                      finiteElementName,
+                                                                                                      constitutiveNames,
+                                                                                                      "geosx::SolidMechanicsLagrangianFEMKernels::ExplicitSmallStrain",
+                                                                                                      std::forward< PARAMS >( params )... );
   }
   else if( m_strainTheory==1 )
   {
@@ -280,7 +289,12 @@ real64 SolidMechanicsLagrangianFEM::explicitKernelDispatch( PARAMS && ... params
              regionBasedKernelApplication< parallelDevicePolicy< 32 >,
                                            constitutive::SolidBase,
                                            CellElementSubRegion,
-                                           SolidMechanicsLagrangianFEMKernels::ExplicitFiniteStrain >( std::forward< PARAMS >( params )... );
+                                           SolidMechanicsLagrangianFEMKernels::ExplicitFiniteStrain >( mesh,
+                                                                                                       targetRegions,
+                                                                                                       finiteElementName,
+                                                                                                       constitutiveNames,
+                                                                                                       "geosx::SolidMechanicsLagrangianFEMKernels::ExplicitFiniteStrain",
+                                                                                                       std::forward< PARAMS >( params )... );
   }
   else
   {
@@ -1027,7 +1041,8 @@ void SolidMechanicsLagrangianFEM::assembleSystem( real64 const GEOSX_UNUSED_PARA
                     SolidMechanicsLagrangianFEMKernels::QuasiStaticPoroElastic >( domain,
                                                                                   dofManager,
                                                                                   localMatrix,
-                                                                                  localRhs );
+                                                                                  localRhs,
+                                                                                  "geosx::SolidMechanicsLagrangianFEMKernels::QuasiStaticPoroElastic" );
 
   }
   else
@@ -1039,7 +1054,8 @@ void SolidMechanicsLagrangianFEM::assembleSystem( real64 const GEOSX_UNUSED_PARA
                       SolidMechanicsLagrangianFEMKernels::QuasiStatic >( domain,
                                                                          dofManager,
                                                                          localMatrix,
-                                                                         localRhs );
+                                                                         localRhs,
+                                                                         "geosx::SolidMechanicsLagrangianFEMKernels::QuasiStatic" );
     }
     else if( m_timeIntegrationOption == TimeIntegrationOption::ImplicitDynamic )
     {
@@ -1048,6 +1064,7 @@ void SolidMechanicsLagrangianFEM::assembleSystem( real64 const GEOSX_UNUSED_PARA
                                                                              dofManager,
                                                                              localMatrix,
                                                                              localRhs,
+                                                                             "geosx::SolidMechanicsLagrangianFEMKernels::ImplicitNewmark",
                                                                              m_newmarkGamma,
                                                                              m_newmarkBeta,
                                                                              m_massDamping,

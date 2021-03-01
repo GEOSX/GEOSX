@@ -168,11 +168,16 @@ public:
                        DofManager const & dofManager,
                        CRSMatrixView< real64, globalIndex const > const & localMatrix,
                        arrayView1d< real64 > const & localRhs,
+                       string const & kernelType,
                        PARAMS && ... params );
 
 
   template< typename ... PARAMS >
-  real64 explicitKernelDispatch( PARAMS && ... params );
+  real64 explicitKernelDispatch( MeshLevel & mesh,
+                                 arrayView1d< string const > const & targetRegions,
+                                 string const & finiteElementName,
+                                 arrayView1d< string const > const & constitutiveNames,
+                                 PARAMS && ... params );
 
   /**
    * Applies displacement boundary conditions to the system for implicit time integration
@@ -320,6 +325,7 @@ void SolidMechanicsLagrangianFEM::assemblyLaunch( DomainPartition & domain,
                                                   DofManager const & dofManager,
                                                   CRSMatrixView< real64, globalIndex const > const & localMatrix,
                                                   arrayView1d< real64 > const & localRhs,
+                                                  string const & kernelType,
                                                   PARAMS && ... params )
 {
   GEOSX_MARK_FUNCTION;
@@ -340,6 +346,7 @@ void SolidMechanicsLagrangianFEM::assemblyLaunch( DomainPartition & domain,
                                                                   targetRegionNames(),
                                                                   this->getDiscretizationName(),
                                                                   m_solidMaterialNames,
+                                                                  kernelType,
                                                                   dofNumber,
                                                                   dofManager.rankOffset(),
                                                                   localMatrix,

@@ -110,7 +110,6 @@ void makeDirsForPath( std::string const & path )
     GEOSX_THROW_IF( err && ( errno != EEXIST ), "Failed to create a directories for " << path, std::runtime_error );
   }
   while (pos != std::string::npos);
-
 }
 
 } /* end namespace geosx */

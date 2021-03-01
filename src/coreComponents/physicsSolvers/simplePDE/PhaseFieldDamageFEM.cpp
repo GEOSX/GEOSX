@@ -236,6 +236,7 @@ void PhaseFieldDamageFEM::assembleSystem( real64 const GEOSX_UNUSED_PARAM( time_
                                                             targetRegionNames(),
                                                             this->getDiscretizationName(),
                                                             m_solidModelNames,
+                                                            "geosx::PhaseFieldDamageKernel",
                                                             dofIndex,
                                                             dofManager.rankOffset(),
                                                             localMatrix,
