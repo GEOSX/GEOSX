@@ -2,7 +2,7 @@ language: minimal
 
 env:
   global:
-  - GEOSX_TPL_TAG=147-601
+  - GEOSX_TPL_TAG=140-613
   - secure: CGs2uH6efq1Me6xJWRr0BnwtwxoujzlowC4FHXHdWbNOkPsXf7nCgdaW5vthfD3bhnOeEUQSrfxdhTRtyU/NfcKLmKgGBnZOdUG4/JJK4gDSJ2Wp8LZ/mB0QEoODKVxbh+YtoAiHe3y4M9PGCs+wkNDw/3eEU00cK12DZ6gad0RbLjI3xkhEr/ZEZDZkcYg9yHAhl5bmpqoh/6QGnIg8mxIqdAtGDw+6tT0EgUqjeqc5bG5WwsamKzJItHSXD5zx8IJAlgDk4EzEGjZe0m56YnNfb9iwqqUsmL3Cuwgs7ByVDYw78JC5Kv42YqoxA5BxMT2mFsEe37TpYNXlzofU7ma2Duw9DGXWQd4IkTCcBxlyR0I0bfo0TmgO+y7PYG9lIyHPUkENemdozsZcWamqqkqegiEdRhDVYlSRo3mu7iCwTS6ZTALliVyEYjYxYb7oAnR3cNywXjblTCI8oKfgLSY+8WijM9SRl57JruIHLkLMCjmRI+cZBfv5tS2tYQTBPkygGrigrrN77ZiC7/TGyfggSN0+y0oYtOAgqEnBcKcreiibMW7tKcV2Z1RFD9ZvIkSc1EXLUPDP8FX1oyhmqBMqVo8LksrYLDJHQ05+F3YNgl2taSt7uMjQ4e8iZ3/IjFeMnbylDw+cj/RbS520HXsFPbWFm2Pb9pceA9n6GnY=
 
 # The integrated test repository contains large data (using git lfs) and we do not use them here.

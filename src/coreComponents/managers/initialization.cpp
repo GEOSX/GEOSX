@@ -324,14 +324,37 @@ std::unique_ptr< CommandLineOptions > parseCommandLineOptions( int argc, char * 
   return commandLineOptions;
 }
 
+void printompinfo()
+{
+  int nthreads, tid;
+
+/* Fork a team of threads giving them their own copies of variables */
+#pragma omp parallel private(nthreads, tid) default(none)
+  {
+
+    /* Obtain thread number */
+    tid = omp_get_thread_num();
+    printf("Hello World from thread = %d\n", tid);
+
+    /* Only master thread does this */
+    if (tid == 0)
+    {
+      nthreads = omp_get_num_threads();
+      printf("Number of threads = %d\n", nthreads);
+    }
+
+  } /* All threads join master thread and disband */
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 std::unique_ptr< CommandLineOptions > basicSetup( int argc, char * argv[], bool const parseCommandLine )
 {
+  printompinfo();
   setupMPI( argc, argv );
   setupLogger();
   setupLvArray();
-  setupOpenMP();
-  setupMKL();
+  setupOpenMP();  setupMKL();
   setupLAI( argc, argv );
 
   if( parseCommandLine )
