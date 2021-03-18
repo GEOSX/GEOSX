@@ -61,37 +61,6 @@ public:
 ///@{
 
 /**
- * @brief Compute an identity matrix
- * @tparam MATRIX type of matrix
- * @param comm MPI communicator
- * @param N global size of the square identity matrix
- * @param I the output matrix
- *
- * This function computes the identity matrix. It can be used to generate a dummy
- * preconditioner.
- */
-template< typename MATRIX >
-void computeIdentity( MPI_Comm comm,
-                      globalIndex N,
-                      MATRIX & I )
-{
-  // Create a matrix of size N with 1 non-zero per row
-  I.createWithGlobalSize( N, 1, comm );
-
-  I.open();
-
-  // Loop over rows to fill the matrix
-  for( globalIndex i = I.ilower(); i < I.iupper(); i++ )
-  {
-    // Set the value for element (i,i) to 1
-    I.insert( i, i, 1.0 );
-  }
-
-  // Close the matrix (make data contiguous in memory)
-  I.close();
-}
-
-/**
  * @brief Construct a square zero matrix.
  * @tparam MATRIX type of matrix
  * @param comm MPI communicator

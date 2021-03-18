@@ -1,0 +1,136 @@
+<?xml version="1.0" ?>
+
+<Problem>
+
+  <Solvers
+    gravityVector="{ 0.0, 0.0, 0.0 }">
+
+    <SolidMechanicsLagrangianSSLE
+      name="mechSolver"
+      timeIntegrationOption="QuasiStatic"
+      discretization="FE1"
+      logLevel="0"
+      targetRegions="{ region }"
+      solidMaterialNames="{ rock }">
+      <NonlinearSolverParameters
+        newtonTol="1.0e+99"
+        newtonMinIter="0"
+        newtonMaxIter="8"/>
+      <!-- Expose all available multiscale parameters -->
+      <LinearSolverParameters
+        solverType="direct"
+        preconditionerType="multiscale"
+        logLevel="1"
+        multiscaleBasisType="msrsb"
+        multiscaleMaxLevels="2"
+        multiscaleMinLocalDof="0"
+        multiscaleMinGlobalDof="0"
+        multiscaleNumSmootherSweeps="1"
+        multiscalePreOrPostSmoothing="both"
+        multiscaleSmootherType="sgs"
+        multiscaleBoundarySets="{xneg,xpos,yneg,ypos,zneg,zpos}"
+        multiscaleCoarseType="direct"
+        multiscaleCoarseningPartitionType="metis"
+        multiscaleCoarseningRatio="16"
+        multiscaleCoarseningMetisMethod="recursive"
+        multiscaleCoarseningMetisUfactor="30"
+        multiscaleMsrsbMaxIter="100"
+        multiscaleMsrsbTolerance="1e-3"
+        multiscaleMsrsbRelaxation="0.666666666"
+      />
+    </SolidMechanicsLagrangianSSLE>
+
+  </Solvers>
+
+  <Mesh>
+    <InternalMesh
+      name="mesh1"
+      elementTypes="{ C3D8 }"
+      xCoords="{ 0, 100 }"
+      yCoords="{ 0, 100 }"
+      zCoords="{ 0, 1 }"
+      nx="{ 10 }"
+      ny="{ 10 }"
+      nz="{ 1 }"
+      cellBlockNames="{ hex }"/>
+  </Mesh>
+
+  <Events
+    maxTime="1.0">
+
+    <PeriodicEvent
+      name="solverApplications"
+      forceDt="1.0"
+      target="/Solvers/mechSolver"/>
+
+    <PeriodicEvent
+      name="outputs"
+      timeFrequency="1.0"
+      targetExactTimestep="1"
+      target="/Outputs/vtkOutput"/>
+
+  </Events>
+
+  <NumericalMethods>
+    <FiniteElements>
+      <FiniteElementSpace
+        name="FE1"
+        order="1"/>
+    </FiniteElements>
+  </NumericalMethods>
+
+  <ElementRegions>
+    <CellElementRegion
+      name="region"
+      cellBlocks="{ hex }"
+      materialList="{ rock }"/>
+  </ElementRegions>
+
+  <Constitutive>
+    <ElasticIsotropic
+      name="rock"
+      defaultDensity="2700"
+      defaultYoungsModulus="1e9"
+      defaultPoissonRatio="0.25"/>
+  </Constitutive>
+
+  <FieldSpecifications>
+
+    <FieldSpecification
+      name="x-roller"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="0"
+      scale="0.0"
+      setNames="{ xneg, xpos }"/>
+
+    <FieldSpecification
+      name="y-roller"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="1"
+      scale="0.0"
+      setNames="{ yneg, ypos }"/>
+
+    <FieldSpecification
+      name="z-roller"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="2"
+      scale="0.0"
+      setNames="{ zneg }"/>
+
+    <Traction
+      name="z-force"
+      objectPath="faceManager"
+      tractionType="normal"
+      scale="1.0e6"
+      setNames="{ zpos }"/>
+
+  </FieldSpecifications>
+
+  <Outputs>
+    <VTK
+      name="vtkOutput"/>
+  </Outputs>
+</Problem>

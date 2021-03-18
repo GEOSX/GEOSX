@@ -34,13 +34,13 @@ LinearSolverParametersInput::LinearSolverParametersInput( string const & name,
     setApplyDefaultValue( m_parameters.solverType ).
     setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "Linear solver type. Available options are: "
-                    "``" + EnumStrings< LinearSolverParameters::SolverType >::concat( "|" ) + "``" );
+                    "``" + EnumStrings< LinearSolverParameters::SolverType >::concat( "``, ``" ) + "``" );
 
   registerWrapper( viewKeyStruct::preconditionerTypeString(), &m_parameters.preconditionerType ).
     setApplyDefaultValue( m_parameters.preconditionerType ).
     setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "Preconditioner type. Available options are: "
-                    "``" + EnumStrings< LinearSolverParameters::PreconditionerType >::concat( "|" ) + "``" );
+                    "``" + EnumStrings< LinearSolverParameters::PreconditionerType >::concat( "``, ``" ) + "``" );
 
   registerWrapper( viewKeyStruct::stopIfErrorString(), &m_parameters.stopIfError ).
     setApplyDefaultValue( m_parameters.stopIfError ).
@@ -61,13 +61,13 @@ LinearSolverParametersInput::LinearSolverParametersInput( string const & name,
     setApplyDefaultValue( m_parameters.direct.colPerm ).
     setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "How to permute the columns. Available options are: "
-                    "``" + EnumStrings< LinearSolverParameters::Direct::ColPerm >::concat( "|" ) + "``" );
+                    "``" + EnumStrings< LinearSolverParameters::Direct::ColPerm >::concat( "``, ``" ) + "``" );
 
   registerWrapper( viewKeyStruct::directRowPermString(), &m_parameters.direct.rowPerm ).
     setApplyDefaultValue( m_parameters.direct.rowPerm ).
     setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "How to permute the rows. Available options are: "
-                    "``" + EnumStrings< LinearSolverParameters::Direct::RowPerm >::concat( "|" ) + "``" );
+                    "``" + EnumStrings< LinearSolverParameters::Direct::RowPerm >::concat( "``, ``" ) + "``" );
 
   registerWrapper( viewKeyStruct::directReplTinyPivotString(), &m_parameters.direct.replaceTinyPivot ).
     setApplyDefaultValue( m_parameters.direct.replaceTinyPivot ).
@@ -122,13 +122,13 @@ LinearSolverParametersInput::LinearSolverParametersInput( string const & name,
     setApplyDefaultValue( m_parameters.amg.smootherType ).
     setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "AMG smoother type. Available options are: "
-                    "``" + EnumStrings< LinearSolverParameters::AMG::SmootherType >::concat( "|" ) + "``" );
+                    "``" + EnumStrings< LinearSolverParameters::AMG::SmootherType >::concat( "``, ``" ) + "``" );
 
   registerWrapper( viewKeyStruct::amgCoarseString(), &m_parameters.amg.coarseType ).
     setApplyDefaultValue( m_parameters.amg.coarseType ).
     setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "AMG coarsest level solver/smoother type. Available options are: "
-                    "``" + EnumStrings< LinearSolverParameters::AMG::CoarseType >::concat( "|" ) + "``" );
+                    "``" + EnumStrings< LinearSolverParameters::AMG::CoarseType >::concat( "``, ``" ) + "``" );
 
   registerWrapper( viewKeyStruct::amgCoarseningString(), &m_parameters.amg.coarseningType ).
     setApplyDefaultValue( "HMIS" ).
@@ -162,8 +162,8 @@ LinearSolverParametersInput::LinearSolverParametersInput( string const & name,
   registerWrapper( viewKeyStruct::amgNullSpaceTypeString(), &m_parameters.amg.nullSpaceType ).
     setApplyDefaultValue( m_parameters.amg.nullSpaceType ).
     setInputFlag( InputFlags::OPTIONAL ).
-    setDescription( "AMG near null space approximation. Available options are:"
-                    "``" + EnumStrings< LinearSolverParameters::AMG::NullSpaceType >::concat( "|" ) + "``" );
+    setDescription( "AMG near null space approximation. Available options are: "
+                    "``" + EnumStrings< LinearSolverParameters::AMG::NullSpaceType >::concat( "``, ``" ) + "``" );
 
   registerWrapper( viewKeyStruct::iluFillString(), &m_parameters.ifact.fill ).
     setApplyDefaultValue( m_parameters.ifact.fill ).
@@ -174,6 +174,24 @@ LinearSolverParametersInput::LinearSolverParametersInput( string const & name,
     setApplyDefaultValue( m_parameters.ifact.threshold ).
     setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "ILU(T) threshold factor" );
+
+  registerWrapper( viewKeyStruct::multiscaleBasisTypeString(), &m_parameters.multiscale.basisType ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleMaxLevelsString(), &m_parameters.multiscale.maxLevels ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleMinLocalDofString(), &m_parameters.multiscale.minLocalDof ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleMinGlobalDofString(), &m_parameters.multiscale.minGlobalDof ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleNumSmootherSweepsString(), &m_parameters.multiscale.numSmootherSweeps ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscalePreOrPostSmoothingString(), &m_parameters.multiscale.preOrPostSmoothing ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleSmootherTypeString(), &m_parameters.multiscale.smootherType ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleBoundarySets(), &m_parameters.multiscale.boundarySets ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleDebugLevel(), &m_parameters.multiscale.debugLevel ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleCoarseTypeString(), &m_parameters.multiscale.coarseType ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleCoarseningPartitionTypeString(), &m_parameters.multiscale.coarsening.partitionType ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleCoarseningRatioString(), &m_parameters.multiscale.coarsening.ratio ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleCoarseningMetisMethodString(), &m_parameters.multiscale.coarsening.metis.method ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleCoarseningMetisUfactorString(), &m_parameters.multiscale.coarsening.metis.ufactor ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleMsrsbMaxIterString(), &m_parameters.multiscale.msrsb.maxIter ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleMsrsbToleranceString(), &m_parameters.multiscale.msrsb.tolerance ).setInputFlag( InputFlags::OPTIONAL );
+  registerWrapper( viewKeyStruct::multiscaleMsrsbRelaxationString(), &m_parameters.multiscale.msrsb.relaxation ).setInputFlag( InputFlags::OPTIONAL );
 }
 
 void LinearSolverParametersInput::postProcessInput()

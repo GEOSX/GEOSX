@@ -34,6 +34,7 @@ inline int CommTag( int const GEOSX_UNUSED_PARAM( senderRank ),
   return comm;
 }
 
+class ObjectManagerBase;
 class MeshLevel;
 class MPI_iCommData;
 
@@ -217,17 +218,34 @@ public:
   void unpackAndRebuildSyncLists( MeshLevel & meshLevel,
                                   int const CommID );
 
+  void packCommBufferForSync( string_array const & fieldNames,
+                              ObjectManagerBase const & manager,
+                              int const commID,
+                              bool onDevice,
+                              parallelDeviceEvents & events );
+
   void packCommBufferForSync( std::map< string, string_array > const & fieldNames,
                               MeshLevel const & meshLevel,
                               int const commID,
                               bool onDevice,
                               parallelDeviceEvents & events );
 
+  int packCommSizeForSync( string_array const & fieldNames,
+                           ObjectManagerBase const & manager,
+                           int const commID,
+                           bool onDevice,
+                           parallelDeviceEvents & events );
+
   int packCommSizeForSync( std::map< string, string_array > const & fieldNames,
                            MeshLevel const & meshLevel,
                            int const commID,
                            bool onDevice,
                            parallelDeviceEvents & events );
+
+  void unpackBufferForSync( ObjectManagerBase & manager,
+                            int const commID,
+                            bool onDevice,
+                            parallelDeviceEvents & events );
 
   void unpackBufferForSync( std::map< string, string_array > const & fieldNames,
                             MeshLevel & meshLevel,

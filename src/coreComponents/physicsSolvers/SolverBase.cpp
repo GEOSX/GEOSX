@@ -516,6 +516,12 @@ real64 SolverBase::nonlinearImplicitStep( real64 const & time_n,
         }
       }
 
+      // TODO remove after testing Multiscale setup
+      if( m_precond )
+      {
+        m_matrix.create( m_localMatrix.toViewConst(), MPI_COMM_GEOSX );
+        m_precond->setup( m_matrix );
+      }
 
       // if the residual norm is less than the Newton tolerance we denote that we have
       // converged and break from the Newton loop immediately.

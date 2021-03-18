@@ -69,9 +69,9 @@ ObjectManagerBase::CatalogInterface::CatalogType & ObjectManagerBase::getCatalog
   return catalog;
 }
 
-void ObjectManagerBase::createSet( const string & newSetName )
+SortedArray< localIndex > & ObjectManagerBase::createSet( const string & newSetName )
 {
-  m_sets.registerWrapper< SortedArray< localIndex > >( newSetName );
+  return m_sets.registerWrapper< SortedArray< localIndex > >( newSetName ).reference();
 }
 
 void ObjectManagerBase::constructSetFromSetAndMap( SortedArrayView< localIndex const > const & inputSet,
@@ -861,11 +861,7 @@ void ObjectManagerBase::copyObject( const localIndex source, const localIndex de
 
 void ObjectManagerBase::setMaxGlobalIndex()
 {
-  MpiWrapper::allReduce( &m_localMaxGlobalIndex,
-                         &m_maxGlobalIndex,
-                         1,
-                         MPI_MAX,
-                         MPI_COMM_GEOSX );
+  m_maxGlobalIndex = MpiWrapper::max( m_localMaxGlobalIndex, MPI_COMM_GEOSX );
 }
 
 void ObjectManagerBase::cleanUpMap( std::set< localIndex > const & targetIndices,

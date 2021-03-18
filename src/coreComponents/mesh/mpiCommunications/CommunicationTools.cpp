@@ -774,6 +774,32 @@ void CommunicationTools::setupGhosts( MeshLevel & meshLevel,
   faceManager.compressRelationMaps();
 }
 
+void CommunicationTools::synchronizePackSendRecvSizes( string_array const & fieldNames,
+                                                       ObjectManagerBase & manager,
+                                                       std::vector< NeighborCommunicator > & neighbors,
+                                                       MPI_iCommData & icomm,
+                                                       bool onDevice )
+{
+  GEOSX_MARK_FUNCTION;
+  icomm.fieldNames().insert( { manager.getName(), fieldNames } );
+  icomm.resize( neighbors.size() );
+
+  parallelDeviceEvents events;
+  for( std::size_t neighborIndex = 0; neighborIndex < neighbors.size(); ++neighborIndex )
+  {
+    NeighborCommunicator & neighbor = neighbors[neighborIndex];
+    int const bufferSize = neighbor.packCommSizeForSync( fieldNames, manager, icomm.commID(), onDevice, events );
+
+    neighbor.mpiISendReceiveBufferSizes( icomm.commID(),
+                                         icomm.mpiSendBufferSizeRequest( neighborIndex ),
+                                         icomm.mpiRecvBufferSizeRequest( neighborIndex ),
+                                         MPI_COMM_GEOSX );
+
+    neighbor.resizeSendBuffer( icomm.commID(), bufferSize );
+  }
+  waitAllDeviceEvents( events );
+}
+
 void CommunicationTools::synchronizePackSendRecvSizes( const std::map< string, string_array > & fieldNames,
                                                        MeshLevel & mesh,
                                                        std::vector< NeighborCommunicator > & neighbors,
@@ -800,6 +826,19 @@ void CommunicationTools::synchronizePackSendRecvSizes( const std::map< string, s
   waitAllDeviceEvents( events );
 }
 
+void CommunicationTools::asyncPack( string_array const & fieldNames,
+                                    ObjectManagerBase & manager,
+                                    std::vector< NeighborCommunicator > & neighbors,
+                                    MPI_iCommData & icomm,
+                                    bool onDevice,
+                                    parallelDeviceEvents & events )
+{
+  GEOSX_MARK_FUNCTION;
+  for( NeighborCommunicator & neighbor : neighbors )
+  {
+    neighbor.packCommBufferForSync( fieldNames, manager, icomm.commID(), onDevice, events );
+  }
+}
 
 void CommunicationTools::asyncPack( const std::map< string, string_array > & fieldNames,
                                     MeshLevel & mesh,
@@ -846,6 +885,18 @@ void CommunicationTools::asyncSendRecv( std::vector< NeighborCommunicator > & ne
   }
 }
 
+void CommunicationTools::synchronizePackSendRecv( string_array const & fieldNames,
+                                                  ObjectManagerBase & manager,
+                                                  std::vector< NeighborCommunicator > & neighbors,
+                                                  MPI_iCommData & icomm,
+                                                  bool onDevice )
+{
+  GEOSX_MARK_FUNCTION;
+  parallelDeviceEvents events;
+  asyncPack( fieldNames, manager, neighbors, icomm, onDevice, events );
+  asyncSendRecv( neighbors, icomm, onDevice, events );
+}
+
 void CommunicationTools::synchronizePackSendRecv( const std::map< string, string_array > & fieldNames,
                                                   MeshLevel & mesh,
                                                   std::vector< NeighborCommunicator > & neighbors,
@@ -858,6 +909,46 @@ void CommunicationTools::synchronizePackSendRecv( const std::map< string, string
   asyncSendRecv( neighbors, icomm, onDevice, events );
 }
 
+bool CommunicationTools::asyncUnpack( ObjectManagerBase & manager,
+                                      std::vector< NeighborCommunicator > & neighbors,
+                                      MPI_iCommData & icomm,
+                                      bool onDevice,
+                                      parallelDeviceEvents & events )
+{
+  GEOSX_MARK_FUNCTION;
+
+  int recvCount = 0;
+  std::vector< int > neighborIndices;
+  neighborIndices.reserve( icomm.size() );
+  MpiWrapper::testSome( icomm.size(),
+                        icomm.mpiRecvBufferRequest(),
+                        &recvCount,
+                        &neighborIndices[0],
+                        icomm.mpiRecvBufferStatus() );
+
+  for( int recvIdx = 0; recvIdx < recvCount; ++recvIdx )
+  {
+    NeighborCommunicator & neighbor = neighbors[ neighborIndices[ recvIdx ] ];
+    neighbor.unpackBufferForSync( manager, icomm.commID(), onDevice, events );
+  }
+
+  // we don't want to check if the request has completed,
+  //  we want to check that we've processed the resulting buffer
+  //  which means that we've tested the request and it has been
+  //  deallocated and set to MPI_REQUEST_NULL
+  int allDone = true;
+  const MPI_Request * reqs = icomm.mpiRecvBufferRequest( );
+  for( int idx = 0; idx < icomm.size(); ++idx )
+  {
+    if( reqs[ idx ] != MPI_REQUEST_NULL )
+    {
+      allDone = false;
+      break;
+    }
+  }
+
+  return allDone;
+}
 
 bool CommunicationTools::asyncUnpack( MeshLevel & mesh,
                                       std::vector< NeighborCommunicator > & neighbors,
@@ -900,6 +991,30 @@ bool CommunicationTools::asyncUnpack( MeshLevel & mesh,
   return allDone;
 }
 
+void CommunicationTools::finalizeUnpack( ObjectManagerBase & manager,
+                                         std::vector< NeighborCommunicator > & neighbors,
+                                         MPI_iCommData & icomm,
+                                         bool onDevice,
+                                         parallelDeviceEvents & events )
+{
+  GEOSX_MARK_FUNCTION;
+
+  // poll mpi for completion then wait 10 nanoseconds 6,000,000,000 times (60 sec timeout)
+  GEOSX_ASYNC_WAIT( 6000000000, 10, asyncUnpack( manager, neighbors, icomm, onDevice, events ) );
+  if( onDevice )
+  {
+    waitAllDeviceEvents( events );
+  }
+
+  MpiWrapper::waitAll( icomm.size(),
+                       icomm.mpiSendBufferSizeRequest(),
+                       icomm.mpiSendBufferSizeStatus() );
+
+  MpiWrapper::waitAll( icomm.size(),
+                       icomm.mpiSendBufferRequest(),
+                       icomm.mpiSendBufferStatus() );
+}
+
 void CommunicationTools::finalizeUnpack( MeshLevel & mesh,
                                          std::vector< NeighborCommunicator > & neighbors,
                                          MPI_iCommData & icomm,
@@ -925,6 +1040,16 @@ void CommunicationTools::finalizeUnpack( MeshLevel & mesh,
 
 }
 
+void CommunicationTools::synchronizeUnpack( ObjectManagerBase & manager,
+                                            std::vector< NeighborCommunicator > & neighbors,
+                                            MPI_iCommData & icomm,
+                                            bool onDevice )
+{
+  GEOSX_MARK_FUNCTION;
+  parallelDeviceEvents events;
+  finalizeUnpack( manager, neighbors, icomm, onDevice, events );
+}
+
 void CommunicationTools::synchronizeUnpack( MeshLevel & mesh,
                                             std::vector< NeighborCommunicator > & neighbors,
                                             MPI_iCommData & icomm,
@@ -933,6 +1058,18 @@ void CommunicationTools::synchronizeUnpack( MeshLevel & mesh,
   GEOSX_MARK_FUNCTION;
   parallelDeviceEvents events;
   finalizeUnpack( mesh, neighbors, icomm, onDevice, events );
+}
+
+void CommunicationTools::synchronizeFields( string_array const & fieldNames,
+                                            ObjectManagerBase & manager,
+                                            std::vector< NeighborCommunicator > & neighbors,
+                                            bool onDevice )
+{
+  MPI_iCommData icomm( getCommID() );
+  icomm.resize( neighbors.size() );
+  synchronizePackSendRecvSizes( fieldNames, manager, neighbors, icomm, onDevice );
+  synchronizePackSendRecv( fieldNames, manager, neighbors, icomm, onDevice );
+  synchronizeUnpack( manager, neighbors, icomm, onDevice );
 }
 
 void CommunicationTools::synchronizeFields( const std::map< string, string_array > & fieldNames,

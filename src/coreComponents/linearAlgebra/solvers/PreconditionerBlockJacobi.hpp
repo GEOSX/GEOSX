@@ -78,7 +78,7 @@ public:
       {
         globalIndex const iRow = i + LvArray::integerConversion< globalIndex >( j );
         idxBlk[j] = iRow;
-        localIndex const rowLength = mat.globalRowLength( iRow );
+        localIndex const rowLength = mat.rowLength( iRow );
         cols.resize( rowLength );
         vals.resize( rowLength );
         mat.getRowCopy( iRow, cols, vals );

@@ -67,7 +67,8 @@ HYPRE_Int getHypreAMGRelaxationType( LinearSolverParameters::AMG::SmootherType c
 #else
     { LinearSolverParameters::AMG::SmootherType::jacobi, 0 },
 #endif
-    { LinearSolverParameters::AMG::SmootherType::gs, 3 }, // 3 = forward, 4 = backward; do we need both?
+    { LinearSolverParameters::AMG::SmootherType::fgs, 3 },
+    { LinearSolverParameters::AMG::SmootherType::bgs, 4 },
     { LinearSolverParameters::AMG::SmootherType::sgs, 6 },
     { LinearSolverParameters::AMG::SmootherType::l1sgs, 8 },
     { LinearSolverParameters::AMG::SmootherType::chebyshev, 16 },
@@ -88,7 +89,8 @@ HYPRE_Int getHypreAMGCoarseType( LinearSolverParameters::AMG::CoarseType const &
 #else
     { LinearSolverParameters::AMG::CoarseType::jacobi, 0 },
 #endif
-    { LinearSolverParameters::AMG::CoarseType::gs, 3 },   // 3 = forward, 4 = backward; do we need both?
+    { LinearSolverParameters::AMG::CoarseType::fgs, 3 },
+    { LinearSolverParameters::AMG::CoarseType::bgs, 4 },
     { LinearSolverParameters::AMG::CoarseType::sgs, 6 },
     { LinearSolverParameters::AMG::CoarseType::l1sgs, 8 },
     { LinearSolverParameters::AMG::CoarseType::direct, 9 },
@@ -375,14 +377,29 @@ void HyprePreconditioner::create( DofManager const * const dofManager )
   {
     case LinearSolverParameters::PreconditionerType::none:
     {
-      m_precond->setup = (HYPRE_PtrToParSolverFcn) hypre_ParKrylovIdentitySetup;
-      m_precond->solve = (HYPRE_PtrToParSolverFcn) hypre_ParKrylovIdentity;
+      m_precond->setup = (HyprePrecWrapper::SetupFunc) hypre_ParKrylovIdentitySetup;
+      m_precond->solve = (HyprePrecWrapper::SetupFunc) hypre_ParKrylovIdentity;
       break;
     }
     case LinearSolverParameters::PreconditionerType::jacobi:
     {
-      m_precond->setup = (HYPRE_PtrToParSolverFcn) HYPRE_ParCSRDiagScaleSetup;
-      m_precond->solve = (HYPRE_PtrToParSolverFcn) HYPRE_ParCSRDiagScale;
+      m_precond->setup = HYPRE_ParCSRDiagScaleSetup;
+      m_precond->solve = HYPRE_ParCSRDiagScale;
+      break;
+    }
+    case LinearSolverParameters::PreconditionerType::fgs:
+    {
+      m_precond->solve = hypre::ForwardGaussSeidelSolve;
+      break;
+    }
+    case LinearSolverParameters::PreconditionerType::bgs:
+    {
+      m_precond->solve = hypre::BackwardGaussSeidelSolve;
+      break;
+    }
+    case LinearSolverParameters::PreconditionerType::sgs:
+    {
+      m_precond->solve = hypre::SymmetricGaussSeidelSolve;
       break;
     }
     case LinearSolverParameters::PreconditionerType::amg:
@@ -404,9 +421,9 @@ void HyprePreconditioner::create( DofManager const * const dofManager )
     }
     case LinearSolverParameters::PreconditionerType::direct:
     {
-      m_precond->setup = hypre::HYPRE_SLUDistSetup;
-      m_precond->solve = hypre::HYPRE_SLUDistSolve;
-      m_precond->destroy = hypre::HYPRE_SLUDistDestroy;
+      m_precond->setup = hypre::SuperLUDistSetup;
+      m_precond->solve = hypre::SuperLUDistSolve;
+      m_precond->destroy = hypre::SuperLUDistDestroy;
       break;
     }
     default:
@@ -426,11 +443,11 @@ HypreMatrix const & HyprePreconditioner::setupPreconditioningMatrix( HypreMatrix
     HypreMatrix Auu;
     mat.dofManager()->makeRestrictor( { { m_params.mgr.displacementFieldName, { 3, true } } }, mat.getComm(), true, Pu );
     mat.multiplyPtAP( Pu, Auu );
-    LAIHelperFunctions::separateComponentFilter( Auu, m_precondMatrix, m_params.dofsPerNode );
+    m_precondMatrix = LAIHelperFunctions::separateComponentFilter( Auu, m_params.dofsPerNode );
   }
   else if( m_params.preconditionerType == LinearSolverParameters::PreconditionerType::amg && m_params.amg.separateComponents )
   {
-    LAIHelperFunctions::separateComponentFilter( mat, m_precondMatrix, m_params.dofsPerNode );
+    m_precondMatrix = LAIHelperFunctions::separateComponentFilter( mat, m_params.dofsPerNode );
     return m_precondMatrix;
   }
   return mat;
@@ -453,13 +470,16 @@ void HyprePreconditioner::setup( Matrix const & mat )
     LvArray::system::FloatingPointExceptionGuard guard( FE_ALL_EXCEPT );
 
     // Perform setup of the MGR mechanics F-solver with SDC matrix, if used
-    if( m_mgrData && m_mgrData->mechSolver.ptr )
+    if( m_mgrData && m_mgrData->mechSolver.ptr && m_mgrData->mechSolver.setup )
     {
       GEOSX_LAI_CHECK_ERROR( m_mgrData->mechSolver.setup( m_mgrData->mechSolver.ptr, m_precondMatrix.unwrapped(), nullptr, nullptr ) );
     }
 
-    // Perform setup of the main solver
-    GEOSX_LAI_CHECK_ERROR( m_precond->setup( m_precond->ptr, precondMat.unwrapped(), nullptr, nullptr ) );
+    // Perform setup of the main solver, if needed
+    if( m_precond->setup )
+    {
+      GEOSX_LAI_CHECK_ERROR( m_precond->setup( m_precond->ptr, precondMat.unwrapped(), nullptr, nullptr ) );
+    }
   }
 }
 
@@ -481,15 +501,15 @@ void HyprePreconditioner::apply( Vector const & src,
 void HyprePreconditioner::clear()
 {
   Base::clear();
-  if( m_precond && m_precond->ptr )
+  if( m_precond && m_precond->ptr && m_precond->destroy )
   {
     GEOSX_LAI_CHECK_ERROR( m_precond->destroy( m_precond->ptr ) );
   }
-  if( m_mgrData && m_mgrData->coarseSolver.ptr )
+  if( m_mgrData && m_mgrData->coarseSolver.ptr && m_mgrData->coarseSolver.destroy )
   {
     GEOSX_LAI_CHECK_ERROR( m_mgrData->coarseSolver.destroy( m_mgrData->coarseSolver.ptr ) );
   }
-  if( m_mgrData && m_mgrData->mechSolver.ptr )
+  if( m_mgrData && m_mgrData->mechSolver.ptr && m_mgrData->mechSolver.destroy )
   {
     GEOSX_LAI_CHECK_ERROR( m_mgrData->mechSolver.destroy( m_mgrData->mechSolver.ptr ) );
   }

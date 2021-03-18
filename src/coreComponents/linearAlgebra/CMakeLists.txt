@@ -3,20 +3,30 @@
 #
 set( linearAlgebra_headers
      common/common.hpp
+     common/LinearOperator.hpp
+     common/LinearSolverBase.hpp
+     common/PreconditionerBase.hpp
+     common/traits.hpp
      interfaces/dense/BlasLapackFunctions.h
      interfaces/dense/BlasLapackLA.hpp
      interfaces/InterfaceTypes.hpp
-     common/LinearOperator.hpp
      interfaces/MatrixBase.hpp
      interfaces/VectorBase.hpp
+     multiscale/MultiscaleMeshData.hpp
+     multiscale/MultiscaleMeshUtils.hpp
+     multiscale/MetisPartitioner.hpp
+     multiscale/MultiscaleMeshLevel.hpp
+     multiscale/MultiscaleMeshObjectManager.hpp
+     multiscale/MultiscaleStrategy.hpp
+     multiscale/MsRSBStrategy.hpp
+     multiscale/PartitionerBase.hpp
+     multiscale/PreconditionerMultiscale.hpp
      solvers/BicgstabSolver.hpp
      solvers/BlockPreconditioner.hpp
      solvers/CgSolver.hpp
      solvers/GmresSolver.hpp
      solvers/KrylovSolver.hpp
      solvers/KrylovUtils.hpp
-     common/LinearSolverBase.hpp
-     common/PreconditionerBase.hpp
      solvers/PreconditionerIdentity.hpp
      solvers/PreconditionerJacobi.hpp
      solvers/PreconditionerBlockJacobi.hpp
@@ -35,7 +45,6 @@ set( linearAlgebra_headers
      utilities/InverseNormalOperator.hpp
      utilities/NormalOperator.hpp
      utilities/TransposeOperator.hpp
-     common/traits.hpp
      DofManager.hpp
      DofManagerHelpers.hpp )
 
@@ -44,6 +53,14 @@ set( linearAlgebra_headers
 #
 set( linearAlgebra_sources
      interfaces/dense/BlasLapackLA.cpp
+     multiscale/MultiscaleMeshUtils.cpp
+     multiscale/MetisPartitioner.cpp
+     multiscale/MultiscaleMeshLevel.cpp
+     multiscale/MultiscaleMeshObjectManager.cpp
+     multiscale/MultiscaleStrategy.cpp
+     multiscale/MsRSBStrategy.cpp
+     multiscale/PartitionerBase.cpp
+     multiscale/PreconditionerMultiscale.cpp
      solvers/BicgstabSolver.cpp
      solvers/BlockPreconditioner.cpp
      solvers/CgSolver.cpp
@@ -52,7 +69,7 @@ set( linearAlgebra_sources
      solvers/SeparateComponentPreconditioner.cpp
      DofManager.cpp )
 
-set( dependencyList mesh blas lapack RAJA)
+set( dependencyList mesh blas lapack RAJA )
 
 
 list( APPEND linearAlgebra_headers
@@ -164,7 +181,10 @@ if( ENABLE_MPI )
     list( APPEND dependencyList mpi )
 endif()
 
-
+# We depend on METIS for multiscale coarsening
+if( ENABLE_METIS )
+    list( APPEND dependencyList metis )
+endif()
 
 blt_add_library( NAME                  linearAlgebra
                  SOURCES               ${linearAlgebra_sources}

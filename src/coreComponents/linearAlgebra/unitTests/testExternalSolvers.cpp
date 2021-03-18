@@ -52,6 +52,17 @@ LinearSolverParameters params_GMRES_ILU()
   return parameters;
 }
 
+LinearSolverParameters params_CG_SGS()
+{
+  LinearSolverParameters parameters;
+  parameters.krylov.relTolerance = 1e-8;
+  parameters.krylov.maxIterations = 300;
+  parameters.isSymmetric = true;
+  parameters.solverType = LinearSolverParameters::SolverType::cg;
+  parameters.preconditionerType = LinearSolverParameters::PreconditionerType::sgs;
+  return parameters;
+}
+
 LinearSolverParameters params_GMRES_AMG()
 {
   LinearSolverParameters parameters;
@@ -59,7 +70,7 @@ LinearSolverParameters params_GMRES_AMG()
   parameters.krylov.maxIterations = 300;
   parameters.solverType = LinearSolverParameters::SolverType::gmres;
   parameters.preconditionerType = LinearSolverParameters::PreconditionerType::amg;
-  parameters.amg.smootherType = geosx::LinearSolverParameters::AMG::SmootherType::gs;
+  parameters.amg.smootherType = geosx::LinearSolverParameters::AMG::SmootherType::fgs;
   parameters.amg.coarseType = geosx::LinearSolverParameters::AMG::CoarseType::direct;
   return parameters;
 }
@@ -69,10 +80,10 @@ LinearSolverParameters params_CG_AMG()
   LinearSolverParameters parameters;
   parameters.krylov.relTolerance = 1e-8;
   parameters.krylov.maxIterations = 300;
-  parameters.solverType = LinearSolverParameters::SolverType::cg;
   parameters.isSymmetric = true;
+  parameters.solverType = LinearSolverParameters::SolverType::cg;
   parameters.preconditionerType = LinearSolverParameters::PreconditionerType::amg;
-  parameters.amg.smootherType = geosx::LinearSolverParameters::AMG::SmootherType::gs;
+  parameters.amg.smootherType = geosx::LinearSolverParameters::AMG::SmootherType::fgs;
   parameters.amg.coarseType = geosx::LinearSolverParameters::AMG::CoarseType::direct;
   return parameters;
 }
@@ -150,7 +161,9 @@ TYPED_TEST_SUITE_P( SolverTestLaplace2D );
 
 TYPED_TEST_P( SolverTestLaplace2D, DirectSerial )
 {
-  this->test( params_DirectSerial() );
+  LinearSolverParameters params = params_DirectSerial();
+  params.isSymmetric = true;
+  this->test( params );
 }
 
 TYPED_TEST_P( SolverTestLaplace2D, DirectParallel )
@@ -159,6 +172,11 @@ TYPED_TEST_P( SolverTestLaplace2D, DirectParallel )
 }
 
 TYPED_TEST_P( SolverTestLaplace2D, GMRES_ILU )
+{
+  this->test( params_GMRES_ILU() );
+}
+
+TYPED_TEST_P( SolverTestLaplace2D, CG_SGS )
 {
   this->test( params_GMRES_ILU() );
 }
@@ -172,6 +190,7 @@ REGISTER_TYPED_TEST_SUITE_P( SolverTestLaplace2D,
                              DirectSerial,
                              DirectParallel,
                              GMRES_ILU,
+                             CG_SGS,
                              CG_AMG );
 
 #ifdef GEOSX_USE_TRILINOS

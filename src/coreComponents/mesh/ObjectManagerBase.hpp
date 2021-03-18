@@ -308,8 +308,9 @@ public:
   /**
    * @brief Creates a new set.
    * @param newSetName The set name.
+   * @return reference to the set
    */
-  void createSet( const string & newSetName );
+  SortedArray< localIndex > & createSet( const string & newSetName );
 
   /**
    * @brief Builds a new set on this instance given another objects set and the map between them.
@@ -797,6 +798,22 @@ public:
    */
   Group const & sets() const
   { return m_sets; }
+
+  /**
+   * @brief Get a set by name.
+   * @param setName Name of the set.
+   * @return Sorted array indices.
+   */
+  SortedArray< localIndex > & getSet( string const & setName )
+  { return m_sets.getReference< SortedArray< localIndex > >( setName ); }
+
+  /**
+   * @brief Get a set by name, const version.
+   * @param setName Name of the set.
+   * @return Sorted array indices.
+   */
+  SortedArrayView< localIndex const > getSet( string const & setName ) const
+  { return m_sets.getReference< SortedArray< localIndex > >( setName ).toViewConst(); }
 
   /**
    * @brief Get the external set.

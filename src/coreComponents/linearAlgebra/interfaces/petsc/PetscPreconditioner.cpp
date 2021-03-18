@@ -64,7 +64,8 @@ PCType getPetscSmootherType( LinearSolverParameters::PreconditionerType const & 
     { LinearSolverParameters::PreconditionerType::ic, PCICC },
     { LinearSolverParameters::PreconditionerType::jacobi, PCJACOBI },
     { LinearSolverParameters::PreconditionerType::l1jacobi, PCJACOBI },
-    { LinearSolverParameters::PreconditionerType::gs, PCSOR },
+    { LinearSolverParameters::PreconditionerType::fgs, PCSOR },
+    { LinearSolverParameters::PreconditionerType::bgs, PCSOR },
     { LinearSolverParameters::PreconditionerType::sgs, PCSOR },
     { LinearSolverParameters::PreconditionerType::l1sgs, PCSOR },
   };
@@ -89,7 +90,8 @@ MatSORType getPetscSORType( LinearSolverParameters::PreconditionerType const & t
 {
   static std::map< LinearSolverParameters::PreconditionerType, MatSORType > const typeMap =
   {
-    { LinearSolverParameters::PreconditionerType::gs, SOR_FORWARD_SWEEP },
+    { LinearSolverParameters::PreconditionerType::fgs, SOR_FORWARD_SWEEP },
+    { LinearSolverParameters::PreconditionerType::bgs, SOR_BACKWARD_SWEEP },
     { LinearSolverParameters::PreconditionerType::sgs, SOR_SYMMETRIC_SWEEP },
     { LinearSolverParameters::PreconditionerType::l1sgs, SOR_SYMMETRIC_SWEEP },
   };
@@ -207,7 +209,7 @@ void createPetscAMG( LinearSolverParameters const & params,
     {
       GEOSX_LAI_CHECK_ERROR( PCSetType( smootherPC, PCJACOBI ) );
     }
-    else if( params.amg.smootherType == LinearSolverParameters::AMG::SmootherType::gs )
+    else if( params.amg.smootherType == LinearSolverParameters::AMG::SmootherType::fgs )
     {
       GEOSX_LAI_CHECK_ERROR( PCSetType( smootherPC, PCSOR ) );
     }
@@ -280,7 +282,7 @@ PetscMatrix const & PetscPreconditioner::setupPreconditioningMatrix( PetscMatrix
 {
   if( m_params.preconditionerType == LinearSolverParameters::PreconditionerType::amg && m_params.amg.separateComponents )
   {
-    LAIHelperFunctions::separateComponentFilter( mat, m_precondMatrix, m_params.dofsPerNode );
+    m_precondMatrix = LAIHelperFunctions::separateComponentFilter( mat, m_params.dofsPerNode );
     return m_precondMatrix;
   }
   return mat;

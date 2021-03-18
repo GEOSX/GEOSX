@@ -32,6 +32,27 @@ namespace LAIHelperFunctions
 {
 
 /**
+ * @brief Create an identity matrix.
+ * @tparam MATRIX type of matrix
+ * @param n local size of the square identity matrix
+ * @param comm MPI communicator
+ * @param mat the output matrix
+ */
+template< typename MATRIX >
+void makeIdentity( localIndex const n,
+                   MPI_Comm const & comm,
+                   MATRIX & mat )
+{
+  mat.createWithLocalSize( n, 1, comm );
+  mat.open();
+  for( globalIndex i = mat.ilower(); i < mat.iupper(); ++i )
+  {
+    mat.insert( i, i, 1.0 );
+  }
+  mat.close();
+}
+
+/**
  * @brief Create a permutation matrix for a given nodal variable.
  * @tparam     MATRIX            the parallel matrix type
  * @param[in]  nodeManager       the node manager
@@ -184,15 +205,18 @@ MATRIX permuteMatrix( MATRIX const & matrix,
  * @tparam MATRIX the type of matrices
  * @param src         the source matrix
  * @param dst         the target (filtered) matrix
- * @param dofsPerNode number of degrees-of-freedom per node
+ * @param dofsPerNode number of degrees-of-freedom per node in @p src
  */
 template< typename MATRIX >
-void separateComponentFilter( MATRIX const & src,
-                              MATRIX & dst,
-                              const localIndex dofsPerNode )
+MATRIX separateComponentFilter( MATRIX const & src,
+                                integer const dofsPerNode )
 {
   GEOSX_MARK_FUNCTION;
-  GEOSX_ERROR_IF( dofsPerNode < 2, "Function requires dofsPerNode > 1" );
+  GEOSX_ASSERT_GT( dofsPerNode, 0 );
+  if( dofsPerNode == 1 )
+  {
+    return src;
+  }
 
   const localIndex localRows  = src.numLocalRows();
   const localIndex maxEntries = src.maxRowLength();
@@ -204,18 +228,18 @@ void separateComponentFilter( MATRIX const & src,
   array1d< globalIndex > const srcIndices( maxEntries );
   array1d< real64 > const srcValues( maxEntries );
 
-  for( globalIndex r = 0; r < localRows; ++r )
+  for( localIndex r = 0; r < localRows; ++r )
   {
     globalIndex const row = r + src.ilower();
-    globalIndex const rowComponent = row % dofsPerNode;
-    localIndex const rowLength = src.globalRowLength( row );
+    integer const rowComponent = row % dofsPerNode;
+    localIndex const rowLength = src.rowLength( row );
 
     src.getRowCopy( row, srcIndices, srcValues );
 
     for( localIndex c = 0; c < rowLength; ++c )
     {
       globalIndex const col = srcIndices( c );
-      globalIndex const colComponent = col % dofsPerNode;
+      integer const colComponent = col % dofsPerNode;
       if( rowComponent == colComponent )
       {
         tempMat.insertNonZero( r, col, srcValues( c ) );
@@ -223,8 +247,10 @@ void separateComponentFilter( MATRIX const & src,
     }
   }
 
+  MATRIX dst;
   dst.create( tempMat.toViewConst(), MPI_COMM_GEOSX );
   dst.setDofManager( src.dofManager() );
+  return dst;
 }
 
 /**

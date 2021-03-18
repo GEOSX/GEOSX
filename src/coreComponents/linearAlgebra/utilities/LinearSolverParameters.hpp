@@ -53,7 +53,8 @@ struct LinearSolverParameters
     none,      ///< No preconditioner
     jacobi,    ///< Jacobi smoothing
     l1jacobi,  ///< l1-Jacobi smoothing
-    gs,        ///< Gauss-Seidel smoothing
+    fgs,       ///< Gauss-Seidel smoothing (forward sweep)
+    bgs,       ///< Gauss-Seidel smoothing (backward sweep)
     sgs,       ///< Symmetric Gauss-Seidel smoothing
     l1sgs,     ///< l1-Symmetric Gauss-Seidel smoothing
     chebyshev, ///< Chebyshev polynomial smoothing
@@ -64,7 +65,8 @@ struct LinearSolverParameters
     amg,       ///< Algebraic Multigrid
     mgr,       ///< Multigrid reduction (Hypre only)
     block,     ///< Block preconditioner
-    direct     ///< Direct solver as preconditioner
+    direct,    ///< Direct solver as preconditioner
+    multiscale ///< Multiscale preconditioner
   };
 
   integer logLevel = 0;     ///< Output level [0=none, 1=basic, 2=everything]
@@ -153,7 +155,8 @@ struct LinearSolverParameters
       default_,  ///< Use LAI's default option
       jacobi,    ///< Jacobi smoothing
       l1jacobi,  ///< l1-Jacobi smoothing
-      gs,        ///< Gauss-Seidel smoothing
+      fgs,       ///< Gauss-Seidel smoothing (forward sweep)
+      bgs,       ///< Gauss-Seidel smoothing (backward sweep)
       sgs,       ///< Symmetric Gauss-Seidel smoothing
       l1sgs,     ///< l1-Symmetric Gauss-Seidel smoothing
       chebyshev, ///< Chebyshev polynomial smoothing
@@ -169,7 +172,8 @@ struct LinearSolverParameters
       default_,  ///< Use LAI's default option
       jacobi,    ///< Jacobi
       l1jacobi,  ///< l1-Jacobi
-      gs,        ///< Gauss-Seidel
+      fgs,       ///< Gauss-Seidel (forward sweep)
+      bgs,       ///< Gauss-Seidel smoothing (backward sweep)
       sgs,       ///< Symmetric Gauss-Seidel
       l1sgs,     ///< l1-Symmetric Gauss-Seidel
       chebyshev, ///< Chebyshev polynomial
@@ -185,7 +189,7 @@ struct LinearSolverParameters
 
     integer maxLevels = 20;                         ///< Maximum number of coarsening levels
     CycleType cycleType = CycleType::V;             ///< AMG cycle type
-    SmootherType smootherType = SmootherType::gs;   ///< Smoother type
+    SmootherType smootherType = SmootherType::fgs;  ///< Smoother type
     CoarseType coarseType = CoarseType::direct;     ///< Coarse-level solver/smoother
     string coarseningType = "HMIS";                 ///< Coarsening algorithm
     integer interpolationType = 6;                  ///< Coarsening algorithm
@@ -208,13 +212,13 @@ struct LinearSolverParameters
     enum class StrategyType : integer
     {
       invalid,                                   ///< default value, to ensure solver sets something
-      singlePhaseReservoirFVM,                   ///< fininte volume single-phase flow with wells
+      singlePhaseReservoirFVM,                   ///< finite volume single-phase flow with wells
       singlePhaseHybridFVM,                      ///< hybrid finite volume single-phase flow
       singlePhaseReservoirHybridFVM,             ///< hybrid finite volume single-phase flow with wells
       singlePhasePoromechanics,                  ///< single phase poromechanics with finite volume single phase flow
       hybridSinglePhasePoromechanics,            ///< single phase poromechanics with hybrid finite volume single phase flow
-      compositionalMultiphaseFVM,                ///< finite volume compositional muliphase flow
-      compositionalMultiphaseHybridFVM,          ///< hybrid finite volume compositional muliphase flow
+      compositionalMultiphaseFVM,                ///< finite volume compositional multiphase flow
+      compositionalMultiphaseHybridFVM,          ///< hybrid finite volume compositional multiphase flow
       compositionalMultiphaseReservoirFVM,       ///< finite volume compositional multiphase flow with wells
       compositionalMultiphaseReservoirHybridFVM, ///< hybrid finite volume compositional multiphase flow with wells
       multiphasePoromechanics,                   ///< multiphase poromechanics with finite volume compositional multiphase flow
@@ -242,6 +246,64 @@ struct LinearSolverParameters
     integer overlap = 0;   ///< Ghost overlap
   }
   dd;                      ///< Domain decomposition parameter struct
+
+  struct Multiscale
+  {
+    enum class BasisType
+    {
+      msrsb,   ///< Restricted Smoothing Basis Multiscale
+    };
+
+    BasisType basisType = BasisType::msrsb;                       ///< type of basis functions
+    string fieldName;                                             ///< DofManager field name, populated by the physics solver
+    integer maxLevels = 2;                                        ///< limit on total number of coarse levels
+    localIndex minLocalDof = 0;                                   ///< limit of coarsening on current rank (i.e. keep coarsening ratio 1
+                                                                  ///< beyond)
+    globalIndex minGlobalDof = 0;                                 ///< limit of coarsening globally (i.e. trim the grid hierarchy)
+    integer galerkin = 1;                                         ///< whether to use Galerkin definition R = P^T
+    integer numSmootherSweeps = 1;                                ///< Number of smoother sweeps
+    AMG::PreOrPost preOrPostSmoothing = AMG::PreOrPost::both;     ///< Pre and/or post smoothing [pre,post,both]
+    PreconditionerType smootherType = PreconditionerType::sgs;    ///< Smoother type
+    PreconditionerType coarseType = PreconditionerType::direct;   ///< Coarse solver type
+    string_array boundarySets = {};                               ///< List of boundary node set names (needed for coarse node detection)
+
+    integer debugLevel = 0;                                       ///< Flag for enabling addition debugging output
+
+    struct Coarsening
+    {
+      enum class PartitionType
+      {
+        metis, ///< METIS-based
+        rib,   ///< Recursive Inertial Bisection
+        cart   ///< Cartesian (only with internal mesh)
+      };
+
+      PartitionType partitionType = PartitionType::metis; ///< partitioning/coarsening method
+      real64 ratio = 512.0;                               ///< coarsening ratio (of coarse-to-fine cells)
+
+      struct Metis
+      {
+        enum class Method
+        {
+          kway,
+          recursive
+        };
+
+        Method method = Method::kway;    ///< Partitioning method
+        integer minCommonNodes = 3;      ///< Min number of common nodes when constructing a cell connectivity graph
+        integer ufactor = 30;            ///< METIS's UFACTOR option (allowed partition imbalance)
+      } metis;
+
+    } coarsening;
+
+    struct MsRSB
+    {
+      integer maxIter   = 100;        ///< max number of smoothing iterations
+      real64 tolerance  = 1e-3;       ///< smoothing iteration convergence tolerance
+      real64 relaxation = 2.0 / 3.0;  ///< relaxation parameter for Jacobi smoothing
+    } msrsb;
+  }
+  multiscale;
 };
 
 /// Declare strings associated with enumeration values.
@@ -258,7 +320,8 @@ ENUM_STRINGS( LinearSolverParameters::PreconditionerType,
               "none",
               "jacobi",
               "l1-jacobi",
-              "gs",
+              "fgs",
+              "bgs",
               "sgs",
               "l1-sgs",
               "chebyshev",
@@ -269,7 +332,8 @@ ENUM_STRINGS( LinearSolverParameters::PreconditionerType,
               "amg",
               "mgr",
               "block",
-              "direct" );
+              "direct",
+              "multiscale" );
 
 /// Declare strings associated with enumeration values.
 ENUM_STRINGS( LinearSolverParameters::Direct::ColPerm,
@@ -317,7 +381,8 @@ ENUM_STRINGS( LinearSolverParameters::AMG::SmootherType,
               "default",
               "jacobi",
               "l1jacobi",
-              "gs",
+              "fgs",
+              "bgs",
               "sgs",
               "l1sgs",
               "chebyshev",
@@ -331,7 +396,8 @@ ENUM_STRINGS( LinearSolverParameters::AMG::CoarseType,
               "default",
               "jacobi",
               "l1jacobi",
-              "gs",
+              "fgs",
+              "bgs",
               "sgs",
               "l1sgs",
               "chebyshev",
@@ -341,6 +407,21 @@ ENUM_STRINGS( LinearSolverParameters::AMG::CoarseType,
 ENUM_STRINGS( LinearSolverParameters::AMG::NullSpaceType,
               "constantModes",
               "rigidBodyModes" );
+
+/// Declare strings associated with enumeration values.
+ENUM_STRINGS( LinearSolverParameters::Multiscale::BasisType,
+              "msrsb" );
+
+/// Declare strings associated with enumeration values.
+ENUM_STRINGS( LinearSolverParameters::Multiscale::Coarsening::PartitionType,
+              "metis",
+              "rib",
+              "cart" );
+
+/// Declare strings associated with enumeration values.
+ENUM_STRINGS( LinearSolverParameters::Multiscale::Coarsening::Metis::Method,
+              "kway",
+              "recursive" );
 
 } /* namespace geosx */
 

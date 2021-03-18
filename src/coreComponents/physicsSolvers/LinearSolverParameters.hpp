@@ -120,6 +120,24 @@ public:
     static constexpr char const * iluFillString() { return "iluFill"; }
     /// ILU threshold key
     static constexpr char const * iluThresholdString() { return "iluThreshold"; }
+
+    static constexpr char const * multiscaleBasisTypeString()               { return "multiscaleBasisType"; }
+    static constexpr char const * multiscaleMaxLevelsString()               { return "multiscaleMaxLevels"; }
+    static constexpr char const * multiscaleMinLocalDofString()             { return "multiscaleMinLocalDof"; }
+    static constexpr char const * multiscaleMinGlobalDofString()            { return "multiscaleMinGlobalDof"; }
+    static constexpr char const * multiscaleNumSmootherSweepsString()       { return "multiscaleNumSmootherSweeps"; }
+    static constexpr char const * multiscalePreOrPostSmoothingString()      { return "multiscalePreOrPostSmoothing"; }
+    static constexpr char const * multiscaleSmootherTypeString()            { return "multiscaleSmootherType"; }
+    static constexpr char const * multiscaleBoundarySets()                  { return "multiscaleBoundarySets"; }
+    static constexpr char const * multiscaleDebugLevel()                    { return "multiscaleDebugLevel"; }
+    static constexpr char const * multiscaleCoarseTypeString()              { return "multiscaleCoarseType"; }
+    static constexpr char const * multiscaleCoarseningPartitionTypeString() { return "multiscaleCoarseningPartitionType"; }
+    static constexpr char const * multiscaleCoarseningRatioString()         { return "multiscaleCoarseningRatio"; }
+    static constexpr char const * multiscaleCoarseningMetisMethodString()   { return "multiscaleCoarseningMetisMethod"; }
+    static constexpr char const * multiscaleCoarseningMetisUfactorString()  { return "multiscaleCoarseningMetisUfactor"; }
+    static constexpr char const * multiscaleMsrsbMaxIterString()            { return "multiscaleMsrsbMaxIter"; }
+    static constexpr char const * multiscaleMsrsbToleranceString()          { return "multiscaleMsrsbTolerance"; }
+    static constexpr char const * multiscaleMsrsbRelaxationString()         { return "multiscaleMsrsbRelaxation"; }
   };
 
 private:

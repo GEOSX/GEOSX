@@ -67,9 +67,11 @@ namespace hypre
 #ifdef GEOSX_USE_HYPRE_CUDA
 /// Execution policy for operations on hypre data
 using execPolicy = parallelDevicePolicy<>;
+constexpr LvArray::MemorySpace memorySpace = LvArray::MemorySpace::cuda;
 #else
 /// Execution policy for operations on hypre data
 using execPolicy = parallelHostPolicy;
+constexpr LvArray::MemorySpace memorySpace = LvArray::MemorySpace::host;
 #endif
 
 // Check matching requirements on index/value types between GEOSX and Hypre
@@ -79,12 +81,35 @@ using execPolicy = parallelHostPolicy;
 //          localIndex to int. We are getting away with this because we do not
 //          pass ( localIndex * ) to hypre except when it is on the GPU, in
 //          which case we are using int for localIndex.
-#if defined(GEOSX_USE_HYPRE_CUDA)
+#ifdef GEOSX_USE_HYPRE_CUDA
 static_assert( sizeof( HYPRE_Int ) == sizeof( geosx::localIndex ),
                "HYPRE_Int and geosx::localIndex must have the same size" );
 static_assert( std::is_signed< HYPRE_Int >::value == std::is_signed< geosx::localIndex >::value,
                "HYPRE_Int and geosx::localIndex must both be signed or unsigned" );
 #endif
+
+/**
+ * @brief
+ * @param msg
+ * @param file
+ * @param line
+ */
+inline void checkDeviceErrors( char const * msg, char const * file, int const line )
+{
+#ifdef GEOSX_USE_HYPRE_CUDA
+  cudaError_t const err = cudaGetLastError();
+  if( err != cudaSuccess )
+  {
+    fprintf( stderr, "Fatal error: %s (%s at %s:%d)\n", msg, cudaGetErrorString( err ), file, line );
+    fprintf( stderr, "*** FAILED - ABORTING\n" );
+    exit( 1 );
+  }
+#else
+  GEOSX_UNUSED_VAR( msg, file, line )
+#endif
+}
+
+#define GEOSX_HYPRE_CHECK_DEVICE_ERRORS( msg ) hypre::checkDeviceErrors( msg, __FILE__, __LINE__ )
 
 static_assert( sizeof( HYPRE_BigInt ) == sizeof( geosx::globalIndex ),
                "HYPRE_BigInt and geosx::globalIndex must have the same size" );
@@ -125,10 +150,10 @@ inline HYPRE_BigInt const * toHypreBigInt( geosx::globalIndex const * const inde
  *
  * Typical use is to prevent hypre from calling preconditioner setup when we have already called it on out side.
  */
-inline HYPRE_Int HYPRE_DummySetup( HYPRE_Solver,
-                                   HYPRE_ParCSRMatrix,
-                                   HYPRE_ParVector,
-                                   HYPRE_ParVector )
+inline HYPRE_Int DummySetup( HYPRE_Solver,
+                             HYPRE_ParCSRMatrix,
+                             HYPRE_ParVector,
+                             HYPRE_ParVector )
 {
   return 0;
 }
@@ -141,10 +166,10 @@ inline HYPRE_Int HYPRE_DummySetup( HYPRE_Solver,
  * @param x the solution vector (unused)
  * @return hypre error code
  */
-inline HYPRE_Int HYPRE_SLUDistSetup( HYPRE_Solver solver,
-                                     HYPRE_ParCSRMatrix A,
-                                     HYPRE_ParVector b,
-                                     HYPRE_ParVector x )
+inline HYPRE_Int SuperLUDistSetup( HYPRE_Solver solver,
+                                   HYPRE_ParCSRMatrix A,
+                                   HYPRE_ParVector b,
+                                   HYPRE_ParVector x )
 {
   GEOSX_UNUSED_VAR( b, x )
   return hypre_SLUDistSetup( &solver, A, 0 );
@@ -158,10 +183,10 @@ inline HYPRE_Int HYPRE_SLUDistSetup( HYPRE_Solver solver,
  * @param x the solution vector
  * @return hypre error code
  */
-inline HYPRE_Int HYPRE_SLUDistSolve( HYPRE_Solver solver,
-                                     HYPRE_ParCSRMatrix A,
-                                     HYPRE_ParVector b,
-                                     HYPRE_ParVector x )
+inline HYPRE_Int SuperLUDistSolve( HYPRE_Solver solver,
+                                   HYPRE_ParCSRMatrix A,
+                                   HYPRE_ParVector b,
+                                   HYPRE_ParVector x )
 {
   GEOSX_UNUSED_VAR( A )
   return hypre_SLUDistSolve( solver, b, x );
@@ -172,9 +197,60 @@ inline HYPRE_Int HYPRE_SLUDistSolve( HYPRE_Solver solver,
  * @param solver the solver
  * @return hypre error code
  */
-inline HYPRE_Int HYPRE_SLUDistDestroy( HYPRE_Solver solver )
+inline HYPRE_Int SuperLUDistDestroy( HYPRE_Solver solver )
 {
   return hypre_SLUDistDestroy( solver );
+}
+
+/**
+ * @brief The missing wrapper compatible with hypre solver solve signature.
+ * @param solver the solver
+ * @param A the matrix (unused)
+ * @param b the rhs vector
+ * @param x the solution vector
+ * @return hypre error code
+ */
+inline HYPRE_Int ForwardGaussSeidelSolve( HYPRE_Solver solver,
+                                          HYPRE_ParCSRMatrix A,
+                                          HYPRE_ParVector b,
+                                          HYPRE_ParVector x )
+{
+  GEOSX_UNUSED_VAR( solver )
+  return hypre_BoomerAMGRelax( A, b, nullptr, 3, 0, 1.0, 0.0, nullptr, x, nullptr, nullptr );
+}
+
+/**
+ * @brief The missing wrapper compatible with hypre solver solve signature.
+ * @param solver the solver
+ * @param A the matrix (unused)
+ * @param b the rhs vector
+ * @param x the solution vector
+ * @return hypre error code
+ */
+inline HYPRE_Int BackwardGaussSeidelSolve( HYPRE_Solver solver,
+                                           HYPRE_ParCSRMatrix A,
+                                           HYPRE_ParVector b,
+                                           HYPRE_ParVector x )
+{
+  GEOSX_UNUSED_VAR( solver )
+  return hypre_BoomerAMGRelax( A, b, nullptr, 4, 0, 1.0, 0.0, nullptr, x, nullptr, nullptr );
+}
+
+/**
+ * @brief The missing wrapper compatible with hypre solver solve signature.
+ * @param solver the solver
+ * @param A the matrix (unused)
+ * @param b the rhs vector
+ * @param x the solution vector
+ * @return hypre error code
+ */
+inline HYPRE_Int SymmetricGaussSeidelSolve( HYPRE_Solver solver,
+                                            HYPRE_ParCSRMatrix A,
+                                            HYPRE_ParVector b,
+                                            HYPRE_ParVector x )
+{
+  GEOSX_UNUSED_VAR( solver )
+  return hypre_BoomerAMGRelax( A, b, nullptr, 6, 0, 1.0, 0.0, nullptr, x, nullptr, nullptr );
 }
 
 } // namespace hypre

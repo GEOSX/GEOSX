@@ -63,7 +63,7 @@ string WrapperBase::getPath() const
   // In the Conduit node heirarchy everything begins with 'Problem', we should change it so that
   // the ProblemManager actually uses the root Conduit Node but that will require a full rebaseline.
   string const noProblem = m_conduitNode.path().substr( sizeof( "Problem" ) -1 );
-  return noProblem == "" ? "/" : noProblem;
+  return noProblem.empty() ? "/" : noProblem;
 }
 
 string WrapperBase::dumpInputOptions( bool const outputHeader ) const

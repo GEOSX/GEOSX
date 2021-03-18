@@ -159,7 +159,7 @@ void hypre::mgr::createMGR( LinearSolverParameters const & params,
     mgrData.mechSolver.destroy = HYPRE_BoomerAMGDestroy;
 
     // Ignore the setup function here, since we'll be performing it manually in setupSeparateComponent()
-    HYPRE_MGRSetFSolver( precond.ptr, mgrData.mechSolver.solve, hypre::HYPRE_DummySetup, mgrData.mechSolver.ptr );
+    HYPRE_MGRSetFSolver( precond.ptr, mgrData.mechSolver.solve, hypre::DummySetup, mgrData.mechSolver.ptr );
   }
 }
 

@@ -202,7 +202,7 @@ void HypreSolver::setup( HypreMatrix const & mat )
   // Set the preconditioner
   GEOSX_LAI_CHECK_ERROR( m_solver->setPrecond( m_solver->ptr,
                                                m_precond.unwrapped().solve,
-                                               hypre::HYPRE_DummySetup,
+                                               hypre::DummySetup,
                                                m_precond.unwrapped().ptr ) );
 
   // Setup the solver (need a dummy vector for rhs/sol to avoid hypre segfaulting in setup)

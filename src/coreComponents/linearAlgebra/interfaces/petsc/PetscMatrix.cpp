@@ -62,6 +62,7 @@ PetscMatrix & PetscMatrix::operator=( PetscMatrix const & src )
       m_assembled = true;
       m_closed = true;
     }
+    m_dofManager = src.dofManager();
   }
   return *this;
 }
@@ -71,9 +72,7 @@ PetscMatrix & PetscMatrix::operator=( PetscMatrix && src ) noexcept
   if( &src != this )
   {
     std::swap( m_mat, src.m_mat );
-    std::swap( m_dofManager, src.m_dofManager );
-    std::swap( m_closed, src.m_closed );
-    std::swap( m_assembled, src.m_assembled );
+    MatrixBase::operator=( std::move( src ) );
   }
   return *this;
 }
@@ -668,27 +667,32 @@ void PetscMatrix::addDiagonal( PetscVector const & src )
 localIndex PetscMatrix::maxRowLength() const
 {
   GEOSX_LAI_ASSERT( assembled() );
-  localIndex maxLocalLength = 0;
-  for( globalIndex i = ilower(); i < iupper(); ++i )
+  RAJA::ReduceMax< parallelHostReduce, localIndex > maxLocalLength( 0 );
+  forAll< parallelHostPolicy >( ilower(), iupper(), [=]( globalIndex const globalRow )
   {
-    maxLocalLength = std::max( maxLocalLength, globalRowLength( i ) );
-  }
-  return MpiWrapper::max( maxLocalLength, getComm() );
+    maxLocalLength.max( rowLength( globalRow ) );
+  } );
+  return MpiWrapper::max( maxLocalLength.get(), getComm() );
 }
 
-localIndex PetscMatrix::localRowLength( localIndex const localRowIndex ) const
-{
-  return globalRowLength( getGlobalRowID( localRowIndex ) );
-}
-
-localIndex PetscMatrix::globalRowLength( globalIndex const globalRowIndex ) const
+localIndex PetscMatrix::rowLength( globalIndex const globalRowIndex ) const
 {
   GEOSX_LAI_ASSERT( assembled() );
   PetscInt ncols;
-  GEOSX_LAI_CHECK_ERROR( MatGetRow( m_mat, globalRowIndex, &ncols, nullptr, nullptr ) );
+  GEOSX_LAI_CHECK_ERROR( MatGetRow( m_mat, LvArray::integerConversion< PetscInt >( globalRowIndex ), &ncols, nullptr, nullptr ) );
   localIndex const nnz = ncols;
-  GEOSX_LAI_CHECK_ERROR( MatRestoreRow( m_mat, globalRowIndex, &ncols, nullptr, nullptr ) );
+  GEOSX_LAI_CHECK_ERROR( MatRestoreRow( m_mat, LvArray::integerConversion< PetscInt >( globalRowIndex ), &ncols, nullptr, nullptr ) );
   return nnz;
+}
+
+void PetscMatrix::getRowLengths( arrayView1d< localIndex > const & lengths ) const
+{
+  GEOSX_LAI_ASSERT( assembled() );
+  globalIndex const rowOffset = ilower();
+  forAll< parallelHostPolicy >( numLocalRows(), [=]( localIndex const localRow )
+  {
+    lengths[localRow] = rowLength( rowOffset + localRow );
+  } );
 }
 
 void PetscMatrix::getRowCopy( globalIndex const globalRow,
@@ -720,31 +724,6 @@ void PetscMatrix::getRowCopy( globalIndex const globalRow,
   GEOSX_LAI_CHECK_ERROR( MatRestoreRow( m_mat, globalRow, &numEntries, &inds, &vals ) );
 }
 
-real64 PetscMatrix::getDiagValue( globalIndex const globalRow ) const
-{
-  GEOSX_LAI_ASSERT( assembled() );
-  GEOSX_LAI_ASSERT_GE( globalRow, ilower());
-  GEOSX_LAI_ASSERT_GT( iupper(), globalRow );
-
-  PetscScalar const * vals = nullptr;
-  PetscInt const * cols = nullptr;
-  PetscInt ncols;
-  real64 diagValue = 0.0;
-
-  GEOSX_LAI_CHECK_ERROR( MatGetRow( m_mat, globalRow, &ncols, &cols, &vals ) );
-  for( PetscInt i = 0; i < ncols; i++ )
-  {
-    if( cols[i] == globalRow )
-    {
-      diagValue = vals[i];
-      break;
-    }
-  }
-  GEOSX_LAI_CHECK_ERROR( MatRestoreRow( m_mat, globalRow, &ncols, &cols, &vals ) );
-
-  return diagValue;
-}
-
 void PetscMatrix::extractDiagonal( PetscVector & dst ) const
 {
   GEOSX_LAI_ASSERT( ready() );
@@ -752,6 +731,15 @@ void PetscMatrix::extractDiagonal( PetscVector & dst ) const
   GEOSX_LAI_ASSERT_EQ( dst.localSize(), numLocalRows() );
 
   GEOSX_LAI_CHECK_ERROR( MatGetDiagonal( m_mat, dst.unwrapped() ) );
+}
+
+void PetscMatrix::getRowSums( PetscMatrix::Vector & dst ) const
+{
+  GEOSX_LAI_ASSERT( ready() );
+  GEOSX_LAI_ASSERT( dst.ready() );
+  GEOSX_LAI_ASSERT_EQ( dst.localSize(), numLocalRows() );
+
+  GEOSX_LAI_CHECK_ERROR( MatGetRowSum( m_mat, dst.unwrapped() ) );
 }
 
 Mat & PetscMatrix::unwrapped()

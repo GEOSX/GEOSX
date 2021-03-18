@@ -127,9 +127,12 @@ public:
   using MatrixBase::residual;
   using MatrixBase::setDofManager;
   using MatrixBase::dofManager;
+  using MatrixBase::getInvRowSums;
+  using MatrixBase::create;
 
   virtual void create( CRSMatrixView< real64 const, globalIndex const > const & localMatrix,
-                       MPI_Comm const & comm ) override final;
+                       localIndex const numLocalColumns,
+                       MPI_Comm const & comm ) override;
 
   virtual void createWithLocalSize( localIndex const localRows,
                                     localIndex const localCols,
@@ -279,17 +282,17 @@ public:
    */
   virtual localIndex maxRowLength() const override;
 
-  virtual localIndex localRowLength( localIndex localRowIndex ) const override;
+  virtual localIndex rowLength( globalIndex const globalRowIndex ) const override;
 
-  virtual localIndex globalRowLength( globalIndex globalRowIndex ) const override;
+  virtual void getRowLengths( arrayView1d< localIndex > const & lengths ) const override;
 
   virtual void getRowCopy( globalIndex globalRowIndex,
                            arraySlice1d< globalIndex > const & colIndices,
                            arraySlice1d< real64 > const & values ) const override;
 
-  virtual real64 getDiagValue( globalIndex globalRow ) const override;
-
   virtual void extractDiagonal( HypreVector & dst ) const override;
+
+  virtual void getRowSums( HypreVector & dst ) const override;
 
   /**
    * @copydoc MatrixBase<HypreMatrix,HypreVector>::numGlobalRows

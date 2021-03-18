@@ -39,7 +39,7 @@ static void initialize( MPI_Comm const & comm,
                         HYPRE_BigInt const & iupper,
                         HYPRE_BigInt const & jlower,
                         HYPRE_BigInt const & jupper,
-                        arraySlice1d< HYPRE_Int const > const & ncols,
+                        arrayView1d< HYPRE_Int const > const & ncols,
                         HYPRE_IJMatrix & ij_matrix )
 {
   GEOSX_LAI_CHECK_ERROR( HYPRE_IJMatrixCreate( comm,
@@ -50,7 +50,7 @@ static void initialize( MPI_Comm const & comm,
                                                &ij_matrix ) );
 
   GEOSX_LAI_CHECK_ERROR( HYPRE_IJMatrixSetObjectType( ij_matrix, HYPRE_PARCSR ) );
-  GEOSX_LAI_CHECK_ERROR( HYPRE_IJMatrixSetRowSizes( ij_matrix, ncols.dataIfContiguous() ) );
+  GEOSX_LAI_CHECK_ERROR( HYPRE_IJMatrixSetRowSizes( ij_matrix, ncols.data() ) );
   GEOSX_LAI_CHECK_ERROR( HYPRE_IJMatrixInitialize( ij_matrix ) );
 }
 
@@ -83,6 +83,7 @@ HypreMatrix & HypreMatrix::operator=( HypreMatrix const & src )
       // Create IJ layer (with matrix closed)
       parCSRtoIJ( dst_parcsr );
     }
+    m_dofManager = src.dofManager();
   }
   return *this;
 }
@@ -93,9 +94,7 @@ HypreMatrix & HypreMatrix::operator=( HypreMatrix && src ) noexcept
   {
     std::swap( m_ij_mat, src.m_ij_mat );
     std::swap( m_parcsr_mat, src.m_parcsr_mat );
-    std::swap( m_dofManager, src.m_dofManager );
-    std::swap( m_closed, src.m_closed );
-    std::swap( m_assembled, src.m_assembled );
+    MatrixBase::operator=( std::move( src ) );
   }
   return *this;
 }
@@ -144,67 +143,45 @@ void HypreMatrix::createWithGlobalSize( globalIndex const globalRows,
               m_ij_mat );
 }
 
-#if defined(GEOSX_USE_HYPRE_CUDA)
-
-#define cudaCheckErrors( msg ) \
-  do { \
-    cudaError_t __err = cudaGetLastError(); \
-    if( __err != cudaSuccess ) { \
-      fprintf( stderr, "Fatal error: %s (%s at %s:%d)\n", \
-               msg, cudaGetErrorString( __err ), \
-               __FILE__, __LINE__ ); \
-      fprintf( stderr, "*** FAILED - ABORTING\n" ); \
-      exit( 1 ); \
-    } \
-  } while (0)
-
-
 void HypreMatrix::create( CRSMatrixView< real64 const, globalIndex const > const & localMatrix,
+                          localIndex const numLocalColumns,
                           MPI_Comm const & comm )
 {
-  RAJA::ReduceMax< parallelDeviceReduce, localIndex > maxRowEntries( 0 );
-
-  forAll< parallelDevicePolicy< 32 > >( localMatrix.numRows(),
-                                        [localMatrix, maxRowEntries] GEOSX_HOST_DEVICE ( localIndex const row )
+  RAJA::ReduceMax< ReducePolicy< hypre::execPolicy >, localIndex > maxRowEntries( 0 );
+  forAll< hypre::execPolicy >( localMatrix.numRows(),
+                               [localMatrix, maxRowEntries] GEOSX_HYPRE_HOST_DEVICE ( localIndex const row )
   {
     maxRowEntries.max( localMatrix.numNonZeros( row ) );
-  }
-                                        );
+  } );
 
-  createWithLocalSize( localMatrix.numRows(),
-                       localMatrix.numRows(),
-                       maxRowEntries.get(),
-                       comm );
-
+  createWithLocalSize( localMatrix.numRows(), numLocalColumns, maxRowEntries.get(), comm );
   globalIndex const rankOffset = ilower();
 
-  array1d< globalIndex > rows;
-  rows.resizeWithoutInitializationOrDestruction( LvArray::MemorySpace::cuda, localMatrix.numRows() );
-  arrayView1d< globalIndex > const rowsV = rows;
+  array1d< HYPRE_BigInt > rows;
+  rows.resizeWithoutInitializationOrDestruction( hypre::memorySpace, localMatrix.numRows() );
 
   array1d< HYPRE_Int > sizes;
-  sizes.resizeWithoutInitializationOrDestruction( LvArray::MemorySpace::cuda, localMatrix.numRows() );
-  arrayView1d< HYPRE_Int > const sizesV = sizes;
+  sizes.resizeWithoutInitializationOrDestruction( hypre::memorySpace, localMatrix.numRows() );
 
   array1d< HYPRE_Int > offsets;
-  offsets.resizeWithoutInitializationOrDestruction( LvArray::MemorySpace::cuda, localMatrix.numRows() );
-  arrayView1d< HYPRE_Int > const offsetsV = offsets;
+  offsets.resizeWithoutInitializationOrDestruction( hypre::memorySpace, localMatrix.numRows() );
 
-  forAll< parallelDevicePolicy< 32 > >( localMatrix.numRows(),
-                                        [localMatrix, rankOffset, rowsV, sizesV, offsetsV] GEOSX_HOST_DEVICE ( localIndex const row )
+  forAll< hypre::execPolicy >( localMatrix.numRows(),
+                               [localMatrix, rankOffset,
+                                rowsV = rows.toView(),
+                                sizesV = sizes.toView(),
+                                offsetsV = offsets.toView()] GEOSX_HYPRE_HOST_DEVICE ( localIndex const row )
   {
-    rowsV[ row ] = row + rankOffset;
-    sizesV[ row ] = localMatrix.numNonZeros( row );
-    offsetsV[ row ] = localMatrix.getOffsets()[ row ];
-  }
-                                        );
+    rowsV[row] = LvArray::integerConversion< HYPRE_BigInt >( row + rankOffset );
+    sizesV[row] = LvArray::integerConversion< HYPRE_Int >( localMatrix.numNonZeros( row ) );
+    offsetsV[row] = LvArray::integerConversion< HYPRE_Int >( localMatrix.getOffsets()[row] );
+  } );
 
   // This is necessary so that localMatrix.getColumns() and localMatrix.getEntries() return the device pointers.
-  localMatrix.move( LvArray::MemorySpace::cuda, false );
+  localMatrix.move( hypre::memorySpace, false );
 
   open();
-
-  cudaCheckErrors( "you have a cuda error" );
+  GEOSX_HYPRE_CHECK_DEVICE_ERRORS( "Cuda error detected before HYPRE_IJMatrixAddToValues2" );
   GEOSX_LAI_CHECK_ERROR( HYPRE_IJMatrixAddToValues2( m_ij_mat,
                                                      localMatrix.numRows(),
                                                      sizes.data(),
@@ -212,16 +189,8 @@ void HypreMatrix::create( CRSMatrixView< real64 const, globalIndex const > const
                                                      offsets.data(),
                                                      localMatrix.getColumns(),
                                                      localMatrix.getEntries() ) );
-
   close();
 }
-#else
-void HypreMatrix::create( CRSMatrixView< real64 const, globalIndex const > const & localMatrix,
-                          MPI_Comm const & comm )
-{
-  MatrixBase::create( localMatrix, comm );
-}
-#endif
 
 void HypreMatrix::createWithLocalSize( localIndex const localRows,
                                        localIndex const localCols,
@@ -236,6 +205,7 @@ void HypreMatrix::createWithLocalSize( localIndex const localRows,
 
   HYPRE_BigInt const ilower = MpiWrapper::prefixSum< HYPRE_BigInt >( localRows );
   HYPRE_BigInt const iupper = ilower + localRows - 1;
+
   HYPRE_BigInt const jlower = MpiWrapper::prefixSum< HYPRE_BigInt >( localCols );
   HYPRE_BigInt const jupper = jlower + localCols - 1;
 
@@ -877,28 +847,22 @@ localIndex HypreMatrix::maxRowLength() const
 {
   GEOSX_LAI_ASSERT( assembled() );
 
-  HYPRE_Int const nrows = LvArray::integerConversion< HYPRE_Int >( numLocalRows() );
+  hypre_CSRMatrix const * const csr_diag = hypre_ParCSRMatrixDiag( m_parcsr_mat );
+  HYPRE_Int const * const ia_diag        = hypre_CSRMatrixI( csr_diag );
 
-  array1d< HYPRE_BigInt > rows( nrows );
-  array1d< HYPRE_Int > ncols( nrows );
+  hypre_CSRMatrix const * const csr_offd = hypre_ParCSRMatrixOffd( m_parcsr_mat );
+  HYPRE_Int const * const ia_offd        = hypre_CSRMatrixI( csr_offd );
 
-  std::iota( rows.begin(), rows.end(), ilower() );
+  RAJA::ReduceMax< ReducePolicy< hypre::execPolicy >, localIndex > localMaxRowLength( 0 );
+  forAll< hypre::execPolicy >( numLocalRows(), [=] GEOSX_HYPRE_HOST_DEVICE ( localIndex const localRow )
+  {
+    localMaxRowLength.max( (ia_diag[localRow + 1] - ia_diag[localRow]) + (ia_offd[localRow + 1] - ia_offd[localRow] ) );
+  } );
 
-  GEOSX_LAI_CHECK_ERROR( HYPRE_IJMatrixGetRowCounts( m_ij_mat,
-                                                     nrows,
-                                                     rows.data(),
-                                                     ncols.data() ) );
-
-  HYPRE_Int const localMaxRowLength = *std::max_element( ncols.begin(), ncols.end() );
-  return MpiWrapper::max( localMaxRowLength, getComm() );
+  return MpiWrapper::max( localMaxRowLength.get(), getComm() );
 }
 
-localIndex HypreMatrix::localRowLength( localIndex const localRowIndex ) const
-{
-  return globalRowLength( getGlobalRowID( localRowIndex ) );
-}
-
-localIndex HypreMatrix::globalRowLength( globalIndex const globalRowIndex ) const
+localIndex HypreMatrix::rowLength( globalIndex const globalRowIndex ) const
 {
   GEOSX_LAI_ASSERT( assembled() );
 
@@ -911,6 +875,22 @@ localIndex HypreMatrix::globalRowLength( globalIndex const globalRowIndex ) cons
                                                      &ncols ) );
 
   return LvArray::integerConversion< localIndex >( ncols );
+}
+
+void HypreMatrix::getRowLengths( arrayView1d< localIndex > const & lengths ) const
+{
+  GEOSX_LAI_ASSERT( assembled() );
+
+  hypre_CSRMatrix const * const csr_diag = hypre_ParCSRMatrixDiag( m_parcsr_mat );
+  HYPRE_Int const * const ia_diag        = hypre_CSRMatrixI( csr_diag );
+
+  hypre_CSRMatrix const * const csr_offd = hypre_ParCSRMatrixOffd( m_parcsr_mat );
+  HYPRE_Int const * const ia_offd        = hypre_CSRMatrixI( csr_offd );
+
+  forAll< hypre::execPolicy >( numLocalRows(), [=] GEOSX_HYPRE_HOST_DEVICE ( localIndex const localRow )
+  {
+    lengths[localRow] = (ia_diag[localRow + 1] - ia_diag[localRow]) + (ia_offd[localRow + 1] - ia_offd[localRow]);
+  } );
 }
 
 void HypreMatrix::getRowCopy( globalIndex const globalRowIndex,
@@ -939,31 +919,6 @@ void HypreMatrix::getRowCopy( globalIndex const globalRowIndex,
                                                         values ) );
 }
 
-real64 HypreMatrix::getDiagValue( globalIndex const globalRow ) const
-{
-  GEOSX_LAI_ASSERT( assembled() );
-  GEOSX_LAI_ASSERT_GE( globalRow, ilower());
-  GEOSX_LAI_ASSERT_GT( iupper(), globalRow );
-
-  // Get local row index
-  HYPRE_Int const localRow = LvArray::integerConversion< HYPRE_Int >( getLocalRowID( globalRow ) );
-
-  // Get diagonal block
-  hypre_CSRMatrix const * const prt_CSR = hypre_ParCSRMatrixDiag( m_parcsr_mat );
-  HYPRE_Int const * const IA            = hypre_CSRMatrixI( prt_CSR );
-  HYPRE_Int const * const JA            = hypre_CSRMatrixJ( prt_CSR );
-  HYPRE_Real const * const ptr_data     = hypre_CSRMatrixData( prt_CSR );
-
-  for( HYPRE_Int j = IA[localRow]; j < IA[localRow + 1]; ++j )
-  {
-    if( JA[j] == localRow )
-    {
-      return ptr_data[j];
-    }
-  }
-  return 0.0;
-}
-
 void HypreMatrix::extractDiagonal( HypreVector & dst ) const
 {
   GEOSX_LAI_ASSERT( ready() );
@@ -986,6 +941,36 @@ void HypreMatrix::extractDiagonal( HypreVector & dst ) const
       {
         values[localRow] = va[j];
       }
+    }
+  } );
+}
+
+void HypreMatrix::getRowSums( HypreMatrix::Vector & dst ) const
+{
+  GEOSX_LAI_ASSERT( ready() );
+  GEOSX_LAI_ASSERT( dst.ready() );
+  GEOSX_LAI_ASSERT_EQ( dst.localSize(), numLocalRows() );
+
+  dst.zero();
+  real64 * const values = dst.extractLocalVector();
+
+  hypre_CSRMatrix const * const csr_diag = hypre_ParCSRMatrixDiag( m_parcsr_mat );
+  HYPRE_Int const * const ia_diag        = hypre_CSRMatrixI( csr_diag );
+  HYPRE_Real const * const va_diag       = hypre_CSRMatrixData( csr_diag );
+
+  hypre_CSRMatrix const * const csr_offd = hypre_ParCSRMatrixOffd( m_parcsr_mat );
+  HYPRE_Int const * const ia_offd        = hypre_CSRMatrixI( csr_offd );
+  HYPRE_Real const * const va_offd       = hypre_CSRMatrixData( csr_offd );
+
+  forAll< hypre::execPolicy >( numLocalRows(), [=] GEOSX_HYPRE_HOST_DEVICE ( localIndex const localRow )
+  {
+    for( HYPRE_Int j = ia_diag[localRow]; j < ia_diag[localRow + 1]; ++j )
+    {
+      values[localRow] += va_diag[j];
+    }
+    for( HYPRE_Int j = ia_offd[localRow]; j < ia_offd[localRow + 1]; ++j )
+    {
+      values[localRow] += va_offd[j];
     }
   } );
 }

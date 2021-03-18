@@ -256,17 +256,19 @@ public:
    */
   virtual localIndex maxRowLength() const override;
 
-  virtual localIndex localRowLength( localIndex localRowIndex ) const override;
+  virtual localIndex rowLength( globalIndex const globalRowIndex ) const override;
 
-  virtual localIndex globalRowLength( globalIndex globalRowIndex ) const override;
+  virtual void getRowLengths( arrayView1d< localIndex > const & lengths ) const override;
 
   virtual void getRowCopy( globalIndex globalRow,
                            arraySlice1d< globalIndex > const & colIndices,
                            arraySlice1d< real64 > const & values ) const override;
 
-  virtual real64 getDiagValue( globalIndex globalRow ) const override;
-
   virtual void extractDiagonal( EpetraVector & dst ) const override;
+
+  virtual void getRowSums( EpetraVector & dst ) const override;
+
+  virtual void getInvRowSums( EpetraVector & dst ) const override;
 
   /**
    * @copydoc MatrixBase<EpetraMatrix,EpetraVector>::numGlobalRows

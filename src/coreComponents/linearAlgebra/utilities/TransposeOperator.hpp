@@ -48,7 +48,7 @@ public:
    */
   explicit TransposeOperator( Matrix const & mat )
     : Base(),
-    m_matrix( &mat )
+    m_matrix( mat )
   { }
 
   /**

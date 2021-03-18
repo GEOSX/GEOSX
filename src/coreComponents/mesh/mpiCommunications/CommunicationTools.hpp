@@ -69,10 +69,21 @@ public:
   void findMatchedPartitionBoundaryObjects( ObjectManagerBase & group,
                                             std::vector< NeighborCommunicator > & allNeighbors );
 
+  void synchronizeFields( string_array const & fieldNames,
+                          ObjectManagerBase & manager,
+                          std::vector< NeighborCommunicator > & neighbors,
+                          bool onDevice );
+
   void synchronizeFields( const std::map< string, string_array > & fieldNames,
                           MeshLevel & mesh,
-                          std::vector< NeighborCommunicator > & allNeighbors,
+                          std::vector< NeighborCommunicator > & neighbors,
                           bool onDevice );
+
+  void synchronizePackSendRecvSizes( string_array const & fieldNames,
+                                     ObjectManagerBase & manager,
+                                     std::vector< NeighborCommunicator > & neighbors,
+                                     MPI_iCommData & icomm,
+                                     bool onDevice );
 
   void synchronizePackSendRecvSizes( const std::map< string, string_array > & fieldNames,
                                      MeshLevel & mesh,
@@ -80,11 +91,24 @@ public:
                                      MPI_iCommData & icomm,
                                      bool onDevice );
 
-  void synchronizePackSendRecv( const std::map< string, string_array > & fieldNames,
-                                MeshLevel & mesh,
-                                std::vector< NeighborCommunicator > & allNeighbors,
+  void synchronizePackSendRecv( string_array const & fieldNames,
+                                ObjectManagerBase & manager,
+                                std::vector< NeighborCommunicator > & neighbors,
                                 MPI_iCommData & icomm,
                                 bool onDevice );
+
+  void synchronizePackSendRecv( const std::map< string, string_array > & fieldNames,
+                                MeshLevel & mesh,
+                                std::vector< NeighborCommunicator > & neighbors,
+                                MPI_iCommData & icomm,
+                                bool onDevice );
+
+  void asyncPack( string_array const & fieldNames,
+                  ObjectManagerBase & manager,
+                  std::vector< NeighborCommunicator > & neighbors,
+                  MPI_iCommData & icomm,
+                  bool onDevice,
+                  parallelDeviceEvents & events );
 
   void asyncPack( const std::map< string, string_array > & fieldNames,
                   MeshLevel & mesh,
@@ -98,16 +122,33 @@ public:
                       bool onDevice,
                       parallelDeviceEvents & events );
 
+  void synchronizeUnpack( ObjectManagerBase & manager,
+                          std::vector< NeighborCommunicator > & neighbors,
+                          MPI_iCommData & icomm,
+                          bool onDevice );
+
   void synchronizeUnpack( MeshLevel & mesh,
                           std::vector< NeighborCommunicator > & neighbors,
                           MPI_iCommData & icomm,
                           bool onDevice );
+
+  bool asyncUnpack( ObjectManagerBase & manager,
+                    std::vector< NeighborCommunicator > & neighbors,
+                    MPI_iCommData & icomm,
+                    bool onDevice,
+                    parallelDeviceEvents & events );
 
   bool asyncUnpack( MeshLevel & mesh,
                     std::vector< NeighborCommunicator > & neighbors,
                     MPI_iCommData & icomm,
                     bool onDevice,
                     parallelDeviceEvents & events );
+
+  void finalizeUnpack( ObjectManagerBase & manager,
+                       std::vector< NeighborCommunicator > & neighbors,
+                       MPI_iCommData & icomm,
+                       bool onDevice,
+                       parallelDeviceEvents & events );
 
   void finalizeUnpack( MeshLevel & mesh,
                        std::vector< NeighborCommunicator > & neighbors,

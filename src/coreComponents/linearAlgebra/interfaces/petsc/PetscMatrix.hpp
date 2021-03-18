@@ -118,6 +118,7 @@ public:
   using MatrixBase::residual;
   using MatrixBase::setDofManager;
   using MatrixBase::dofManager;
+  using MatrixBase::getInvRowSums;
 
   virtual void createWithLocalSize( localIndex const localRows,
                                     localIndex const localCols,
@@ -267,13 +268,13 @@ public:
    */
   virtual localIndex maxRowLength() const override;
 
-  virtual localIndex localRowLength( localIndex localRowIndex ) const override;
+  virtual localIndex rowLength( globalIndex const globalRowIndex ) const override;
 
-  virtual localIndex globalRowLength( globalIndex globalRowIndex ) const override;
-
-  virtual real64 getDiagValue( globalIndex globalRow ) const override;
+  virtual void getRowLengths( arrayView1d< localIndex > const & lengths ) const override;
 
   virtual void extractDiagonal( PetscVector & dst ) const override;
+
+  virtual void getRowSums( PetscVector & dst ) const override;
 
   virtual void getRowCopy( globalIndex globalRow,
                            arraySlice1d< globalIndex > const & colIndices,

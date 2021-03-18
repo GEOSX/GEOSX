@@ -44,7 +44,7 @@ void SeparateComponentPreconditioner< LAI >::setup( Matrix const & mat )
 {
   Base::setup( mat );
   // TODO: if matrix structure hasn't changed, can just copy entries into existing m_matSC
-  LAIHelperFunctions::separateComponentFilter( mat, m_matSC, m_numComp );
+  m_matSC = LAIHelperFunctions::separateComponentFilter( mat, m_numComp );
   m_precond->setup( m_matSC );
 }
 
