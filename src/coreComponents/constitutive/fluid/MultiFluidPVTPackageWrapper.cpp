@@ -141,11 +141,12 @@ void MultiFluidPVTPackageWrapperUpdate::compute( real64 pressure,
     auto const & comp = props.getMoleComposition( phaseType );
     auto const & dens = m_useMass ? props.getMassDensity( phaseType ) : props.getMoleDensity( phaseType );
     auto const & massDens = props.getMassDensity( phaseType );
+    auto const & visc = props.getViscosity( phaseType );
 
     phaseFrac[ip] = frac.value;
     phaseDens[ip] = dens.value;
     phaseMassDens[ip] = massDens.value;
-    phaseVisc[ip] = 0.001; // TODO
+    phaseVisc[ip] = visc.value;
     for( localIndex jc = 0; jc < NC; ++jc )
     {
       phaseCompFrac[ip][jc] = comp.value[jc];
@@ -337,6 +338,7 @@ void MultiFluidPVTPackageWrapperUpdate::compute( real64 pressure,
     auto const & comp = props.getMoleComposition( phaseType );
     auto const & dens = m_useMass ? props.getMassDensity( phaseType ) : props.getMoleDensity( phaseType );
     auto const & massDens = props.getMassDensity( phaseType );
+    auto const & visc = props.getViscosity( phaseType );
 
     phaseFrac.value[ip] = frac.value;
     phaseFrac.dPres[ip] = frac.dP;
@@ -350,17 +352,16 @@ void MultiFluidPVTPackageWrapperUpdate::compute( real64 pressure,
     phaseMassDens.dPres[ip] = massDens.dP;
     phaseMassDens.dTemp[ip] = massDens.dT;
 
-    // TODO
-    phaseVisc.value[ip] = 0.001;
-    phaseVisc.dPres[ip] = 0.0;
-    phaseVisc.dTemp[ip] = 0.0;
+    phaseVisc.value[ip] = visc.value;
+    phaseVisc.dPres[ip] = visc.dP;
+    phaseVisc.dTemp[ip] = visc.dT;
 
     for( localIndex jc = 0; jc < NC; ++jc )
     {
       phaseFrac.dComp[ip][jc]     = frac.dz[jc];
       phaseDens.dComp[ip][jc]     = dens.dz[jc];
       phaseMassDens.dComp[ip][ip] = massDens.dz[jc];
-      phaseVisc.dComp[ip][jc]     = 0.0; // TODO
+      phaseVisc.dComp[ip][jc]     = visc.dz[jc];
 
       phaseCompFrac.value[ip][jc] = comp.value[jc];
       phaseCompFrac.dPres[ip][jc] = comp.dP[jc];
