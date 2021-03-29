@@ -37,7 +37,8 @@ EmbeddedSurfaceSubRegion::EmbeddedSurfaceSubRegion( string const & name,
   m_tangentVector1(),
   m_tangentVector2(),
   m_numOfJumpEnrichments( 3 ),
-  m_connectivityIndex()
+  m_connectivityIndex(),
+  m_parentPlaneName()
 {
   registerWrapper( viewKeyStruct::normalVectorString(), &m_normalVector ).
     setDescription( "Unit normal vector to the embedded surface." );
@@ -59,6 +60,9 @@ EmbeddedSurfaceSubRegion::EmbeddedSurfaceSubRegion( string const & name,
   registerWrapper( viewKeyStruct::connectivityIndexString(), &m_connectivityIndex ).
     setApplyDefaultValue( 1 ).
     setDescription( "Connectivity index of each EmbeddedSurface." );
+
+  registerWrapper( viewKeyStruct::surfaceElementToParentPlaneString(), &m_parentPlaneName ).
+    setDescription( "A map of surface element to the parent fracture name" );
 
   m_normalVector.resizeDimension< 1 >( 3 );
   m_tangentVector1.resizeDimension< 1 >( 3 );
@@ -181,6 +185,8 @@ bool EmbeddedSurfaceSubRegion::addNewEmbeddedSurface ( localIndex const cellInde
     computationalGeometry::orderPointsCCW( intersectionPoints, normalVector );
     array2d< real64, nodes::REFERENCE_POSITION_PERM > & embSurfNodesPos = nodeManager.embSurfNodesPosition();
 
+    // fill out elemNodes array with the previously found intersection points
+    // add new nodes to embSurfNodes
     bool isNew;
     localIndex nodeIndex;
     array1d< localIndex > elemNodes( intersectionPoints.size( 0 ) );
@@ -215,9 +221,10 @@ bool EmbeddedSurfaceSubRegion::addNewEmbeddedSurface ( localIndex const cellInde
       m_toNodesRelation( surfaceIndex, inode ) = elemNodes[inode];
     }
 
-    m_surfaceElementsToCells.m_toElementIndex[ surfaceIndex ][0]        = cellIndex;
-    m_surfaceElementsToCells.m_toElementSubRegion[ surfaceIndex ][0]    =  subRegionIndex;
-    m_surfaceElementsToCells.m_toElementRegion[ surfaceIndex ][0]       =  regionIndex;
+    m_surfaceElementsToCells.m_toElementIndex[ surfaceIndex ][0]     = cellIndex;
+    m_surfaceElementsToCells.m_toElementSubRegion[ surfaceIndex ][0] =  subRegionIndex;
+    m_surfaceElementsToCells.m_toElementRegion[ surfaceIndex ][0]    =  regionIndex;
+    m_parentPlaneName[ surfaceIndex ] = fracture->getName();
     LvArray::tensorOps::copy< 3 >( m_normalVector[ surfaceIndex ], normalVector );
     LvArray::tensorOps::copy< 3 >( m_tangentVector1[ surfaceIndex ], fracture->getWidthVector());
     LvArray::tensorOps::copy< 3 >( m_tangentVector2[ surfaceIndex ], fracture->getLengthVector());

@@ -229,6 +229,13 @@ public:
   arraySlice1d< real64 const > getNormalVector( localIndex k ) const { return m_normalVector[k]; }
 
   /**
+   * @brief Get the name of the bounding plate that was used to generate fracture element k.
+   * @param k the index of the embedded surface element
+   * @return the name of the bounded plane, the element was generated from
+   */
+  std::string const & getFractureName( localIndex k ) const { return m_parentPlaneName[k]; }
+
+  /**
    * @brief Get an array of the first tangent vector of the embedded surface elements.
    * @return an array of the first tangent vector of the embedded surface elements
    */
@@ -273,7 +280,6 @@ public:
    * @copydoc getTangentVector2( localIndex k )
    */
   arraySlice1d< real64 const > getTangentVector2( localIndex k ) const { return m_tangentVector2[k];}
-
 
   /**
    * @brief Get the connectivity index of the  embedded surface element.
@@ -369,6 +375,9 @@ private:
 
   /// The CI of the cells
   array1d< real64 > m_connectivityIndex;
+
+  // Indices of geometric objects the element belongs to
+  array1d< std::string > m_parentPlaneName;
 };
 
 

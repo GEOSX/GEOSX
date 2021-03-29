@@ -20,6 +20,7 @@
 #define GEOSX_FINITEVOLUME_TWOPOINTFLUXAPPROXIMATION_HPP_
 
 #include "finiteVolume/FluxApproximationBase.hpp"
+#include "ProjectionEDFMHelper.hpp"
 
 namespace geosx
 {
@@ -49,6 +50,7 @@ public:
   TwoPointFluxApproximation( string const & name, dataRepository::Group * const parent );
 
 protected:
+  virtual void initializePreSubGroups() override final;
 
   virtual void registerCellStencil( Group & stencilGroup ) const override;
 
@@ -70,7 +72,22 @@ protected:
   virtual void addEDFracToFractureStencil( MeshLevel & mesh,
                                            string const & embeddedSurfaceRegionName ) const override;
 
+  void addFractureFractureConnections( MeshLevel & mesh,
+                                       EmbeddedSurfaceSubRegion const & fractureSubRegion,
+                                       localIndex const fractureRegionIndex ) const;
 
+  void addFractureMatrixConnections( MeshLevel & mesh,
+                                     EmbeddedSurfaceSubRegion const & fractureSubRegion,
+                                     localIndex const fractureRegionIndex ) const;
+
+  struct viewKeyStruct : FluxApproximationBase::viewKeyStruct
+  {
+    // constexpr static auto useProjectionEmbeddedFractureMethodString = "useProjectionEmbeddedFractureMethod";
+    static constexpr char const * useProjectionEmbeddedFractureMethodString() { return "useProjectionEmbeddedFractureMethod"; }
+  };
+
+  int m_useProjectionEmbeddedFractureMethod;  // whether or not to do projection EDFM
+  std::unique_ptr< ProjectionEDFMHelper > m_pedfmHelper{nullptr};
 };
 
 }

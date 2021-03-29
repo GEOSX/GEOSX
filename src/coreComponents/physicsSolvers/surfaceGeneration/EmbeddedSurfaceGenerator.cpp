@@ -197,7 +197,6 @@ real64 EmbeddedSurfaceGenerator::solverStep( real64 const & GEOSX_UNUSED_PARAM( 
   /*
    * This should be the method that generates new fracture elements based on the propagation criterion of choice.
    */
-
   // Add the embedded elements to the fracture stencil.
   addToFractureStencil( domain );
 

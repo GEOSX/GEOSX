@@ -10,6 +10,7 @@ set( finiteVolume_headers
      FluxApproximationBase.hpp
      TwoPointFluxApproximation.hpp
      FluxStencil.hpp
+     ProjectionEDFMHelper.hpp
      HybridMimeticDiscretization.hpp
      MimeticInnerProductDispatch.hpp     
      mimeticInnerProducts/MimeticInnerProductBase.hpp
@@ -31,6 +32,7 @@ set( finiteVolume_sources
      FiniteVolumeManager.cpp
      FluxApproximationBase.cpp
      TwoPointFluxApproximation.cpp
+     ProjectionEDFMHelper.cpp
      HybridMimeticDiscretization.cpp
    )
 
