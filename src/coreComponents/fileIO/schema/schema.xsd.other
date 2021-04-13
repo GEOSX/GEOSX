@@ -304,10 +304,18 @@
 	<xsd:complexType name="FileType" />
 	<xsd:complexType name="MeshType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="ExternalCornerPointMesh" type="ExternalCornerPointMeshType" />
 			<xsd:element name="InternalMesh" type="InternalMeshType" />
 			<xsd:element name="InternalWell" type="InternalWellType" />
 			<xsd:element name="PAMELAMeshGenerator" type="PAMELAMeshGeneratorType" />
 		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="ExternalCornerPointMeshType">
+		<xsd:choice minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="Level0" type="Level0Type" />
+		</xsd:choice>
+		<!--meshLevels => (no description available)-->
+		<xsd:attribute name="meshLevels" type="integer" />
 	</xsd:complexType>
 	<xsd:complexType name="InternalMeshType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
@@ -1334,6 +1342,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="MeshBodiesType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="ExternalCornerPointMesh" type="ExternalCornerPointMeshType" />
 			<xsd:element name="InternalMesh" type="InternalMeshType" />
 			<xsd:element name="InternalWell" type="InternalWellType" />
 			<xsd:element name="PAMELAMeshGenerator" type="PAMELAMeshGeneratorType" />

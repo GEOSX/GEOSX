@@ -479,11 +479,36 @@
 	</xsd:complexType>
 	<xsd:complexType name="MeshType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="ExternalCornerPointMesh" type="ExternalCornerPointMeshType" />
 			<xsd:element name="InternalMesh" type="InternalMeshType" />
 			<xsd:element name="InternalWell" type="InternalWellType" />
 			<xsd:element name="PAMELAMeshGenerator" type="PAMELAMeshGeneratorType" />
 		</xsd:choice>
 	</xsd:complexType>
+	<xsd:complexType name="ExternalCornerPointMeshType">
+		<!--coordinatesUnitInInputFile => Flag to specify the unit of the coordinates in the input file. 
+Two options are available: Meter (default) or Foot. 
+If Foot is chosen, a conversion factor is applied as GEOSX internally works with meters.-->
+		<xsd:attribute name="coordinatesUnitInInputFile" type="geosx_CornerPointMeshGenerator_CoordinatesUnit" default="Meter" />
+		<!--file => Path to the mesh file-->
+		<xsd:attribute name="file" type="path" use="required" />
+		<!--permeabilityUnitInInputFile => Flag to specify the unit of permeability in the input file. 
+Two options are available: Millidarcy (default) or SquareMeter. 
+If Millidarcy is chosen, a conversion factor is applied as GEOSX internally works with square meters.-->
+		<xsd:attribute name="permeabilityUnitInInputFile" type="geosx_CornerPointMeshGenerator_PermeabilityUnit" default="Millidarcy" />
+		<!--name => A name is required for any non-unique nodes-->
+		<xsd:attribute name="name" type="string" use="required" />
+	</xsd:complexType>
+	<xsd:simpleType name="geosx_CornerPointMeshGenerator_CoordinatesUnit">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value=".*[\[\]`$].*|Meter|Foot" />
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="geosx_CornerPointMeshGenerator_PermeabilityUnit">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value=".*[\[\]`$].*|Millidarcy|SquareMeter" />
+		</xsd:restriction>
+	</xsd:simpleType>
 	<xsd:complexType name="InternalMeshType">
 		<!--cellBlockNames => names of each mesh block-->
 		<xsd:attribute name="cellBlockNames" type="string_array" use="required" />

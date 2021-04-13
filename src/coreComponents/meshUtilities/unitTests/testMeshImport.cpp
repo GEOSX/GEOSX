@@ -26,7 +26,9 @@
 using namespace geosx;
 using namespace geosx::dataRepository;
 
-void TestMeshImport( string const & inputStringMesh,
+real64 constexpr expectedVolume = 3.08104;
+
+void testMeshImport( string const & inputStringMesh,
                      string const & inputStringRegion,
                      string const & propertyToTest )
 {
@@ -64,7 +66,6 @@ void TestMeshImport( string const & inputStringMesh,
   // This method will call the CopyElementSubRegionFromCellBlocks that will trigger the property transfer.
   elemManager.generateMesh( cellBlockManager );
 
-
   // Check if the computed center match with the imported center
   if( !propertyToTest.empty() )
   {
@@ -82,9 +83,23 @@ void TestMeshImport( string const & inputStringMesh,
       }
     } );
   }
+  else
+  {
+    elemManager.forElementSubRegionsComplete< ElementSubRegionBase >(
+      [&]( localIndex const, localIndex const, ElementRegionBase &, ElementSubRegionBase & elemSubRegion )
+    {
+      elemSubRegion.calculateElementGeometricQuantities( nodeManager, faceManager );
+      arrayView1d< real64 const > const elemVolume = elemSubRegion.getElementVolume();
+      for( localIndex ei = 0; ei < elemSubRegion.size(); ++ei )
+      {
+        GEOSX_ERROR_IF( fabs( elemVolume( ei ) - expectedVolume ) > 1e-5,
+                        "The cell volume should be equal to the expected cell volume, but is equal to " << elemVolume( ei ) );
+      }
+    } );
+  }
 }
 
-TEST( PAMELAImport, testGMSH )
+TEST( MeshImport, testPAMELA_GMSH )
 {
   conduit::Node node;
   Group root( "root", node );
@@ -111,10 +126,10 @@ TEST( PAMELAImport, testGMSH )
     "</ElementRegions>";
   string inputStringRegion = inputStreamRegion.str();
 
-  TestMeshImport( inputStringMesh, inputStringRegion, "barycenter" );
+  testMeshImport( inputStringMesh, inputStringRegion, "barycenter" );
 }
 
-TEST( PAMELAImport, testECLIPSE )
+TEST( MeshImport, testPAMELA_ECLIPSE )
 {
   conduit::Node node;
   Group root( "root", node );
@@ -134,13 +149,40 @@ TEST( PAMELAImport, testECLIPSE )
   std::stringstream inputStreamRegion;
   inputStreamRegion <<
     "<?xml version=\"1.0\" ?>" <<
-    "  <CellElementRegions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"geos_v0.0.xsd\">" <<
+    "  <ElementRegions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"geos_v0.0.xsd\">" <<
     "  <CellElementRegion name=\"0\" cellBlocks=\"{DEFAULT_HEX}\" materialList=\"{water, rock}\"/>" <<
     "</ElementRegions>";
   string inputStringRegion = inputStreamRegion.str();
 
-  TestMeshImport( inputStringMesh, inputStringRegion, "" );
+  testMeshImport( inputStringMesh, inputStringRegion, "" );
 }
+
+TEST( MeshImport, testCPGReader_ECLIPSE )
+{
+  conduit::Node node;
+  Group root( "root", node );
+  MeshManager meshManager( "mesh", &root );
+
+  std::stringstream inputStreamMesh;
+  inputStreamMesh <<
+    "<?xml version=\"1.0\" ?>" <<
+    "  <Mesh xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"geos_v0.0.xsd\">" <<
+    "  <ExternalCornerPointMesh name=\"ToyModel\" " <<
+    "  file=\"" << eclipseFilePath.c_str()<< "\"/>"<<
+    "</Mesh>";
+  const string inputStringMesh = inputStreamMesh.str();
+
+  std::stringstream inputStreamRegion;
+  inputStreamRegion <<
+    "<?xml version=\"1.0\" ?>" <<
+    "  <ElementRegions xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:noNamespaceSchemaLocation=\"geos_v0.0.xsd\">" <<
+    "  <CellElementRegion name=\"0\" cellBlocks=\"{DEFAULT_HEX_0}\" materialList=\"{water, rock}\"/>" <<
+    "</ElementRegions>";
+  string inputStringRegion = inputStreamRegion.str();
+
+  testMeshImport( inputStringMesh, inputStringRegion, "" );
+}
+
 
 int main( int argc, char * * argv )
 {

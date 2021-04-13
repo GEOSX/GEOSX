@@ -8,6 +8,7 @@ set(meshUtilities_headers
     MeshGeneratorBase.hpp
     InternalMeshGenerator.hpp
     InternalWellGenerator.hpp
+    CornerPointMeshGenerator.hpp
     PerforationData.hpp
     Perforation.hpp
     MeshUtilities.hpp
@@ -16,6 +17,13 @@ set(meshUtilities_headers
     SimpleGeometricObjects/Box.hpp
     SimpleGeometricObjects/ThickPlane.hpp
     SimpleGeometricObjects/BoundedPlane.hpp
+    cornerPointMesh/CornerPointMeshBuilder.hpp
+    cornerPointMesh/CornerPointMeshParser.hpp
+    cornerPointMesh/CornerPointMeshData.hpp
+    cornerPointMesh/CornerPointMeshPartition.hpp
+    cornerPointMesh/utilities/StringUtilities.hpp
+    cornerPointMesh/utilities/GeometryUtilities.hpp
+    cornerPointMesh/utilities/OutputUtilities.hpp
     StructuredGridUtilities.hpp
    )
 
@@ -28,6 +36,7 @@ set(meshUtilities_sources
     MeshGeneratorBase.cpp
     InternalMeshGenerator.cpp
     InternalWellGenerator.cpp
+    CornerPointMeshGenerator.cpp
     PerforationData.cpp
     Perforation.cpp
     MeshUtilities.cpp
@@ -37,6 +46,10 @@ set(meshUtilities_sources
     SimpleGeometricObjects/Cylinder.cpp
     SimpleGeometricObjects/ThickPlane.cpp
     SimpleGeometricObjects/BoundedPlane.cpp
+    cornerPointMesh/CornerPointMeshBuilder.cpp
+    cornerPointMesh/CornerPointMeshParser.cpp
+    cornerPointMesh/CornerPointMeshPartition.cpp
+    cornerPointMesh/utilities/StringUtilities.cpp    
    )
 
 if( BUILD_OBJ_LIBS)

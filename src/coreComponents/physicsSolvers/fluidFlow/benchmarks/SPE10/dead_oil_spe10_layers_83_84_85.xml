@@ -48,7 +48,7 @@
         name="wellControls1"
         type="producer"
         control="BHP"
-        referenceElevation="3710.03"
+        referenceElevation="-3706.98"
         targetBHP="2.7579e7"
         targetPhaseRate="1e6"
         targetPhaseName="oil"/>
@@ -56,7 +56,7 @@
         name="wellControls2"
         type="producer"
         control="BHP"
-        referenceElevation="3710.03"    
+        referenceElevation="-3706.98"    
         targetBHP="2.7579e7"
         targetPhaseRate="1e6"
         targetPhaseName="oil"/>
@@ -64,7 +64,7 @@
         name="wellControls3"
         type="producer"
         control="BHP"
-        referenceElevation="3710.03"    
+        referenceElevation="-3706.98"    
         targetBHP="2.7579e7"
         targetPhaseRate="1e6"
         targetPhaseName="oil"/>
@@ -72,7 +72,7 @@
         name="wellControls4"
         type="producer"
         control="BHP"
-        referenceElevation="3710.03"    
+        referenceElevation="-3706.98"    
         targetBHP="2.7579e7"
         targetPhaseRate="1e6"
         targetPhaseName="oil"/>
@@ -80,7 +80,7 @@
         name="wellControls5"
         type="injector"
         control="totalVolRate"
-        referenceElevation="3710.03"    
+        referenceElevation="-3706.98"    
         targetBHP="6.8948e9"
         targetTotalRate="1e-3"
         injectionStream="{ 0.0, 1.0 }"/>
@@ -90,19 +90,17 @@
   <!-- SPHINX_TUT_DEAD_OIL_BOTTOM_SPE10_SOLVERS_END -->
   <!-- SPHINX_TUT_DEAD_OIL_BOTTOM_SPE10_MESH -->
   <Mesh>
-    <PAMELAMeshGenerator
+    <ExternalCornerPointMesh
       name="mesh"
-      file="../../../../../../../GEOSXDATA/DataSets/SPE10/EclipseBottomLayers/SPE10_LAYERS_83_84_85.GRDECL"
-      fieldsToImport="{ PERM, PORO }"
-      fieldNamesInGEOSX="{ permeability, referencePorosity }"/>
+      file="../../../../../../../GEOSXDATA/DataSets/SPE10/EclipseBottomLayers/SPE10_LAYERS_83_84_85.GRDECL"/>
 
     <InternalWell
       name="wellProducer1"
       wellRegionName="wellRegion1"
       wellControlsName="wellControls1"
       meshName="mesh"
-      polylineNodeCoords="{ { 0.1, 0.1, 3710.03 },
-                            { 0.1, 0.1, 3707.59 } }"
+      polylineNodeCoords="{ { 3.048, 1.52399, -3706.98 },
+                            { 3.048, 1.52399, -3709.42 } }"
       polylineSegmentConn="{ { 0, 1 } }"
       radius="0.1"
       numElementsPerSegment="4">
@@ -122,8 +120,8 @@
       wellRegionName="wellRegion2"
       wellControlsName="wellControls2"
       meshName="mesh"
-      polylineNodeCoords="{ { 365.7, 0.1, 3710.03 },
-                            { 365.7, 0.1, 3707.59 } }"
+      polylineNodeCoords="{ { 365.7, 0.1, -3706.98 },
+                            { 365.7, 0.1, -3709.42 } }"
       polylineSegmentConn="{ { 0, 1 } }"
       radius="0.1"
       numElementsPerSegment="4">
@@ -143,8 +141,8 @@
       wellRegionName="wellRegion3"
       wellControlsName="wellControls3"
       meshName="mesh"
-      polylineNodeCoords="{ { 365.7, 670.5, 3710.03 },
-                            { 365.7, 670.5, 3707.59 } }"
+      polylineNodeCoords="{ { 365.7, 670.5, -3706.98 },
+                            { 365.7, 670.5, -3709.42 } }"
       polylineSegmentConn="{ { 0, 1 } }"
       radius="0.1"
       numElementsPerSegment="4">
@@ -164,8 +162,8 @@
       wellRegionName="wellRegion4"
       wellControlsName="wellControls4"
       meshName="mesh"
-      polylineNodeCoords="{ { 0.1, 670.5, 3710.03 },
-                            { 0.1, 670.5, 3707.59 } }"
+      polylineNodeCoords="{ { 0.1, 670.5, -3706.98 },
+                            { 0.1, 670.5, -3709.42 } }"
       polylineSegmentConn="{ { 0, 1 } }"
       radius="0.1"
       numElementsPerSegment="4">
@@ -185,8 +183,8 @@
       wellRegionName="wellRegion5"
       wellControlsName="wellControls5"
       meshName="mesh"
-      polylineNodeCoords="{ { 182.8, 335.2, 3710.03 },
-                            { 182.8, 335.2, 3707.59 } }"
+      polylineNodeCoords="{ { 182.8, 335.2, -3706.98 },
+                            { 182.8, 335.2, -3709.42 } }"
       polylineSegmentConn="{ { 0, 1 } }"
       radius="0.1"
       numElementsPerSegment="4">
@@ -292,7 +290,7 @@
   <ElementRegions>
     <CellElementRegion
       name="reservoir"
-      cellBlocks="{ DEFAULT_HEX }"
+      cellBlocks="{ DEFAULT_HEX_0 }"
       materialList="{ fluid, rock, relperm }"/>
 
     <WellElementRegion
@@ -346,7 +344,7 @@
       name="initialPressure"
       initialCondition="1"
       setNames="{ all }"
-      objectPath="ElementRegions/reservoir/DEFAULT_HEX"
+      objectPath="ElementRegions/reservoir/DEFAULT_HEX_0"
       fieldName="pressure"
       scale="4.1369e7"/>
 
@@ -354,7 +352,7 @@
       name="initialComposition_oil"
       initialCondition="1"
       setNames="{ all }"
-      objectPath="ElementRegions/reservoir/DEFAULT_HEX"
+      objectPath="ElementRegions/reservoir/DEFAULT_HEX_0"
       fieldName="globalCompFraction"
       component="0"
       scale="1.0"/>
@@ -363,7 +361,7 @@
       name="initialComposition_water"
       initialCondition="1"
       setNames="{ all }"
-      objectPath="ElementRegions/reservoir/DEFAULT_HEX"
+      objectPath="ElementRegions/reservoir/DEFAULT_HEX_0"
       fieldName="globalCompFraction"
       component="1"
       scale="0.0"/>

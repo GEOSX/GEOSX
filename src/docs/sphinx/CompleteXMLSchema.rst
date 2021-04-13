@@ -253,6 +253,13 @@ Element: ExtendedDruckerPrager
 .. include:: ../../coreComponents/fileIO/schema/docs/ExtendedDruckerPrager.rst
 
 
+.. _XML_ExternalCornerPointMesh:
+
+Element: ExternalCornerPointMesh
+================================
+.. include:: ../../coreComponents/fileIO/schema/docs/ExternalCornerPointMesh.rst
+
+
 .. _XML_FieldSpecification:
 
 Element: FieldSpecification
@@ -1032,6 +1039,13 @@ Datastructure: Events
 Datastructure: ExtendedDruckerPrager
 ====================================
 .. include:: ../../coreComponents/fileIO/schema/docs/ExtendedDruckerPrager_other.rst
+
+
+.. _DATASTRUCTURE_ExternalCornerPointMesh:
+
+Datastructure: ExternalCornerPointMesh
+======================================
+.. include:: ../../coreComponents/fileIO/schema/docs/ExternalCornerPointMesh_other.rst
 
 
 .. _DATASTRUCTURE_FaceManager:

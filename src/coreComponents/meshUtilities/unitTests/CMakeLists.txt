@@ -4,7 +4,8 @@
 
 if(ENABLE_PAMELA)
 set( gtest_geosx_tests
-    testPAMELAImport.cpp
+     ${gtest_geosx_tests}
+    testMeshImport.cpp
    )
 
 set( GMSH_FILE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/toy_model.msh )
