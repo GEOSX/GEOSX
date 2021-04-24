@@ -184,7 +184,7 @@ void ElasticIsotropicUpdates::getElasticStrain( localIndex const k,
                                                 localIndex const q,
                                                 real64 ( & elasticStrain)[6] ) const
 {
-  real64 const E = conversions::BulkModAndShearMod::toYoungsMod( m_bulkModulus[k], m_shearModulus[k] );
+  real64 const E = conversions::BulkModAndShearMod::toYoungMod( m_bulkModulus[k], m_shearModulus[k] );
   real64 const nu = conversions::BulkModAndShearMod::toPoissonRatio( m_bulkModulus[k], m_shearModulus[k] );
 
   elasticStrain[0] = (    m_newStress[k][q][0] - nu*m_newStress[k][q][1] - nu*m_newStress[k][q][2])/E;
@@ -398,7 +398,7 @@ public:
     static constexpr char const * defaultShearModulusString() { return "defaultShearModulus"; }
 
     /// string/key for default Young's modulus
-    static constexpr char const * defaultYoungsModulusString() { return "defaultYoungsModulus"; }
+    static constexpr char const * defaultYoungModulusString() { return "defaultYoungModulus"; }
 
     /// string/key for bulk modulus
     static constexpr char const * bulkModulusString() { return "bulkModulus"; }
@@ -477,7 +477,6 @@ public:
                           m_oldStress );
   }
 
-
 protected:
 
   /// Post-process XML data
@@ -497,7 +496,7 @@ protected:
 
 };
 
-}
+} /* namespace constitutive */
 
 } /* namespace geosx */
 

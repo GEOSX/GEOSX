@@ -27,6 +27,7 @@
 #include "solid/DruckerPragerExtended.hpp"
 #include "solid/ElasticIsotropic.hpp"
 #include "solid/ElasticTransverseIsotropic.hpp"
+#include "solid/ElasticOrthotropic.hpp"
 #include "solid/PoroElastic.hpp"
 
 namespace geosx
@@ -91,6 +92,10 @@ struct ConstitutivePassThru< SolidBase >
     {
       lambda( *ptr7 );
     }
+    else if( auto * const ptr8 = dynamic_cast< ElasticOrthotropic * >( &constitutiveRelation ) )
+    {
+      lambda( *ptr8 );
+    }
     else
     {
       GEOSX_ERROR( "ConstitutivePassThru< SolidBase >::execute failed. The constitutive relation is named "
@@ -150,6 +155,10 @@ struct ConstitutivePassThru< PoroElasticBase >
     {
       lambda( *ptr4 );
     }
+    else if( auto * const ptr5 = dynamic_cast< PoroElastic< ElasticOrthotropic > * >( &constitutiveRelation ) )
+    {
+      lambda( *ptr5 );
+    }
     else
     {
       GEOSX_ERROR( "ConstitutivePassThru< PoroElasticBase >::execute failed. The constitutive relation is named "
@@ -190,7 +199,8 @@ struct ConstitutivePassThru< DamageBase >
   }
 };
 
-}
-}
+} /* namespace constitutive */
+
+} /* namespace geosx */
 
 #endif /* GEOSX_CONSTITUTIVE_CONSTITUTIVEPASSTHRU_HPP_ */

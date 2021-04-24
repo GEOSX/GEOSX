@@ -137,7 +137,7 @@
     <PoroElasticIsotropic
       name="skeleton"
       defaultDensity="0"
-      defaultYoungsModulus="1.0e4"
+      defaultYoungModulus="1.0e4"
       defaultPoissonRatio="0.2"
       BiotCoefficient="1.0"/>
 

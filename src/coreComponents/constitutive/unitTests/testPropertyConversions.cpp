@@ -22,52 +22,52 @@ using namespace ::geosx::constitutive;
 
 TEST( PropertyConversionTests, testElasticConversions )
 {
-  real64 bulk, poisson, youngs, shear;
-  real64 bulk_out, poisson_out, youngs_out, shear_out;
+  real64 bulk, poisson, young, shear;
+  real64 bulk_out, poisson_out, young_out, shear_out;
 
   // bulk and poisson
   bulk        = 5.4321;
   poisson     = 0.2345;
-  youngs      = conversions::BulkModAndPoissonRatio::toYoungsMod( bulk, poisson );
+  young      = conversions::BulkModAndPoissonRatio::toYoungMod( bulk, poisson );
   shear       = conversions::BulkModAndPoissonRatio::toShearMod( bulk, poisson );
 
-  EXPECT_DOUBLE_EQ( youngs, 3*bulk*(1-2*poisson) );
+  EXPECT_DOUBLE_EQ( young, 3*bulk*(1-2*poisson) );
   EXPECT_DOUBLE_EQ( shear, 3*bulk*(1-2*poisson)/(2+2*poisson) );
 
   // bulk and shear
   poisson_out = conversions::BulkModAndShearMod::toPoissonRatio( bulk, shear );
-  youngs_out = conversions::BulkModAndShearMod::toYoungsMod( bulk, shear );
+  young_out = conversions::BulkModAndShearMod::toYoungMod( bulk, shear );
 
   EXPECT_DOUBLE_EQ( poisson, poisson_out );
-  EXPECT_DOUBLE_EQ( youngs, youngs_out );
+  EXPECT_DOUBLE_EQ( young, young_out );
 
-  // bulk and youngs
-  shear_out = conversions::BulkModAndYoungsMod::toShearMod( bulk, youngs );
-  poisson_out = conversions::BulkModAndYoungsMod::toPoissonRatio( bulk, youngs );
+  // bulk and young
+  shear_out = conversions::BulkModAndYoungMod::toShearMod( bulk, young );
+  poisson_out = conversions::BulkModAndYoungMod::toPoissonRatio( bulk, young );
 
   EXPECT_DOUBLE_EQ( poisson, poisson_out );
   EXPECT_DOUBLE_EQ( shear, shear_out );
 
-  // youngs and shear
-  bulk_out    = conversions::ShearModAndYoungsMod::toBulkMod( shear, youngs );
-  poisson_out = conversions::ShearModAndYoungsMod::toPoissonRatio( shear, youngs );
+  // young and shear
+  bulk_out    = conversions::ShearModAndYoungMod::toBulkMod( shear, young );
+  poisson_out = conversions::ShearModAndYoungMod::toPoissonRatio( shear, young );
 
   EXPECT_DOUBLE_EQ( bulk, bulk_out );
   EXPECT_DOUBLE_EQ( poisson, poisson_out );
 
-  // youngs and poisson
-  bulk_out = conversions::YoungsModAndPoissonRatio::toBulkMod( youngs, poisson );
-  shear_out = conversions::YoungsModAndPoissonRatio::toShearMod( youngs, poisson );
+  // young and poisson
+  bulk_out = conversions::YoungModAndPoissonRatio::toBulkMod( young, poisson );
+  shear_out = conversions::YoungModAndPoissonRatio::toShearMod( young, poisson );
 
   EXPECT_DOUBLE_EQ( bulk, bulk_out );
   EXPECT_DOUBLE_EQ( shear, shear_out );
 
   // shear and poisson
   bulk_out = conversions::ShearModAndPoissonRatio::toBulkMod( shear, poisson );
-  youngs_out =conversions::ShearModAndPoissonRatio::toYoungsMod( shear, poisson );
+  young_out =conversions::ShearModAndPoissonRatio::toYoungMod( shear, poisson );
 
   EXPECT_DOUBLE_EQ( bulk, bulk_out );
-  EXPECT_DOUBLE_EQ( youngs, youngs_out );
+  EXPECT_DOUBLE_EQ( young, young_out );
 
   // first lame (bulk and shear input only)
   real64 lame = conversions::BulkModAndShearMod::toFirstLame( bulk, shear );

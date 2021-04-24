@@ -12,7 +12,7 @@ defaultInitialFrictionAngle  real64 30       Initial friction angle (degrees)
 defaultPoissonRatio          real64 -1       Poisson's ratio                                                      
 defaultResidualFrictionAngle real64 30       Residual friction angle (degrees)                                    
 defaultShearModulus          real64 -1       Elastic Shear Modulus Parameter                                      
-defaultYoungsModulus         real64 -1       Elastic Young's Modulus.                                             
+defaultYoungModulus          real64 -1       Elastic Young's Modulus.                                             
 name                         string required A name is required for any non-unique nodes                          
 ============================ ====== ======== ==================================================================== 
 

@@ -2894,7 +2894,7 @@ void SurfaceGenerator::calculateNodeAndFaceSif( DomainPartition & domain,
             arrayView2d< real64 const > const & elementCenter = elementSubRegion.getElementCenter().toViewConst();
             real64 K = bulkModulus[er][esr][m_solidMaterialFullIndex][ei];
             real64 G = shearModulus[er][esr][m_solidMaterialFullIndex][ei];
-            real64 youngsModulus = 9 * K * G / ( 3 * K + G );
+            real64 YoungModulus = 9 * K * G / ( 3 * K + G );
             real64 poissonRatio = ( 3 * K - 2 * G ) / ( 2 * ( 3 * K + G ) );
 
             localIndex const numQuadraturePoints = detJ[er][esr].size( 1 );
@@ -2916,7 +2916,7 @@ void SurfaceGenerator::calculateNodeAndFaceSif( DomainPartition & domain,
                                              temp );
 
                 //wu40: the nodal force need to be weighted by Young's modulus and possion's ratio.
-                LvArray::tensorOps::scale< 3 >( temp, youngsModulus );
+                LvArray::tensorOps::scale< 3 >( temp, YoungModulus );
                 LvArray::tensorOps::scale< 3 >( temp, 1.0 / (1 - poissonRatio * poissonRatio) );
 
                 LvArray::tensorOps::subtract< 3 >( xEle, nodePosition );
@@ -3004,7 +3004,7 @@ void SurfaceGenerator::calculateNodeAndFaceSif( DomainPartition & domain,
           real64 fExternal[2][3];
           for( localIndex i=0; i<2; ++i )
           {
-            real64 averageYoungsModulus( 0 ), averagePoissonRatio( 0 );
+            real64 averageYoungModulus( 0 ), averagePoissonRatio( 0 );
             localIndex nodeID = i == 0 ? tralingNodeID : theOtherTrailingNodeID;
             for( localIndex k=0; k<nodeToRegionMap.sizeOfArray( nodeID ); ++k )
             {
@@ -3014,15 +3014,15 @@ void SurfaceGenerator::calculateNodeAndFaceSif( DomainPartition & domain,
 
               real64 K = bulkModulus[er][esr][m_solidMaterialFullIndex][ei];
               real64 G = shearModulus[er][esr][m_solidMaterialFullIndex][ei];
-              averageYoungsModulus += 9 * K * G / ( 3 * K + G );
+              averageYoungModulus += 9 * K * G / ( 3 * K + G );
               averagePoissonRatio += ( 3 * K - 2 * G ) / ( 2 * ( 3 * K + G ) );
             }
 
-            averageYoungsModulus /= nodeToRegionMap.sizeOfArray( nodeID );
+            averageYoungModulus /= nodeToRegionMap.sizeOfArray( nodeID );
             averagePoissonRatio /= nodeToRegionMap.sizeOfArray( nodeID );
 
             LvArray::tensorOps::copy< 3 >( fExternal[i], fext[nodeID] );
-            LvArray::tensorOps::scale< 3 >( fExternal[i], averageYoungsModulus / (1 - averagePoissonRatio * averagePoissonRatio) );
+            LvArray::tensorOps::scale< 3 >( fExternal[i], averageYoungModulus / (1 - averagePoissonRatio * averagePoissonRatio) );
           }
 
           //TODO: The sign of fext here is opposite to the sign of fFaceA in function "CalculateEdgeSIF".
@@ -3709,7 +3709,7 @@ int SurfaceGenerator::calculateElementForcesOnEdge( DomainPartition & domain,
       {
         real64 K = bulkModulus[er][esr][m_solidMaterialFullIndex][ei];
         real64 G = shearModulus[er][esr][m_solidMaterialFullIndex][ei];
-        real64 youngsModulus = 9 * K * G / ( 3 * K + G );
+        real64 YoungModulus = 9 * K * G / ( 3 * K + G );
         real64 poissonRatio = ( 3 * K - 2 * G ) / ( 2 * ( 3 * K + G ) );
 
         arrayView2d< localIndex const, cells::NODE_MAP_USD > const & elementsToNodes = elementSubRegion.nodeList();
@@ -3732,7 +3732,7 @@ int SurfaceGenerator::calculateElementForcesOnEdge( DomainPartition & domain,
                                          stress[er][esr][m_solidMaterialFullIndex],
                                          temp );
 
-            LvArray::tensorOps::scale< 3 >( temp, youngsModulus );
+            LvArray::tensorOps::scale< 3 >( temp, YoungModulus );
             LvArray::tensorOps::scale< 3 >( temp, 1.0 / (1 - poissonRatio * poissonRatio) );
 
             if( !calculatef_u )

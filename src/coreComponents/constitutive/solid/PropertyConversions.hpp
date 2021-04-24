@@ -41,7 +41,7 @@ namespace BulkModAndShearMod
  */
 GEOSX_HOST_DEVICE
 GEOSX_FORCE_INLINE
-real64 toYoungsMod( real64 const & K, real64 const & G )
+real64 toYoungMod( real64 const & K, real64 const & G )
 {
   return 9 * K * G / ( 3 * K + G );
 }
@@ -75,7 +75,7 @@ real64 toFirstLame( real64 const & K, real64 const & G )
 } /* namespace BulkModeAndShearMod */
 
 /// @namespace Young's modulus and Poisson ratio as input
-namespace YoungsModAndPoissonRatio
+namespace YoungModAndPoissonRatio
 {
 
 /**
@@ -104,7 +104,7 @@ real64 toShearMod( real64 const & E, real64 const & nu )
   return E / (2 * ( 1 + nu ) );
 }
 
-} /* namespace YoungsModAndPoissonRatio*/
+} /* namespace YoungModAndPoissonRatio*/
 
 /// @namespace Shear modulus and Poisson's ratio as input
 namespace ShearModAndPoissonRatio
@@ -131,7 +131,7 @@ real64 toBulkMod( real64 const & G, real64 const & nu )
  */
 GEOSX_HOST_DEVICE
 GEOSX_FORCE_INLINE
-real64 toYoungsMod( real64 const & G, real64 const & nu )
+real64 toYoungMod( real64 const & G, real64 const & nu )
 {
   return 2 * G * ( 1 + nu );
 }
@@ -150,7 +150,7 @@ namespace BulkModAndPoissonRatio
  */
 GEOSX_HOST_DEVICE
 GEOSX_FORCE_INLINE
-real64 toYoungsMod( real64 const & K, real64 const & nu )
+real64 toYoungMod( real64 const & K, real64 const & nu )
 {
   return 3 * K * ( 1 - 2 * nu );
 }
@@ -171,7 +171,7 @@ real64 toShearMod( real64 const & K, real64 const & nu )
 } /* namespace BulkModAndPoissonRatio */
 
 /// @namespace Bulk modulus and Young's modulus
-namespace BulkModAndYoungsMod
+namespace BulkModAndYoungMod
 {
 
 /**
@@ -200,10 +200,10 @@ real64 toPoissonRatio( real64 const & K, real64 const & E )
   return ( 3 * K - E ) / ( 6 * K);
 }
 
-} /* namespace BulkModAndYoungsMod */
+} /* namespace BulkModAndYoungMod */
 
 /// @namespace Shear modulus and Young's modulus
-namespace ShearModAndYoungsMod
+namespace ShearModAndYoungMod
 {
 /**
  * @brief Compute Poisson ratio
@@ -231,7 +231,7 @@ real64 toBulkMod( real64 const & G, real64 const & E )
   return E * G / ( 3 * ( 3 * G - E ) );
 }
 
-} /* namespace ShearModAndYoungsMod*/
+} /* namespace ShearModAndYoungMod*/
 
 } /* namespace conversions */
 

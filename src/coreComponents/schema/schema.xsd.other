@@ -767,6 +767,7 @@
 			<xsd:element name="DruckerPrager" type="DruckerPragerType" />
 			<xsd:element name="ElasticIsotropic" type="ElasticIsotropicType" />
 			<xsd:element name="ElasticTransverseIsotropic" type="ElasticTransverseIsotropicType" />
+			<xsd:element name="ElasticOrthotropic" type="ElasticOrthotropicType" />
 			<xsd:element name="ExtendedDruckerPrager" type="ExtendedDruckerPragerType" />
 			<xsd:element name="NullModel" type="NullModelType" />
 			<xsd:element name="ParticleFluid" type="ParticleFluidType" />
@@ -1128,15 +1129,41 @@
 		<xsd:attribute name="stress" type="real64_array3d" />
 	</xsd:complexType>
 	<xsd:complexType name="ElasticTransverseIsotropicType">
-		<!--c11 => Elastic Bulk Modulus Field-->
+		<!--c11 => Elastic Stiffness Field c11-->
 		<xsd:attribute name="c11" type="real64_array" />
-		<!--c13 => Elastic Bulk Modulus Field-->
+		<!--c13 => Elastic Stiffness Field c13-->
 		<xsd:attribute name="c13" type="real64_array" />
-		<!--c33 => Elastic Bulk Modulus Field-->
+		<!--c33 => Elastic Stiffness Field c33-->
 		<xsd:attribute name="c33" type="real64_array" />
-		<!--c44 => Elastic Bulk Modulus Field-->
+		<!--c44 => Elastic Stiffness Field c44-->
 		<xsd:attribute name="c44" type="real64_array" />
-		<!--c66 => Elastic Bulk Modulus Field-->
+		<!--c66 => Elastic Stiffness Field c66-->
+		<xsd:attribute name="c66" type="real64_array" />
+		<!--density => Material Density-->
+		<xsd:attribute name="density" type="real64_array2d" />
+		<!--oldStress => Previous Material Stress-->
+		<xsd:attribute name="oldStress" type="real64_array3d" />
+		<!--stress => Current Material Stress-->
+		<xsd:attribute name="stress" type="real64_array3d" />
+	</xsd:complexType>
+    <xsd:complexType name="ElasticOrthotropicType">
+		<!--c11 => Elastic Stiffness Field c11-->
+		<xsd:attribute name="c11" type="real64_array" />
+		<!--c12 => Elastic Stiffness Field c12-->
+		<xsd:attribute name="c12" type="real64_array" />
+		<!--c13 => Elastic Stiffness Field c13-->
+		<xsd:attribute name="c13" type="real64_array" />
+		<!--c22 => Elastic Stiffness Field c22-->
+		<xsd:attribute name="c22" type="real64_array" />
+		<!--c23 => Elastic Stiffness Field c23-->
+		<xsd:attribute name="c23" type="real64_array" />
+		<!--c33 => Elastic Stiffness Field c33-->
+		<xsd:attribute name="c33" type="real64_array" />
+		<!--c44 => Elastic Stiffness Field c44-->
+		<xsd:attribute name="c44" type="real64_array" />
+		<!--c55 => Elastic Stiffness Field c55-->
+		<xsd:attribute name="c55" type="real64_array" />
+		<!--c66 => Elastic Stiffness Field c66-->
 		<xsd:attribute name="c66" type="real64_array" />
 		<!--density => Material Density-->
 		<xsd:attribute name="density" type="real64_array2d" />
@@ -1237,15 +1264,15 @@
 		<xsd:attribute name="stress" type="real64_array3d" />
 	</xsd:complexType>
 	<xsd:complexType name="PoroElasticTransverseIsotropicType">
-		<!--c11 => Elastic Bulk Modulus Field-->
+		<!--c11 => Elastic Stiffness Field c11-->
 		<xsd:attribute name="c11" type="real64_array" />
-		<!--c13 => Elastic Bulk Modulus Field-->
+		<!--c13 => Elastic Stiffness Field c13-->
 		<xsd:attribute name="c13" type="real64_array" />
-		<!--c33 => Elastic Bulk Modulus Field-->
+		<!--c33 => Elastic Stiffness Field c33-->
 		<xsd:attribute name="c33" type="real64_array" />
-		<!--c44 => Elastic Bulk Modulus Field-->
+		<!--c44 => Elastic Stiffness Field c44-->
 		<xsd:attribute name="c44" type="real64_array" />
-		<!--c66 => Elastic Bulk Modulus Field-->
+		<!--c66 => Elastic Stiffness Field c66-->
 		<xsd:attribute name="c66" type="real64_array" />
 		<!--dPVMult_dDensity => (no description available)-->
 		<xsd:attribute name="dPVMult_dDensity" type="real64_array2d" />
