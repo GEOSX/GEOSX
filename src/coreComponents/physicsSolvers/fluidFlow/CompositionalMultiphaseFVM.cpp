@@ -116,18 +116,26 @@ void CompositionalMultiphaseFVM::assembleFluxTerms( real64 const dt,
     arrayView4d< real64 const > const & dPhaseCompFrac_dPres = fluid.dPhaseCompFraction_dPressure();
     arrayView5d< real64 const > const & dPhaseCompFrac_dComp = fluid.dPhaseCompFraction_dGlobalCompFraction();
 
+    arrayView3d< real64 const > const & phaseDens = fluid.phaseDensity();
+    arrayView3d< real64 const > const & dPhaseDens_dPres = fluid.dPhaseDensity_dPressure();
+    arrayView4d< real64 const > const & dPhaseDens_dComp = fluid.dPhaseDensity_dGlobalCompFraction();
+
     arrayView3d< real64 const > const & phaseMassDens = fluid.phaseMassDensity();
     arrayView3d< real64 const > const & dPhaseMassDens_dPres = fluid.dPhaseMassDensity_dPressure();
     arrayView4d< real64 const > const & dPhaseMassDens_dComp = fluid.dPhaseMassDensity_dGlobalCompFraction();
 
     forAll< parallelDevicePolicy<> >( subRegion.size(),
                                       [phaseCompFrac, dPhaseCompFrac_dPres, dPhaseCompFrac_dComp,
+                                       phaseDens, dPhaseDens_dPres, dPhaseDens_dComp,
                                        phaseMassDens, dPhaseMassDens_dPres, dPhaseMassDens_dComp]
                                       GEOSX_HOST_DEVICE ( localIndex const )
     {
       GEOSX_UNUSED_VAR( phaseCompFrac )
       GEOSX_UNUSED_VAR( dPhaseCompFrac_dPres )
       GEOSX_UNUSED_VAR( dPhaseCompFrac_dComp )
+      GEOSX_UNUSED_VAR( phaseDens )
+      GEOSX_UNUSED_VAR( dPhaseDens_dPres )
+      GEOSX_UNUSED_VAR( dPhaseDens_dComp )
       GEOSX_UNUSED_VAR( phaseMassDens )
       GEOSX_UNUSED_VAR( dPhaseMassDens_dPres )
       GEOSX_UNUSED_VAR( dPhaseMassDens_dComp )
@@ -160,6 +168,9 @@ void CompositionalMultiphaseFVM::assembleFluxTerms( real64 const dt,
                                          m_dPhaseVolFrac_dPres.toNestedViewConst(),
                                          m_dPhaseVolFrac_dCompDens.toNestedViewConst(),
                                          m_dCompFrac_dCompDens.toNestedViewConst(),
+                                         m_phaseDens.toNestedViewConst(),
+                                         m_dPhaseDens_dPres.toNestedViewConst(),
+                                         m_dPhaseDens_dComp.toNestedViewConst(),
                                          m_phaseMassDens.toNestedViewConst(),
                                          m_dPhaseMassDens_dPres.toNestedViewConst(),
                                          m_dPhaseMassDens_dComp.toNestedViewConst(),

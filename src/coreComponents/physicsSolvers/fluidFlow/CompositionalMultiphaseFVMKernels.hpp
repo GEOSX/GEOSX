@@ -110,7 +110,7 @@ struct FluxKernel
   template< typename VIEWTYPE >
   using ElementViewConst = ElementRegionManager::ElementViewConst< VIEWTYPE >;
 
-  template< localIndex NC, localIndex NUM_ELEMS, localIndex MAX_STENCIL >
+  template< localIndex NC, localIndex NUM_ELEMS, localIndex MAX_STENCIL, bool IS_UT_FORM >
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
   static void
@@ -129,6 +129,9 @@ struct FluxKernel
            ElementViewConst< arrayView2d< real64 const > > const & dPhaseVolFrac_dPres,
            ElementViewConst< arrayView3d< real64 const > > const & dPhaseVolFrac_dComp,
            ElementViewConst< arrayView3d< real64 const > > const & dCompFrac_dCompDens,
+           ElementViewConst< arrayView3d< real64 const > > const & phaseDens,
+           ElementViewConst< arrayView3d< real64 const > > const & dPhaseDens_dPres,
+           ElementViewConst< arrayView4d< real64 const > > const & dPhaseDens_dComp,
            ElementViewConst< arrayView3d< real64 const > > const & phaseMassDens,
            ElementViewConst< arrayView3d< real64 const > > const & dPhaseMassDens_dPres,
            ElementViewConst< arrayView4d< real64 const > > const & dPhaseMassDens_dComp,
@@ -142,7 +145,7 @@ struct FluxKernel
            arraySlice1d< real64 > const localFlux,
            arraySlice2d< real64 > const localFluxJacobian );
 
-  template< localIndex NC, typename STENCIL_TYPE >
+  template< localIndex NC, typename STENCIL_TYPE, bool IS_UT_FORM = true >
   static void
   launch( localIndex const numPhases,
           STENCIL_TYPE const & stencil,
@@ -158,6 +161,9 @@ struct FluxKernel
           ElementViewConst< arrayView2d< real64 const > > const & dPhaseVolFrac_dPres,
           ElementViewConst< arrayView3d< real64 const > > const & dPhaseVolFrac_dComp,
           ElementViewConst< arrayView3d< real64 const > > const & dCompFrac_dCompDens,
+          ElementViewConst< arrayView3d< real64 const > > const & phaseDens,
+          ElementViewConst< arrayView3d< real64 const > > const & dPhaseDens_dPres,
+          ElementViewConst< arrayView4d< real64 const > > const & dPhaseDens_dComp,
           ElementViewConst< arrayView3d< real64 const > > const & phaseMassDens,
           ElementViewConst< arrayView3d< real64 const > > const & dPhaseMassDens_dPres,
           ElementViewConst< arrayView4d< real64 const > > const & dPhaseMassDens_dComp,
