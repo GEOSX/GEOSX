@@ -106,33 +106,66 @@ void ElasticIsotropic::postProcessInput()
 
   if( nu >= 0.0 && E >= 0.0 )
   {
-    K = conversions::YoungsModAndPoissonRatio::toBulkMod( E, nu );
-    G = conversions::YoungsModAndPoissonRatio::toShearMod( E, nu );
+    K = BulkModulus().
+          setYoungModulus( E ).
+          setPoissonRatio( nu ).
+          getValue();
+
+    G = ShearModulus().
+          setYoungModulus( E ).
+          setPoissonRatio( nu ).
+          getValue();
   }
   else if( nu >= 0.0 && G >= 0.0 )
   {
-    E = conversions::ShearModAndPoissonRatio::toYoungsMod( G, nu );
-    K = conversions::ShearModAndPoissonRatio::toBulkMod( G, nu );
+    E = YoungModulus().
+          setShearModulus( G ).
+          setPoissonRatio( nu ).
+          getValue();
+
+    K = BulkModulus().
+          setShearModulus( G ).
+          setPoissonRatio( nu ).
+          getValue();
   }
   else if( nu >= 0 && K >= 0.0 )
   {
-    E = conversions::BulkModAndPoissonRatio::toYoungsMod( K, nu );
-    G = conversions::BulkModAndPoissonRatio::toShearMod( K, nu );
+    E = YoungModulus().
+          setBulkModulus( K ).
+          setPoissonRatio( nu ).
+          getValue();
+
+    G = ShearModulus().
+          setBulkModulus( K ).
+          setPoissonRatio( nu ).
+          getValue();
   }
   else if( E >= 0.0 && K >=0 )
   {
-    nu = conversions::BulkModAndYoungsMod::toPoissonRatio( K, E );
-    G  = conversions::BulkModAndYoungsMod::toShearMod( K, E );
+    nu = PoissonRatio( BulkModulus( K ), YoungModulus( E ) ).value;
+
+    G = ShearModulus().
+          setYoungModulus( E ).
+          setBulkModulus( K ).
+          getValue();
   }
   else if( E >= 0.0 && G >= 0 )
   {
-    nu = conversions::ShearModAndYoungsMod::toPoissonRatio( G, E );
-    K  = conversions::ShearModAndYoungsMod::toBulkMod( G, E );
+    nu = PoissonRatio( ShearModulus( G ), YoungModulus( E ) ).value;
+
+    K = BulkModulus().
+          setYoungModulus( E ).
+          setShearModulus( G ).
+          getValue();
   }
   else if( K >= 0.0 && G >= 0.0 )
   {
-    E  = conversions::BulkModAndShearMod::toYoungsMod( K, G );
-    nu = conversions::BulkModAndShearMod::toPoissonRatio( K, G );
+
+    E = YoungModulus().
+          setBulkModulus( K ).
+          setShearModulus( G ).
+          getValue();
+    nu = PoissonRatio( BulkModulus( K ), ShearModulus( G ) ).value;
   }
   else
   {
