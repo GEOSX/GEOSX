@@ -283,11 +283,9 @@ struct AccumulationKernel
   GEOSX_FORCE_INLINE
   static void
     compute( localIndex const numPhases,
-             real64 const & volume,
-             real64 const & porosityOld,
-             real64 const & porosityRef,
-             real64 const & pvMult,
-             real64 const & dPvMult_dPres,
+             real64 const & poreVolOld,
+             real64 const & poreVolNew,
+             real64 const & dPoreVol_dP,
              arraySlice2d< real64 const > const & dCompFrac_dCompDens,
              arraySlice1d< real64 const > const & phaseVolFracOld,
              arraySlice1d< real64 const > const & phaseVolFrac,
@@ -312,10 +310,9 @@ struct AccumulationKernel
           arrayView1d< globalIndex const > const & dofNumber,
           arrayView1d< integer const > const & elemGhostRank,
           arrayView1d< real64 const > const & volume,
-          arrayView1d< real64 const > const & porosityOld,
-          arrayView1d< real64 const > const & porosityRef,
-          arrayView2d< real64 const > const & pvMult,
-          arrayView2d< real64 const > const & dPvMult_dPres,
+          arrayView2d< real64 const > const & porosityOld,
+          arrayView2d< real64 const > const & porosityNew,
+          arrayView2d< real64 const > const & dPoro_dPres,
           arrayView3d< real64 const > const & dCompFrac_dCompDens,
           arrayView2d< real64 const > const & phaseVolFracOld,
           arrayView2d< real64 const > const & phaseVolFrac,
@@ -345,9 +342,8 @@ struct VolumeBalanceKernel
   GEOSX_FORCE_INLINE
   static void
   compute( real64 const & volume,
-           real64 const & porosityRef,
-           real64 const & pvMult,
-           real64 const & dPvMult_dPres,
+           real64 const & porosityNew,
+           real64 const & dPoro_dPres,
            arraySlice1d< real64 const > const & phaseVolFrac,
            arraySlice1d< real64 const > const & dPhaseVolFrac_dPres,
            arraySlice2d< real64 const > const & dPhaseVolFrac_dCompDens,
@@ -361,9 +357,8 @@ struct VolumeBalanceKernel
           arrayView1d< globalIndex const > const & dofNumber,
           arrayView1d< integer const > const & elemGhostRank,
           arrayView1d< real64 const > const & volume,
-          arrayView1d< real64 const > const & porosityRef,
-          arrayView2d< real64 const > const & pvMult,
-          arrayView2d< real64 const > const & dPvMult_dPres,
+          arrayView2d< real64 const > const & porosityNew,
+          arrayView2d< real64 const > const & dPoro_dPres,
           arrayView2d< real64 const > const & phaseVolFrac,
           arrayView2d< real64 const > const & dPhaseVolFrac_dPres,
           arrayView3d< real64 const > const & dPhaseVolFrac_dCompDens,
@@ -382,7 +377,6 @@ struct ResidualNormKernel
                       localIndex const numComponents,
                       arrayView1d< globalIndex const > const & dofNumber,
                       arrayView1d< integer const > const & ghostRank,
-                      arrayView1d< real64 const > const & refPoro,
                       arrayView1d< real64 const > const & volume,
                       arrayView1d< real64 const > const & totalDensOld,
                       real64 & localResidualNorm )
@@ -394,7 +388,7 @@ struct ResidualNormKernel
       if( ghostRank[ei] < 0 )
       {
         localIndex const localRow = dofNumber[ei] - rankOffset;
-        real64 const normalizer = totalDensOld[ei] * refPoro[ei] * volume[ei];
+        real64 const normalizer = totalDensOld[ei] * volume[ei];
 
         for( localIndex idof = 0; idof < numComponents + 1; ++idof )
         {
@@ -407,7 +401,6 @@ struct ResidualNormKernel
   }
 
 };
-
 
 
 /******************************** SolutionCheckKernel ********************************/

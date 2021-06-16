@@ -20,6 +20,7 @@
 
 #include "common/TimingMacros.hpp"
 #include "constitutive/fluid/SingleFluidBase.hpp"
+#include "constitutive/solid/RockBase.hpp"
 #include "finiteVolume/HybridMimeticDiscretization.hpp"
 #include "finiteVolume/MimeticInnerProductDispatch.hpp"
 #include "mesh/mpiCommunications/CommunicationTools.hpp"
@@ -198,7 +199,7 @@ void SinglePhaseHybridFVM::setupDofs( DomainPartition const & GEOSX_UNUSED_PARAM
 
 void SinglePhaseHybridFVM::assembleFluxTerms( real64 const GEOSX_UNUSED_PARAM( time_n ),
                                               real64 const dt,
-                                              DomainPartition const & domain,
+                                              DomainPartition & domain,
                                               DofManager const & dofManager,
                                               CRSMatrixView< real64, globalIndex const > const & localMatrix,
                                               arrayView1d< real64 > const & localRhs )
@@ -268,6 +269,9 @@ void SinglePhaseHybridFVM::assembleFluxTerms( real64 const GEOSX_UNUSED_PARAM( t
     SingleFluidBase const & fluid =
       getConstitutiveModel< SingleFluidBase >( subRegion, m_fluidModelNames[targetIndex] );
 
+    PermeabilityBase const & permeabilityModel =
+      getConstitutiveModel< PermeabilityBase >( subRegion, m_permeabilityModelNames[targetIndex] );
+
     mimeticInnerProductDispatch( mimeticInnerProductBase,
                                  [&] ( auto const mimeticInnerProduct )
     {
@@ -278,6 +282,7 @@ void SinglePhaseHybridFVM::assembleFluxTerms( real64 const GEOSX_UNUSED_PARAM( t
                                                    esr,
                                                    subRegion,
                                                    fluid,
+                                                   permeabilityModel,
                                                    m_regionFilter.toViewConst(),
                                                    nodePosition,
                                                    elemRegionList,
@@ -300,6 +305,24 @@ void SinglePhaseHybridFVM::assembleFluxTerms( real64 const GEOSX_UNUSED_PARAM( t
                                                    localRhs );
     } );
   } );
+}
+
+void SinglePhaseHybridFVM::assemblePoroelasticFluxTerms( real64 const time_n,
+                                                         real64 const dt,
+                                                         DomainPartition & domain,
+                                                         DofManager const & dofManager,
+                                                         CRSMatrixView< real64, globalIndex const > const & localMatrix,
+                                                         arrayView1d< real64 > const & localRhs,
+                                                         string const & jumpDofKey )
+{
+  GEOSX_UNUSED_VAR ( jumpDofKey );
+
+  assembleFluxTerms( time_n,
+                     dt,
+                     domain,
+                     dofManager,
+                     localMatrix,
+                     localRhs );
 }
 
 void SinglePhaseHybridFVM::applyBoundaryConditions( real64 const time_n,
@@ -344,23 +367,27 @@ real64 SinglePhaseHybridFVM::calculateResidualNorm( DomainPartition const & doma
   localIndex subRegionCounter = 0;
 
   forTargetSubRegions( mesh, [&]( localIndex const targetIndex,
-                                  ElementSubRegionBase const & subRegion )
+                                  auto const & subRegion )
   {
 
-    arrayView1d< globalIndex const > const & elemDofNumber = subRegion.getReference< array1d< globalIndex > >( elemDofKey );
+    arrayView1d< globalIndex const > const & elemDofNumber = subRegion.template getReference< array1d< globalIndex > >( elemDofKey );
     arrayView1d< integer const > const & elemGhostRank = subRegion.ghostRank();
-    arrayView1d< real64 const > const & refPoro = subRegion.getReference< array1d< real64 > >( viewKeyStruct::referencePorosityString() );
     arrayView1d< real64 const > const & volume = subRegion.getElementVolume();
-    arrayView1d< real64 const > const & densOld = subRegion.getReference< array1d< real64 > >( viewKeyStruct::densityOldString() );
+    arrayView1d< real64 const > const & densOld = subRegion.template getReference< array1d< real64 > >( viewKeyStruct::densityOldString() );
+
+    RockBase const & solidModel = this->template getConstitutiveModel< RockBase >( subRegion,
+                                                                                   m_solidModelNames[targetIndex] );
+
+    arrayView2d< real64 const > const & poroOld = solidModel.getOldPorosity();
 
     SinglePhaseBaseKernels::ResidualNormKernel::launch< parallelDevicePolicy<>,
                                                         parallelDeviceReduce >( localRhs,
                                                                                 rankOffset,
                                                                                 elemDofNumber,
                                                                                 elemGhostRank,
-                                                                                refPoro,
                                                                                 volume,
                                                                                 densOld,
+                                                                                poroOld,
                                                                                 localResidualNorm );
 
     SingleFluidBase const & fluid = getConstitutiveModel< SingleFluidBase >( subRegion, m_fluidModelNames[targetIndex] );
@@ -518,12 +545,6 @@ void SinglePhaseHybridFVM::applySystemSolution( DofManager const & dofManager,
   fieldNames["elems"].emplace_back( string( viewKeyStruct::deltaPressureString() ) );
 
   CommunicationTools::getInstance().synchronizeFields( fieldNames, mesh, domain.getNeighbors(), true );
-
-  forTargetSubRegions( mesh, [&]( localIndex const targetIndex,
-                                  ElementSubRegionBase & subRegion )
-  {
-    updateState( subRegion, targetIndex );
-  } );
 }
 
 

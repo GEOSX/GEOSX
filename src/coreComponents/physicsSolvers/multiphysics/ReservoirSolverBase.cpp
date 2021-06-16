@@ -23,6 +23,7 @@
 #include "mainInterface/ProblemManager.hpp"
 #include "physicsSolvers/fluidFlow/FlowSolverBase.hpp"
 #include "physicsSolvers/fluidFlow/wells/WellSolverBase.hpp"
+#include "constitutive/permeability/PermeabilityBase.hpp"
 
 namespace geosx
 {
@@ -76,12 +77,15 @@ void ReservoirSolverBase::initializePostInitialConditionsPreSubGroups()
   elemManager.forElementSubRegions< WellElementSubRegion >( [&]( WellElementSubRegion & subRegion )
   {
     // get the string to access the permeability
-    string const permeabilityKey = FlowSolverBase::viewKeyStruct::permeabilityString();
+    string const permeabilityKey = PermeabilityBase::viewKeyStruct::permeabilityString();
 
     PerforationData * const perforationData = subRegion.getPerforationData();
 
     // compute the Peaceman index (if not read from XML)
-    perforationData->computeWellTransmissibility( meshLevel, subRegion, permeabilityKey );
+    perforationData->computeWellTransmissibility( meshLevel, subRegion,
+                                                  permeabilityKey,
+                                                  m_flowSolver->targetRegionNames(),
+                                                  m_flowSolver->permeabilityModelNames() );
   } );
 
   // bind the stored reservoir views to the current domain
@@ -286,7 +290,7 @@ void ReservoirSolverBase::assembleSystem( real64 const time_n,
    * moved to device, the calculation is wrong. the problem should go away when fluid updates
    * are executed on device.
    */
-  m_wellSolver->updateStateAll( domain );
+  m_wellSolver->updateState( domain );
 
   // assemble J_WW (excluding perforation rates)
   m_wellSolver->assembleSystem( time_n, dt,
@@ -364,6 +368,12 @@ void ReservoirSolverBase::applySystemSolution( DofManager const & dofManager,
   m_flowSolver->applySystemSolution( dofManager, localSolution, scalingFactor, domain );
   // update the well variables
   m_wellSolver->applySystemSolution( dofManager, localSolution, scalingFactor, domain );
+}
+
+void ReservoirSolverBase::updateState( DomainPartition & domain )
+{
+  m_flowSolver->updateState( domain );
+  m_wellSolver->updateState( domain );
 }
 
 void ReservoirSolverBase::resetStateToBeginningOfStep( DomainPartition & domain )

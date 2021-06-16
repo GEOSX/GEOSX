@@ -94,7 +94,7 @@ public:
 
   virtual void resetStateToBeginningOfStep( DomainPartition & domain ) override final;
 
-  void updateState( DomainPartition & domain );
+  virtual void updateState( DomainPartition & domain ) override;
 
   virtual real64 solverStep( real64 const & time_n,
                              real64 const & dt,

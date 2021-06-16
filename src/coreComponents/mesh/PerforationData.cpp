@@ -110,15 +110,19 @@ void decideWellDirection( VEC_TYPE const & topToBottomVec,
 
 void PerforationData::computeWellTransmissibility( MeshLevel const & mesh,
                                                    WellElementSubRegion const & wellElemSubRegion,
-                                                   string const & permeabilityKey )
+                                                   string const & permeabilityKey,
+                                                   arrayView1d< string const > const & targetRegions,
+                                                   arrayView1d< string const > const & permModelNames )
 {
   NodeManager const & nodeManager = mesh.getNodeManager();
   arrayView2d< real64 const, nodes::REFERENCE_POSITION_USD > const & X = nodeManager.referencePosition();
   WellElementSubRegion::NodeMapType const & elemToNodeMap = wellElemSubRegion.nodeList();
 
   // get the permeability in the domain
-  ElementRegionManager::ElementViewAccessor< arrayView2d< real64 const > > const perm =
-    mesh.getElemManager().constructArrayViewAccessor< real64, 2 >( permeabilityKey );
+  ElementRegionManager::ElementViewAccessor< arrayView3d< real64 const > > const perm =
+    mesh.getElemManager().constructMaterialArrayViewAccessor< real64, 3 >( permeabilityKey,
+                                                                           targetRegions,
+                                                                           permModelNames );
 
   // for all the local perforations on this well
   for( localIndex iperf = 0; iperf < size(); ++iperf )
@@ -165,7 +169,7 @@ void PerforationData::computeWellTransmissibility( MeshLevel const & mesh,
     // check if this is a vertical well or a horizontal well
     // assign d1, d2, h, k1, and k2 accordingly
     decideWellDirection( topToBottomVec,
-                         dx, dy, dz, perm[er][esr][ei],
+                         dx, dy, dz, perm[er][esr][ei][0],
                          d1, d2, h, k1, k2 );
 
     real64 const k21 = k1 > 0

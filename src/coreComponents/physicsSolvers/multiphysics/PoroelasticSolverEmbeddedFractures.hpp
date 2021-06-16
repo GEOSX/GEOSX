@@ -126,18 +126,7 @@ public:
                                    SparsityPatternView< globalIndex > const & pattern ) const;
 
 
-  void updateState( DomainPartition & domain );
-
-
-  void assembleTractionBalanceResidualWrtPressure( DomainPartition const & domain,
-                                                   DofManager const & dofManager,
-                                                   CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                                                   arrayView1d< real64 > const & localRhs );
-
-  void assembleFractureFlowResidualWrtJump( DomainPartition const & domain,
-                                            DofManager const & dofManager,
-                                            CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                                            arrayView1d< real64 > const & localRhs );
+  virtual void updateState( DomainPartition & domain ) override final;
 
 
   struct viewKeyStruct : PoroelasticSolver::viewKeyStruct

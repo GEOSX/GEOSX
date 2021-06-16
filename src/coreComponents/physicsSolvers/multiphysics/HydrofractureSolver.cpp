@@ -33,8 +33,9 @@
 #include "mesh/MeshForLoopInterface.hpp"
 #include "mesh/utilities/ComputationalGeometry.hpp"
 #include "mesh/mpiCommunications/NeighborCommunicator.hpp"
-#include "physicsSolvers/fluidFlow/FlowSolverBase.hpp"
+#include "physicsSolvers/fluidFlow/SinglePhaseBase.hpp"
 #include "physicsSolvers/solidMechanics/SolidMechanicsLagrangianFEM.hpp"
+#include "physicsSolvers/surfaceGeneration/SurfaceGenerator.hpp"
 #include "common/GEOS_RAJA_Interface.hpp"
 #include "linearAlgebra/utilities/LAIHelperFunctions.hpp"
 
@@ -46,25 +47,15 @@ using namespace constitutive;
 
 HydrofractureSolver::HydrofractureSolver( const string & name,
                                           Group * const parent ):
-  SolverBase( name, parent ),
-  m_solidSolverName(),
-  m_flowSolverName(),
-  m_couplingTypeOption( CouplingTypeOption::FIM ),
-  m_solidSolver( nullptr ),
-  m_flowSolver( nullptr ),
+  PoroelasticSolver( name, parent ),
+  m_contactRelationName(),
+  m_surfaceGeneratorName(),
+  m_surfaceGenerator( nullptr ),
   m_maxNumResolves( 10 )
 {
-  registerWrapper( viewKeyStruct::solidSolverNameString(), &m_solidSolverName ).
+  registerWrapper( viewKeyStruct::surfaceGeneratorNameString(), &m_surfaceGeneratorName ).
     setInputFlag( InputFlags::REQUIRED ).
-    setDescription( "Name of the solid mechanics solver to use in the poroelastic solver" );
-
-  registerWrapper( viewKeyStruct::fluidSolverNameString(), &m_flowSolverName ).
-    setInputFlag( InputFlags::REQUIRED ).
-    setDescription( "Name of the fluid mechanics solver to use in the poroelastic solver" );
-
-  registerWrapper( viewKeyStruct::couplingTypeOptionStringString(), &m_couplingTypeOption ).
-    setInputFlag( InputFlags::REQUIRED ).
-    setDescription( "Coupling method. Valid options:\n* " + EnumStrings< CouplingTypeOption >::concat( "\n* " ) );
+    setDescription( "Name of the surface generator to use in the hydrofracture solver" );
 
   registerWrapper( viewKeyStruct::contactRelationNameString(), &m_contactRelationName ).
     setInputFlag( InputFlags::REQUIRED ).
@@ -109,6 +100,11 @@ void HydrofractureSolver::RegisterDataOnMesh( dataRepository::Group & MeshBodies
 }
 #endif
 
+HydrofractureSolver::~HydrofractureSolver()
+{
+  // TODO Auto-generated destructor stub
+}
+
 void HydrofractureSolver::implicitStepSetup( real64 const & time_n,
                                              real64 const & dt,
                                              DomainPartition & domain )
@@ -138,27 +134,16 @@ void HydrofractureSolver::implicitStepSetup( real64 const & time_n,
 
 }
 
-void HydrofractureSolver::implicitStepComplete( real64 const & time_n,
-                                                real64 const & dt,
-                                                DomainPartition & domain )
-{
-  m_flowSolver->implicitStepComplete( time_n, dt, domain );
-  m_solidSolver->implicitStepComplete( time_n, dt, domain );
-}
-
 void HydrofractureSolver::postProcessInput()
 {
-  m_solidSolver = &this->getParent().getGroup< SolidMechanicsLagrangianFEM >( m_solidSolverName );
-  m_flowSolver = &this->getParent().getGroup< FlowSolverBase >( m_flowSolverName );
+  PoroelasticSolver::postProcessInput();
+  m_surfaceGenerator = &this->getParent().getGroup< SurfaceGenerator >( m_surfaceGeneratorName );
 }
 
 void HydrofractureSolver::initializePostInitialConditionsPreSubGroups()
 {}
 
-HydrofractureSolver::~HydrofractureSolver()
-{
-  // TODO Auto-generated destructor stub
-}
+
 
 void HydrofractureSolver::resetStateToBeginningOfStep( DomainPartition & domain )
 {
@@ -172,8 +157,6 @@ real64 HydrofractureSolver::solverStep( real64 const & time_n,
                                         DomainPartition & domain )
 {
   real64 dtReturn = dt;
-
-  SolverBase * const surfaceGenerator = this->getParent().getGroupPointer< SolverBase >( "SurfaceGen" );
 
   if( m_couplingTypeOption == CouplingTypeOption::SIM_FixedStress )
   {
@@ -201,9 +184,9 @@ real64 HydrofractureSolver::solverStep( real64 const & time_n,
       // currently the only method is implicit time integration
       dtReturn = nonlinearImplicitStep( time_n, dt, cycleNumber, domain );
 
-      if( surfaceGenerator!=nullptr )
+      if( m_surfaceGenerator!=nullptr )  // is this check really necessary ?
       {
-        if( surfaceGenerator->solverStep( time_n, dt, cycleNumber, domain ) > 0 )
+        if( m_surfaceGenerator->solverStep( time_n, dt, cycleNumber, domain ) > 0 )
         {
           locallyFractured = 1;
         }
@@ -463,6 +446,9 @@ void HydrofractureSolver::setupDofs( DomainPartition const & domain,
 {
   GEOSX_MARK_FUNCTION;
 
+  // TODO: do we still need to avoid poroelasticity in the rock matrix? If not this can be done by
+  // calling PoroelasticSolver::setupDofs( domain, dofManager );
+
   m_solidSolver->setupDofs( domain, dofManager );
   m_flowSolver->setupDofs( domain, dofManager );
 
@@ -540,8 +526,7 @@ void HydrofractureSolver::setupSystem( DomainPartition & domain,
   localRhs.setName( this->getName() + "/localRhs" );
   localSolution.setName( this->getName() + "/localSolution" );
 
-  m_flowSolver->setUpDflux_dApertureMatrix( domain, dofManager, localMatrix );
-
+  setUpDflux_dApertureMatrix( domain, dofManager, localMatrix );
 }
 
 void HydrofractureSolver::addFluxApertureCouplingNNZ( DomainPartition & domain,
@@ -562,14 +547,14 @@ void HydrofractureSolver::addFluxApertureCouplingNNZ( DomainPartition & domain,
   FiniteVolumeManager const & fvManager = numericalMethodManager.getFiniteVolumeManager();
   FluxApproximationBase const & fluxApprox = fvManager.getFluxApproximation( m_flowSolver->getDiscretization() );
 
-  fluxApprox.forStencils< FaceElementStencil >( mesh, [&]( FaceElementStencil const & stencil )
+  fluxApprox.forStencils< SurfaceElementStencil >( mesh, [&]( SurfaceElementStencil const & stencil )
   {
     for( localIndex iconn=0; iconn<stencil.size(); ++iconn )
     {
       localIndex const numFluxElems = stencil.stencilSize( iconn );
-      typename FaceElementStencil::IndexContainerViewConstType const & seri = stencil.getElementRegionIndices();
-      typename FaceElementStencil::IndexContainerViewConstType const & sesri = stencil.getElementSubRegionIndices();
-      typename FaceElementStencil::IndexContainerViewConstType const & sei = stencil.getElementIndices();
+      typename SurfaceElementStencil::IndexContainerViewConstType const & seri = stencil.getElementRegionIndices();
+      typename SurfaceElementStencil::IndexContainerViewConstType const & sesri = stencil.getElementSubRegionIndices();
+      typename SurfaceElementStencil::IndexContainerViewConstType const & sei = stencil.getElementIndices();
 
       FaceElementSubRegion const & elementSubRegion =
         elemManager.getRegion( seri[iconn][0] ).getSubRegion< FaceElementSubRegion >( sesri[iconn][0] );
@@ -625,14 +610,14 @@ void HydrofractureSolver::addFluxApertureCouplingSparsityPattern( DomainPartitio
   FiniteVolumeManager const & fvManager = numericalMethodManager.getFiniteVolumeManager();
   FluxApproximationBase const & fluxApprox = fvManager.getFluxApproximation( m_flowSolver->getDiscretization() );
 
-  fluxApprox.forStencils< FaceElementStencil >( mesh, [&]( FaceElementStencil const & stencil )
+  fluxApprox.forStencils< SurfaceElementStencil >( mesh, [&]( SurfaceElementStencil const & stencil )
   {
     for( localIndex iconn=0; iconn<stencil.size(); ++iconn )
     {
       localIndex const numFluxElems = stencil.stencilSize( iconn );
-      typename FaceElementStencil::IndexContainerViewConstType const & seri = stencil.getElementRegionIndices();
-      typename FaceElementStencil::IndexContainerViewConstType const & sesri = stencil.getElementSubRegionIndices();
-      typename FaceElementStencil::IndexContainerViewConstType const & sei = stencil.getElementIndices();
+      typename SurfaceElementStencil::IndexContainerViewConstType const & seri = stencil.getElementRegionIndices();
+      typename SurfaceElementStencil::IndexContainerViewConstType const & sesri = stencil.getElementSubRegionIndices();
+      typename SurfaceElementStencil::IndexContainerViewConstType const & sei = stencil.getElementIndices();
 
       FaceElementSubRegion const & elementSubRegion =
         elemManager.getRegion( seri[iconn][0] ).getSubRegion< FaceElementSubRegion >( sesri[iconn][0] );
@@ -692,12 +677,16 @@ void HydrofractureSolver::assembleSystem( real64 const time,
 
   m_flowSolver->resetViews( domain.getMeshBody( 0 ).getMeshLevel( 0 ) );
 
-  m_flowSolver->assembleSystem( time,
-                                dt,
-                                domain,
-                                dofManager,
-                                localMatrix,
-                                localRhs );
+  m_flowSolver->assembleAccumulationTerms< parallelDevicePolicy<> >( domain,
+                                                                     dofManager,
+                                                                     localMatrix,
+                                                                     localRhs );
+  m_flowSolver->assembleFluxTerms( time,
+                                   dt,
+                                   domain,
+                                   dofManager,
+                                   localMatrix,
+                                   localRhs );
 
 
   assembleForceResidualDerivativeWrtPressure( domain, localMatrix, localRhs );
@@ -728,33 +717,6 @@ void HydrofractureSolver::applyBoundaryConditions( real64 const time,
                                          localMatrix,
                                          localRhs );
 }
-
-real64
-HydrofractureSolver::
-  calculateResidualNorm( DomainPartition const & domain,
-                         DofManager const & dofManager,
-                         arrayView1d< real64 const > const & localRhs )
-{
-  GEOSX_MARK_FUNCTION;
-
-  real64 const fluidResidual = m_flowSolver->calculateResidualNorm( domain,
-                                                                    dofManager,
-                                                                    localRhs );
-
-  real64 const solidResidual = m_solidSolver->calculateResidualNorm( domain,
-                                                                     dofManager,
-                                                                     localRhs );
-
-  if( getLogLevel() >= 1 && logger::internal::rank==0 )
-  {
-    char output[200] = {0};
-    sprintf( output, "    ( Rfluid, Rsolid ) = ( %4.2e, %4.2e )", fluidResidual, solidResidual );
-    std::cout << output << std::endl;
-  }
-
-  return std::sqrt( fluidResidual * fluidResidual + solidResidual * solidResidual );
-}
-
 
 
 void
@@ -878,7 +840,7 @@ HydrofractureSolver::
   globalIndex const rankOffset = m_dofManager.rankOffset();
 
   CRSMatrixView< real64 const, localIndex const > const
-  dFluxResidual_dAperture = m_flowSolver->getDerivativeFluxResidual_dAperture().toViewConst();
+  dFluxResidual_dAperture = getDerivativeFluxResidual_dAperture().toViewConst();
 
   ContactRelationBase const &
   contactRelation = constitutiveManager.getGroup< ContactRelationBase >( m_contactRelationName );
@@ -993,14 +955,7 @@ HydrofractureSolver::
                        DomainPartition & domain )
 {
   GEOSX_MARK_FUNCTION;
-  m_solidSolver->applySystemSolution( dofManager,
-                                      localSolution,
-                                      scalingFactor,
-                                      domain );
-  m_flowSolver->applySystemSolution( dofManager,
-                                     localSolution,
-                                     -scalingFactor,
-                                     domain );
+  PoroelasticSolver::applySystemSolution( dofManager, localSolution, scalingFactor, domain );
 
   updateDeformationForCoupling( domain );
 }
@@ -1036,6 +991,64 @@ void HydrofractureSolver::setNextDt( real64 const & currentDt,
 void HydrofractureSolver::initializeNewFaceElements( DomainPartition const & )
 {
 //  m_flowSolver->
+}
+
+void HydrofractureSolver::setUpDflux_dApertureMatrix( DomainPartition & domain,
+                                                      DofManager const & dofManager,
+                                                      CRSMatrix< real64, globalIndex > & localMatrix )
+{
+  MeshLevel & mesh = domain.getMeshBody( 0 ).getMeshLevel( 0 );
+
+  std::unique_ptr< CRSMatrix< real64, localIndex > > &
+  derivativeFluxResidual_dAperture = this->getRefDerivativeFluxResidual_dAperture();
+
+  {
+    localIndex numRows = 0;
+    this->template forTargetSubRegions< FaceElementSubRegion >( mesh, [&]( localIndex const,
+                                                                           auto const & elementSubRegion )
+    {
+      numRows += elementSubRegion.size();
+    } );
+
+    derivativeFluxResidual_dAperture = std::make_unique< CRSMatrix< real64, localIndex > >( numRows, numRows );
+    derivativeFluxResidual_dAperture->setName( this->getName() + "/derivativeFluxResidual_dAperture" );
+
+    derivativeFluxResidual_dAperture->reserveNonZeros( localMatrix.numNonZeros() );
+    localIndex maxRowSize = -1;
+    for( localIndex row = 0; row < localMatrix.numRows(); ++row )
+    {
+      localIndex const rowSize = localMatrix.numNonZeros( row );
+      maxRowSize = maxRowSize > rowSize ? maxRowSize : rowSize;
+    }
+    // TODO This is way too much. The With the full system rowSize is not a good estimate for this.
+    for( localIndex row = localMatrix.numRows(); row < numRows; ++row )
+    {
+      derivativeFluxResidual_dAperture->reserveNonZeros( row, maxRowSize );
+    }
+  }
+
+  string const presDofKey = dofManager.getKey( FlowSolverBase::viewKeyStruct::pressureString() );
+
+  NumericalMethodsManager const & numericalMethodManager = domain.getNumericalMethodManager();
+  FiniteVolumeManager const & fvManager = numericalMethodManager.getFiniteVolumeManager();
+  FluxApproximationBase const & fluxApprox = fvManager.getFluxApproximation( this->getDiscretization() );
+
+  fluxApprox.forStencils< SurfaceElementStencil >( mesh, [&]( SurfaceElementStencil const & stencil )
+  {
+    for( localIndex iconn = 0; iconn < stencil.size(); ++iconn )
+    {
+      localIndex const numFluxElems = stencil.stencilSize( iconn );
+      typename SurfaceElementStencil::IndexContainerViewConstType const & sei = stencil.getElementIndices();
+
+      for( localIndex k0 = 0; k0 < numFluxElems; ++k0 )
+      {
+        for( localIndex k1 = 0; k1 < numFluxElems; ++k1 )
+        {
+          derivativeFluxResidual_dAperture->insertNonZero( sei[iconn][k0], sei[iconn][k1], 0.0 );
+        }
+      }
+    }
+  } );
 }
 
 REGISTER_CATALOG_ENTRY( SolverBase, HydrofractureSolver, string const &, Group * const )

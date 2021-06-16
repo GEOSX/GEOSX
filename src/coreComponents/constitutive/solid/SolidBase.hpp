@@ -20,7 +20,7 @@
 #ifndef GEOSX_CONSTITUTIVE_SOLID_SOLIDBASE_HPP_
 #define GEOSX_CONSTITUTIVE_SOLID_SOLIDBASE_HPP_
 
-#include "constitutive/ConstitutiveBase.hpp"
+#include "constitutive/solid/RockBase.hpp"
 #include "LvArray/src/tensorOps.hpp"
 
 namespace geosx
@@ -45,7 +45,7 @@ namespace constitutive
  * If an allocation occurs on the underlying Array after a KernelWrapper is created,
  * then the ArrayView members of that KernelWrapper are silently invalid.
  */
-class SolidBaseUpdates
+class SolidBaseUpdates : public RockBaseUpdates
 {
 protected:
   /**
@@ -53,8 +53,20 @@ protected:
    * @param[in] newStress The new stress data from the constitutive model class.
    * @param[in] oldStress The old stress data from the constitutive model class.
    */
-  SolidBaseUpdates( arrayView3d< real64, solid::STRESS_USD > const & newStress,
+  SolidBaseUpdates( arrayView2d< real64 > const & newPorosity,
+                    arrayView2d< real64 > const & oldPorosity,
+                    arrayView2d< real64 > const & dPorosity_dPressure,
+                    arrayView1d< real64 > const & referencePorosity,
+                    real64 const & grainBulkModulus,
+                    arrayView2d< real64 > const & grainDensity,
+                    arrayView3d< real64, solid::STRESS_USD > const & newStress,
                     arrayView3d< real64, solid::STRESS_USD > const & oldStress ):
+    RockBaseUpdates( newPorosity,
+                     oldPorosity,
+                     dPorosity_dPressure,
+                     referencePorosity,
+                     grainBulkModulus,
+                     grainDensity ),
     m_newStress( newStress ),
     m_oldStress( oldStress )
   {}
@@ -96,6 +108,24 @@ protected:
                    real64 const ( &stress )[6] ) const
   {
     LvArray::tensorOps::copy< 6 >( m_newStress[k][q], stress );
+  }
+
+  /**
+   * @brief Helper to save point stress back to m_newPorosity array
+   *
+   * This is mostly defined for improving code readability.
+   *
+   * @param[in] k Element index.
+   * @param[in] q Quadrature point index.
+   * @param[in] porosity porosity to be saved to m_newPorosity[k][q]
+   */
+  GEOSX_HOST_DEVICE
+  GEOSX_FORCE_INLINE
+  void savePorosity( localIndex const k,
+                     localIndex const q,
+                     real64 const & porosity ) const
+  {
+    m_newPorosity[k][q] = porosity;
   }
 
 public:
@@ -564,7 +594,7 @@ public:
  * @class SolidBase
  * This class serves as the base class for solid constitutive models.
  */
-class SolidBase : public constitutive::ConstitutiveBase
+class SolidBase : public constitutive::RockBase
 {
 public:
   /**
@@ -592,12 +622,10 @@ public:
   virtual void saveConvergedState() const;
 
   /// Keys for data in this class
-  struct viewKeyStruct : public ConstitutiveBase::viewKeyStruct
+  struct viewKeyStruct : public RockBase::viewKeyStruct
   {
     static constexpr char const * stressString() { return "stress"; }                  ///< New stress key
     static constexpr char const * oldStressString() { return "oldStress"; }            ///< Old stress key
-    static constexpr char const * densityString() { return "density"; }                ///< Density key
-    static constexpr char const * defaultDensityString() { return "defaultDensity"; }  ///< Default density key
   };
 
 
@@ -642,24 +670,6 @@ public:
     return m_newStress;
   }
 
-  /**
-   * @brief Non-const/Mutable accessor for density.
-   * @return Accessor
-   */
-  arrayView2d< real64 > const getDensity()
-  {
-    return m_density;
-  }
-
-  /**
-   * @brief Const/non-mutable accessor for density
-   * @return Accessor
-   */
-  arrayView2d< real64 const > const getDensity() const
-  {
-    return m_density;
-  }
-
   ///@}
 
 protected:
@@ -672,12 +682,6 @@ protected:
 
   /// The previous stress at a quadrature point (i.e. at timestep (n-1))
   array3d< real64, solid::STRESS_PERMUTATION > m_oldStress;
-
-  /// The material density at a quadrature point.
-  array2d< real64 > m_density;
-
-  /// The default density for new allocations.
-  real64 m_defaultDensity = 0;
 
   /// band-aid fix...going to have to remove this after we clean up
   /// initialization for constitutive models.

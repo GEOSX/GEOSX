@@ -21,7 +21,7 @@
 #include <physicsSolvers/multiphysics/MultiphasePoroelasticSolver.hpp>
 #include "common/DataLayouts.hpp"
 #include "constitutive/ConstitutiveManager.hpp"
-#include "constitutive/solid/PoroElastic.hpp"
+#include "constitutive/solid/SolidBase.hpp"
 #include "constitutive/fluid/SingleFluidBase.hpp"
 #include "discretizationMethods/NumericalMethodsManager.hpp"
 #include "finiteElement/Kinematics.h"
@@ -208,13 +208,12 @@ void MultiphasePoroelasticSolver::assembleSystem( real64 const time_n,
   m_solidSolver->getMaxForce() =
     finiteElement::
       regionBasedKernelApplication< parallelDevicePolicy< 32 >,
-                                    constitutive::PoroElasticBase,
+                                    constitutive::SolidBase,
                                     CellElementSubRegion >( mesh,
                                                             targetRegionNames(),
                                                             this->getDiscretizationName(),
                                                             m_solidSolver->solidMaterialNames(),
                                                             kernelFactory );
-
 
 
   // Face-based contributions
@@ -293,6 +292,26 @@ void MultiphasePoroelasticSolver::applySystemSolution( DofManager const & dofMan
   m_solidSolver->applySystemSolution( dofManager, localSolution, scalingFactor, domain );
   // update pressure field
   m_flowSolver->applySystemSolution( dofManager, localSolution, -scalingFactor, domain );
+}
+
+void MultiphasePoroelasticSolver::updateState( DomainPartition & domain )
+{
+  MeshLevel & mesh = domain.getMeshBody( 0 ).getMeshLevel( 0 );
+
+  this->template forTargetSubRegions< CellElementSubRegion >( mesh, [&] ( localIndex const targetIndex,
+                                                                          auto & subRegion )
+  {
+    updatePermeability( subRegion, targetIndex );
+    m_flowSolver->updateFluidState( subRegion, targetIndex );
+  } );
+}
+
+void MultiphasePoroelasticSolver::updatePermeability( CellElementSubRegion & subRegion,
+                                                      localIndex const targetIndex ) const
+{
+  //TODO stress-dependent permeability update.
+  GEOSX_UNUSED_VAR( subRegion );
+  GEOSX_UNUSED_VAR( targetIndex );
 }
 
 REGISTER_CATALOG_ENTRY( SolverBase, MultiphasePoroelasticSolver, string const &, Group * const )

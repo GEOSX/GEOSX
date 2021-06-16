@@ -166,7 +166,7 @@ public:
    * @param subRegion the well subRegion containing the well elements and their associated fields
    * @param targetIndex the targetIndex of the subRegion
    */
-  virtual void updateState( WellElementSubRegion & subRegion, localIndex const targetIndex ) override;
+  virtual void updateSubRegionState( WellElementSubRegion & subRegion, localIndex const targetIndex ) override;
 
   /**
    * @brief assembles the flux terms for all connections between well elements

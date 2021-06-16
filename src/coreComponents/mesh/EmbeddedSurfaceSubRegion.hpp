@@ -208,6 +208,8 @@ public:
     /// @return Fracture traction derivative w.r.t. jump string
     static constexpr char const * dTraction_dJumpString()   { return "dTraction_dJump"; }
 
+    static constexpr char const * dTraction_dPressureString()   { return "dTraction_dPressure"; }
+
     /// @return surfaces with ghost nodes list string
     static constexpr char const * surfaceWithGhostNodesString() { return "surfaceWithGhostNodes"; }
 
@@ -222,6 +224,9 @@ public:
 
     /// dTraction_dJump key
     dataRepository::ViewKey dTraction_dJump = { dTraction_dJumpString() };
+
+    /// dTraction_dPressure key
+    dataRepository::ViewKey dTraction_dPressure = { dTraction_dPressureString() };
 
   }
   /// viewKey struct for the EmbeddedSurfaceSubRegion class
@@ -394,6 +399,22 @@ public:
    */
   arrayView3d< real64 const > dTraction_dJump() const
   { return getReference< array3d< real64 > >( viewKeys.dTraction_dJump ); }
+
+  /**
+   * @brief Get a mutable dTraction_dPressure array.
+   * @return the dTraction_dJump array if it exists, or an error is thrown if it does not exist
+   * @note An error is thrown if the dTraction_dJump does not exist
+   */
+  array1d< real64 > & dTraction_dPressure()
+  { return getReference< array1d< real64 > >( viewKeys.dTraction_dPressure ); }
+
+  /**
+   * @brief Provide an immutable arrayView to the dTraction_dJump array.
+   * @return immutable arrayView of the dTraction_dJump array if it exists, or an error is thrown if it does not exist
+   * @note An error is thrown if the dTraction_dJump does not exist
+   */
+  arrayView1d< real64 const > dTraction_dPressure() const
+  { return getReference< array1d< real64 > >( viewKeys.dTraction_dPressure ); }
 
   /**
    * @brief accessor to the m_surfaceWithGhostNodes list

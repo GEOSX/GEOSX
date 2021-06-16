@@ -285,6 +285,9 @@ real64 SolverBase::linearImplicitStep( real64 const & time_n,
   // apply the system solution to the fields/variables
   applySystemSolution( m_dofManager, m_localSolution, 1.0, domain );
 
+  // update non-primary variables (constitutive models)
+  updateState( domain );
+
   // final step for completion of timestep. typically secondary variable updates and cleanup.
   implicitStepComplete( time_n, dt, domain );
 
@@ -333,6 +336,9 @@ bool SolverBase::lineSearch( real64 const & time_n,
     }
 
     applySystemSolution( dofManager, localSolution, localScaleFactor, domain );
+
+    // update non-primary variables (constitutive models)
+    updateState( domain );
 
     // re-assemble system
     localMatrix.zero();
@@ -600,6 +606,9 @@ real64 SolverBase::nonlinearImplicitStep( real64 const & time_n,
       // apply the system solution to the fields/variables
       applySystemSolution( m_dofManager, m_localSolution, scaleFactor, domain );
 
+      // update non-primary variables (constitutive models)
+      updateState( domain );
+
       lastResidual = residualNorm;
     }
 
@@ -853,6 +862,11 @@ void SolverBase::applySystemSolution( DofManager const & GEOSX_UNUSED_PARAM( dof
                                       DomainPartition & GEOSX_UNUSED_PARAM( domain ) )
 {
   GEOSX_ERROR( "SolverBase::applySystemSolution called!. Should be overridden." );
+}
+
+void SolverBase::updateState( DomainPartition & GEOSX_UNUSED_PARAM( domain ) )
+{
+  GEOSX_ERROR( "SolverBase::updateState called!. Should be overridden." );
 }
 
 void SolverBase::resetStateToBeginningOfStep( DomainPartition & GEOSX_UNUSED_PARAM( const ) )

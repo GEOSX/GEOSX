@@ -47,11 +47,24 @@ public:
    * @param[in] newStress    The ArrayView holding the new stress data for each quadrature point.
    * @param[in] oldStress    The ArrayView holding the old stress data for each quadrature point.
    */
-  ElasticIsotropicUpdates( arrayView1d< real64 const > const & bulkModulus,
-                           arrayView1d< real64 const > const & shearModulus,
+  ElasticIsotropicUpdates( arrayView2d< real64 > const & newPorosity,
+                           arrayView2d< real64 > const & oldPorosity,
+                           arrayView2d< real64 > const & dPorosity_dPressure,
+                           arrayView1d< real64 > const & referencePorosity,
+                           real64 const & grainBulkModulus,
+                           arrayView2d< real64 > const & grainDensity,
                            arrayView3d< real64, solid::STRESS_USD > const & newStress,
-                           arrayView3d< real64, solid::STRESS_USD > const & oldStress ):
-    SolidBaseUpdates( newStress, oldStress ),
+                           arrayView3d< real64, solid::STRESS_USD > const & oldStress,
+                           arrayView1d< real64 const > const & bulkModulus,
+                           arrayView1d< real64 const > const & shearModulus ):
+    SolidBaseUpdates( newPorosity,
+                      oldPorosity,
+                      dPorosity_dPressure,
+                      referencePorosity,
+                      grainBulkModulus,
+                      grainDensity,
+                      newStress,
+                      oldStress ),
     m_bulkModulus( bulkModulus ),
     m_shearModulus( shearModulus )
   {}
@@ -116,6 +129,19 @@ public:
                                   real64 const ( &strainIncrement )[6],
                                   real64 ( &stress )[6],
                                   DiscretizationOps & stiffness ) const;
+
+  GEOSX_HOST_DEVICE
+  virtual void smallStrainUpdate_porosity( localIndex const k,
+                                           localIndex const q,
+                                           real64 const & pressure,
+                                           real64 const & deltaPressure,
+                                           real64 const ( &strainIncrement )[6],
+                                           real64 & porosity,
+                                           real64 & dPorosity_dPressure,
+                                           real64 & dPorosity_dVolStrainIncrement,
+                                           real64 ( &stress )[6],
+                                           real64 & dTotalStress_dPressure,
+                                           DiscretizationOps & stiffness ) const;
 
   GEOSX_HOST_DEVICE
   virtual void getElasticStiffness( localIndex const k,
@@ -290,6 +316,42 @@ void ElasticIsotropicUpdates::smallStrainUpdate( localIndex const k,
 }
 
 
+GEOSX_HOST_DEVICE
+GEOSX_FORCE_INLINE
+void ElasticIsotropicUpdates::smallStrainUpdate_porosity( localIndex const k,
+                                                          localIndex const q,
+                                                          real64 const & pressure,
+                                                          real64 const & deltaPressure,
+                                                          real64 const ( &strainIncrement )[6],
+                                                          real64 & porosity,
+                                                          real64 & dPorosity_dPressure,
+                                                          real64 & dPorosity_dVolStrainIncrement,
+                                                          real64 ( & stress )[6],
+                                                          real64 & dTotalStress_dPressure,
+                                                          DiscretizationOps & stiffness ) const
+{
+  smallStrainUpdate( k, q, strainIncrement, stress, stiffness );
+
+  real64 const biotCoefficient = 1 - m_bulkModulus[k] / m_grainBulkModulus;
+  real64 const biotSkeletonModulusInverse = ( biotCoefficient - m_referencePorosity[k] ) / m_grainBulkModulus;
+
+  porosity = m_oldPorosity[k][q] +
+             +biotCoefficient * LvArray::tensorOps::symTrace< 3 >( strainIncrement )
+             + biotSkeletonModulusInverse * deltaPressure;
+
+  dPorosity_dPressure = biotSkeletonModulusInverse;
+
+  dPorosity_dVolStrainIncrement = biotCoefficient;
+
+  savePorosity( k, q, porosity );
+
+  real64 const biotTimesPressure = -biotCoefficient * ( pressure + deltaPressure );
+
+  LvArray::tensorOps::symAddIdentity< 3 >( stress, biotTimesPressure );
+
+  dTotalStress_dPressure = biotCoefficient;
+}
+
 // TODO: need to confirm stress / strain measures before activating hyper inferface
 /*
    GEOSX_HOST_DEVICE
@@ -448,17 +510,29 @@ public:
   {
     if( includeState )
     {
-      return ElasticIsotropicUpdates( m_bulkModulus,
-                                      m_shearModulus,
+      return ElasticIsotropicUpdates( m_newPorosity,
+                                      m_oldPorosity,
+                                      m_dPorosity_dPressure,
+                                      m_referencePorosity,
+                                      m_grainBulkModulus,
+                                      m_grainDensity,
                                       m_newStress,
-                                      m_oldStress );
+                                      m_oldStress,
+                                      m_bulkModulus,
+                                      m_shearModulus );
     }
     else // for "no state" updates, pass empty views to avoid transfer of stress data to device
     {
-      return ElasticIsotropicUpdates( m_bulkModulus,
-                                      m_shearModulus,
+      return ElasticIsotropicUpdates( m_newPorosity,
+                                      m_oldPorosity,
+                                      m_dPorosity_dPressure,
+                                      m_referencePorosity,
+                                      m_grainBulkModulus,
+                                      m_grainDensity,
                                       arrayView3d< real64, solid::STRESS_USD >(),
-                                      arrayView3d< real64, solid::STRESS_USD >() );
+                                      arrayView3d< real64, solid::STRESS_USD >(),
+                                      m_bulkModulus,
+                                      m_shearModulus );
     }
   }
 
@@ -474,10 +548,16 @@ public:
   UPDATE_KERNEL createDerivedKernelUpdates( PARAMS && ... constructorParams )
   {
     return UPDATE_KERNEL( std::forward< PARAMS >( constructorParams )...,
-                          m_bulkModulus,
-                          m_shearModulus,
+                          m_newPorosity,
+                          m_oldPorosity,
+                          m_dPorosity_dPressure,
+                          m_referencePorosity,
+                          m_grainBulkModulus,
+                          m_grainDensity,
                           m_newStress,
-                          m_oldStress );
+                          m_oldStress,
+                          m_bulkModulus,
+                          m_shearModulus );
   }
 
 

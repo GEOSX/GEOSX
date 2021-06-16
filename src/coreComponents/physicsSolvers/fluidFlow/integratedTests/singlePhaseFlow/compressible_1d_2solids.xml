@@ -9,7 +9,8 @@
       discretization="tpfaFlow"
       targetRegions="{ Region1, Region2 }"
       fluidNames="{ fluid }"
-      solidNames="{ rock1, rock2 }">
+      solidNames="{ rock1, rock2 }"
+      permeabilityNames="{ rock1_permeability, rock2_permeability }">
       <NonlinearSolverParameters
         newtonTol="1.0e-6"
         newtonMaxIter="8"/>
@@ -78,12 +79,12 @@
     <CellElementRegion
       name="Region1"
       cellBlocks="{ block1 }"
-      materialList="{ fluid, rock1 }"/>
+      materialList="{ fluid, rock1, rock1_permeability }"/>
 
     <CellElementRegion
       name="Region2"
       cellBlocks="{ block2 }"
-      materialList="{ fluid, rock2 }"/>
+      materialList="{ fluid, rock2, rock2_permeability }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -97,53 +98,28 @@
       referenceViscosity="0.001"
       viscosibility="0.0"/>
 
-    <PoreVolumeCompressibleSolid
+   <CompressibleRock
       name="rock1"
       referencePressure="0.0"
+      defaultReferencePorosity ="0.05"
       compressibility="1e-8"/>
-
-    <PoreVolumeCompressibleSolid
+      
+    <ConstantPermeability
+      name="rock1_permeability"
+      permeabilityComponents="2e-16, 2e-16, 2e-16"/>
+      
+    <CompressibleRock
       name="rock2"
       referencePressure="0.0"
+      defaultReferencePorosity ="0.05"
       compressibility="1e-10"/>
+      
+    <ConstantPermeability
+      name="rock2_permeability"
+      permeabilityComponents="2e-16, 2e-16, 2e-16"/>  
   </Constitutive>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
-    <FieldSpecification
-      name="referencePorosity"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions"
-      fieldName="referencePorosity"
-      scale="0.05"/>
-
     <FieldSpecification
       name="initialPressure"
       initialCondition="1"

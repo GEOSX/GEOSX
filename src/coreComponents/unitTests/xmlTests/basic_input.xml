@@ -55,7 +55,9 @@
   <Constitutive>
     <ElasticIsotropic
       name="shale"
-      defaultDensity="2700"
+      defaultGrainDensity="2700"
+      grainBulkModulus="1e15"
+      defaultReferencePorosity="0.2"
       defaultBulkModulus="5.5556e9"
       defaultShearModulus="4.16667e9"/>
   </Constitutive>

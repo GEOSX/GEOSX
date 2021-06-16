@@ -54,8 +54,8 @@ public:
   using DiscretizationOps = SolidModelDiscretizationOpsFullyAnisotroipic; // could maybe optimize, but general for now
 
   using DamageUpdates< UPDATE_BASE >::smallStrainUpdate;
+  using DamageUpdates< UPDATE_BASE >::smallStrainUpdate_porosity;
   using DamageUpdates< UPDATE_BASE >::saveConvergedState;
-
   using DamageUpdates< UPDATE_BASE >::getDegradationValue;
   using DamageUpdates< UPDATE_BASE >::getDegradationDerivative;
   using DamageUpdates< UPDATE_BASE >::getDegradationSecondDerivative;
@@ -238,6 +238,29 @@ public:
                                   DiscretizationOps & stiffness ) const final
   {
     smallStrainUpdate( k, q, strainIncrement, stress, stiffness.m_c );
+  }
+
+  GEOSX_HOST_DEVICE
+  virtual void smallStrainUpdate_porosity( localIndex const k,
+                                           localIndex const q,
+                                           real64 const & pressure,
+                                           real64 const & deltaPressure,
+                                           real64 const ( &strainIncrement )[6],
+                                           real64 & porosity,
+                                           real64 & dPorosity_dPressure,
+                                           real64 & dPorosity_dVolStrainIncrement,
+                                           real64 ( & stress )[6],
+                                           real64 & dTotalStress_dPressure,
+                                           DiscretizationOps & stiffness ) const final
+  {
+    // TODO: fill this function properly.
+    GEOSX_UNUSED_VAR( pressure );
+    GEOSX_UNUSED_VAR( deltaPressure );
+    GEOSX_UNUSED_VAR( porosity );
+    GEOSX_UNUSED_VAR( dPorosity_dPressure );
+    GEOSX_UNUSED_VAR( dPorosity_dVolStrainIncrement );
+    GEOSX_UNUSED_VAR( dTotalStress_dPressure );
+    smallStrainUpdate( k, q, strainIncrement, stress, stiffness );
   }
 
 

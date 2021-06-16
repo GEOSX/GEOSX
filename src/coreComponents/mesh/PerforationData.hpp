@@ -193,7 +193,9 @@ public:
    */
   void computeWellTransmissibility( MeshLevel const & mesh,
                                     WellElementSubRegion const & wellElemSubRegion,
-                                    string const & permeabilityKey );
+                                    string const & permeabilityKey,
+                                    arrayView1d< string const > const & targetRegions,
+                                    arrayView1d< string const > const & permModelNames );
 
   ///@}
 

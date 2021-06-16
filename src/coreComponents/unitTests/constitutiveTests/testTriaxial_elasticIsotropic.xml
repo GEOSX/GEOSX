@@ -25,9 +25,11 @@
 
     <ElasticIsotropic 
       name="elastic"
-      defaultDensity="2700"
+      grainBulkModulus="1e15"
+      defaultGrainDensity="2700"
       defaultBulkModulus="500"
       defaultShearModulus="300"
+      defaultReferencePorosity = "0.2"
     />
 
   </Constitutive>

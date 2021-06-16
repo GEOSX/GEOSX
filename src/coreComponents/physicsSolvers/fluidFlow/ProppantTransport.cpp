@@ -697,13 +697,15 @@ void ProppantTransport::assembleFluxTerms( real64 const GEOSX_UNUSED_PARAM( time
 
   FluxKernel::ElementViewConst< arrayView1d< integer const > > const isProppantMobile  = m_isProppantMobile.toNestedViewConst();
   FluxKernel::ElementViewConst< arrayView2d< real64 const > > const transTMultiplier  = m_transTMultiplier.toNestedViewConst();
-  FluxKernel::ElementViewConst< arrayView1d< real64 const > > const aperture  = m_elementAperture.toNestedViewConst();
+
+  ElementRegionManager::ElementViewAccessor< arrayView1d< real64 const > > const
+  aperture = elemManager.constructArrayViewAccessor< real64, 1 >( FaceElementSubRegion::viewKeyStruct::elementApertureString() );
 
   FluxKernel::ElementViewConst< arrayView1d< real64 const > > const proppantPackVf  = m_proppantPackVolumeFraction.toNestedViewConst();
 
   FluxKernel::ElementViewConst< arrayView1d< integer const > > const elemGhostRank = m_elemGhostRank.toNestedViewConst();
 
-  fluxApprox.forStencils< FaceElementStencil >( mesh, [&]( auto const & stencil )
+  fluxApprox.forStencils< SurfaceElementStencil >( mesh, [&]( auto const & stencil )
   {
 
     FluxKernel::launch( stencil,
@@ -742,7 +744,7 @@ void ProppantTransport::assembleFluxTerms( real64 const GEOSX_UNUSED_PARAM( time
                         dCollisionFactor_dProppantConc,
                         isProppantMobile,
                         proppantPackVf,
-                        aperture,
+                        aperture.toNestedViewConst(),
                         localMatrix,
                         localRhs );
   } );
@@ -1233,6 +1235,7 @@ void ProppantTransport::updateCellBasedFlux( real64 const GEOSX_UNUSED_PARAM( ti
   LvArray::tensorOps::normalize< 3 >( downVector );
 
   MeshLevel & mesh = domain.getMeshBody( 0 ).getMeshLevel( 0 );
+  ElementRegionManager & elemManager = mesh.getElemManager();
 
   NumericalMethodsManager const & numericalMethodManager = domain.getNumericalMethodManager();
   FiniteVolumeManager const & fvManager = numericalMethodManager.getFiniteVolumeManager();
@@ -1242,7 +1245,8 @@ void ProppantTransport::updateCellBasedFlux( real64 const GEOSX_UNUSED_PARAM( ti
   FluxKernel::ElementViewConst< arrayView1d< real64 const > > const gravCoef         = m_gravCoef.toNestedViewConst();
   FluxKernel::ElementViewConst< arrayView2d< real64 const > > const dens             = m_density.toNestedViewConst();
   FluxKernel::ElementViewConst< arrayView2d< real64 const > > const visc             = m_viscosity.toNestedViewConst();
-  FluxKernel::ElementViewConst< arrayView1d< real64 const > > const aperture         = m_elementAperture.toNestedViewConst();
+  ElementRegionManager::ElementViewAccessor< arrayView1d< real64 const > > const
+  aperture = elemManager.constructArrayViewAccessor< real64, 1 >( FaceElementSubRegion::viewKeyStruct::elementApertureString() );
   FluxKernel::ElementViewConst< arrayView1d< real64 const > > const proppantPackVf   = m_proppantPackVolumeFraction.toNestedViewConst();
   FluxKernel::ElementViewConst< arrayView2d< real64 const > > const transTMultiplier = m_transTMultiplier.toNestedViewConst();
 
@@ -1260,7 +1264,7 @@ void ProppantTransport::updateCellBasedFlux( real64 const GEOSX_UNUSED_PARAM( ti
                                                 gravCoef,
                                                 dens,
                                                 visc,
-                                                aperture,
+                                                aperture.toNestedViewConst(),
                                                 proppantPackVf,
                                                 cellBasedFlux );
   } );
@@ -1301,6 +1305,9 @@ void ProppantTransport::updateProppantPackVolume( real64 const GEOSX_UNUSED_PARA
   ElementRegionManager::ElementViewAccessor< arrayView1d< real64 > > const proppantLiftFlux =
     elemManager.constructViewAccessor< array1d< real64 >, arrayView1d< real64 > >( viewKeyStruct::proppantLiftFluxString() );
 
+  ElementRegionManager::ElementViewAccessor< arrayView1d< real64 const > > const
+  aperture = elemManager.constructArrayViewAccessor< real64, 1 >( FaceElementSubRegion::viewKeyStruct::elementApertureString() );
+
   fluxApprox.forAllStencils( mesh, [&]( auto const & stencil )
   {
     ProppantPackVolumeKernel::launchProppantPackVolumeCalculation( stencil,
@@ -1317,7 +1324,7 @@ void ProppantTransport::updateProppantPackVolume( real64 const GEOSX_UNUSED_PARA
                                                                    m_fluidViscosity.toNestedViewConst(),
                                                                    m_isProppantMobile.toNestedViewConst(),
                                                                    m_isProppantBoundaryElement.toNestedViewConst(),
-                                                                   m_elementAperture.toNestedViewConst(),
+                                                                   aperture.toNestedViewConst(),
                                                                    m_volume.toNestedViewConst(),
                                                                    m_elemGhostRank.toNestedViewConst(),
                                                                    m_cellBasedFlux.toNestedViewConst(),

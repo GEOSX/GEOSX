@@ -27,7 +27,7 @@
 #include "solid/DruckerPragerExtended.hpp"
 #include "solid/ElasticIsotropic.hpp"
 #include "solid/ElasticTransverseIsotropic.hpp"
-#include "solid/PoroElastic.hpp"
+#include "solid/CompressibleRock.hpp"
 
 namespace geosx
 {
@@ -102,6 +102,41 @@ struct ConstitutivePassThru< SolidBase >
 
 
 /**
+ * Specialization for models that derive from SolidBase.
+ */
+template<>
+struct ConstitutivePassThru< RockBase >
+{
+
+  // NOTE: The switch order here can be fragile if a model derives from another
+  //       model, as the dynamic_cast will also cast to a base version.
+  //       Models should be ordered such that children come before parents.
+  //       For example, DruckerPrager before ElasticIsotropic, DamageVolDev before
+  //       Damage, etc.
+
+  template< typename LAMBDA >
+  static
+  void execute( ConstitutiveBase & constitutiveRelation, LAMBDA && lambda )
+  {
+    if( auto * const ptr1 = dynamic_cast< CompressibleRock * >( &constitutiveRelation ) )
+    {
+      lambda( *ptr1 );
+    }
+    else if( auto * const ptr2 = dynamic_cast< SolidBase * >( &constitutiveRelation ) )
+    {
+      ConstitutivePassThru< SolidBase >::execute( constitutiveRelation, lambda );
+    }
+    else
+    {
+      GEOSX_ERROR( "ConstitutivePassThru< RockBase >::execute failed. The constitutive relation is named "
+                   << constitutiveRelation.getName() << " with type "
+                   << LvArray::system::demangleType( constitutiveRelation ) );
+    }
+  }
+};
+
+
+/**
  * Specialization for the NullModel.
  */
 template<>
@@ -124,40 +159,40 @@ struct ConstitutivePassThru< NullModel >
   }
 };
 
-
-/**
- * Specialization for the PoroElastic models.
- */
-template<>
-struct ConstitutivePassThru< PoroElasticBase >
-{
-  template< typename LAMBDA >
-  static void execute( ConstitutiveBase & constitutiveRelation, LAMBDA && lambda )
-  {
-    if( auto * const ptr1 = dynamic_cast< PoroElastic< DruckerPragerExtended > * >( &constitutiveRelation ) )
-    {
-      lambda( *ptr1 );
-    }
-    else if( auto * const ptr2 = dynamic_cast< PoroElastic< DruckerPrager > * >( &constitutiveRelation ) )
-    {
-      lambda( *ptr2 );
-    }
-    else if( auto * const ptr3 = dynamic_cast< PoroElastic< ElasticIsotropic > * >( &constitutiveRelation ) )
-    {
-      lambda( *ptr3 );
-    }
-    else if( auto * const ptr4 = dynamic_cast< PoroElastic< ElasticTransverseIsotropic > * >( &constitutiveRelation ) )
-    {
-      lambda( *ptr4 );
-    }
-    else
-    {
-      GEOSX_ERROR( "ConstitutivePassThru< PoroElasticBase >::execute failed. The constitutive relation is named "
-                   << constitutiveRelation.getName() << " with type "
-                   << LvArray::system::demangleType( constitutiveRelation ) );
-    }
-  }
-};
+//
+///**
+// * Specialization for the PoroElastic models.
+// */
+//template<>
+//struct ConstitutivePassThru< PoroElasticBase >
+//{
+//  template< typename LAMBDA >
+//  static void execute( ConstitutiveBase & constitutiveRelation, LAMBDA && lambda )
+//  {
+//    if( auto * const ptr1 = dynamic_cast< PoroElastic< DruckerPragerExtended > * >( &constitutiveRelation ) )
+//    {
+//      lambda( *ptr1 );
+//    }
+//    else if( auto * const ptr2 = dynamic_cast< PoroElastic< DruckerPrager > * >( &constitutiveRelation ) )
+//    {
+//      lambda( *ptr2 );
+//    }
+//    else if( auto * const ptr3 = dynamic_cast< PoroElastic< ElasticIsotropic > * >( &constitutiveRelation ) )
+//    {
+//      lambda( *ptr3 );
+//    }
+//    else if( auto * const ptr4 = dynamic_cast< PoroElastic< ElasticTransverseIsotropic > * >( &constitutiveRelation ) )
+//    {
+//      lambda( *ptr4 );
+//    }
+//    else
+//    {
+//      GEOSX_ERROR( "ConstitutivePassThru< PoroElasticBase >::execute failed. The constitutive relation is named "
+//                   << constitutiveRelation.getName() << " with type "
+//                   << LvArray::system::demangleType( constitutiveRelation ) );
+//    }
+//  }
+//};
 
 /**
  * Specialization for the Damage models.

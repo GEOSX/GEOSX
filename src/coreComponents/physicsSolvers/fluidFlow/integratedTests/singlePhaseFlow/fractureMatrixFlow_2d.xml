@@ -9,7 +9,8 @@
       discretization="singlePhaseTPFA"
       targetRegions="{ Region2, Fracture }"
       fluidNames="{ water }"
-      solidNames="{ rock }">
+      permeabilityNames="{ rock_permeability, fracture_permeability }"
+      solidNames ="{ rock, fractureFilling }">
       <NonlinearSolverParameters
         newtonTol="1.0e-2"
         newtonMaxIter="8"
@@ -115,15 +116,15 @@
   </NumericalMethods>
 
   <ElementRegions>
-    <CellElementRegion
+     <CellElementRegion
       name="Region2"
       cellBlocks="{ cb1 }"
-      materialList="{ water, rock }"/>
+      materialList="{ water, rock_permeability, rock }"/>
 
     <SurfaceElementRegion
       name="Fracture"
-      defaultAperture="1.0e-5"
-      materialList="{ water, rock }"/>
+      defaultAperture = "1e-4"
+      materialList="{ water, fracture_permeability, fractureFilling }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -137,48 +138,28 @@
       referenceViscosity="0.001"
       viscosibility="0.0"/>
 
-    <PoreVolumeCompressibleSolid
+    <CompressibleRock
       name="rock"
       referencePressure="0.0"
+      defaultReferencePorosity ="0.01"
       compressibility="1e-9"/>
+      
+    <ConstantPermeability
+      name="rock_permeability"
+      permeabilityComponents="5e-19, 5e-19, 5e-19"/>
+      
+    <CompressibleRock
+      name="fractureFilling"
+      referencePressure="0.0"
+      defaultReferencePorosity ="1.00"
+      compressibility="0.0"/>
+      
+    <ParallelPlatesPermeability
+      name="fracture_permeability"/>  
+   
   </Constitutive>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Region2/cb1"
-      fieldName="permeability"
-      scale="5.0e-19"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Region2/cb1"
-      fieldName="permeability"
-      scale="5.0e-19"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Region2/cb1"
-      fieldName="permeability"
-      scale="5.0e-19"/>
-
-    <FieldSpecification
-      name="referencePorosity"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Region2/cb1"
-      fieldName="referencePorosity"
-      scale="0.01"/>
-
     <FieldSpecification
       name="initialPressure"
       initialCondition="1"
@@ -206,7 +187,7 @@
   <Functions/>
 
   <Outputs>
-    <Silo
+    <VTK
       name="siloOutput"
       plotFileRoot="fractureMatrixFlow"
       plotLevel="1"/>

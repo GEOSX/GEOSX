@@ -68,19 +68,14 @@ public:
   // have to use this->member etc.
   using BASE::m_fluidModelNames;
   using BASE::m_solidModelNames;
+  using BASE::m_permeabilityModelNames;
   using BASE::m_poroElasticFlag;
   using BASE::m_coupledWellsFlag;
   using BASE::m_numDofPerCell;
-  using BASE::m_derivativeFluxResidual_dAperture;
   using BASE::m_fluxEstimate;
   using BASE::m_elemGhostRank;
   using BASE::m_volume;
   using BASE::m_gravCoef;
-  using BASE::m_porosityRef;
-  using BASE::m_elementArea;
-  using BASE::m_elementAperture0;
-  using BASE::m_elementAperture;
-  using BASE::m_effectiveAperture;
 
 
   // Aliasing public/protected members/methods of SinglePhaseBase so we don't
@@ -88,6 +83,8 @@ public:
   using BASE::m_pressure;
   using BASE::m_deltaPressure;
   using BASE::m_deltaVolume;
+  using BASE::m_permeability;
+  using BASE::m_dPerm_dPressure;
   using BASE::m_mobility;
   using BASE::m_dMobility_dPres;
   using BASE::m_density;
@@ -195,14 +192,36 @@ public:
   virtual void
   assembleFluxTerms( real64 const time_n,
                      real64 const dt,
-                     DomainPartition const & domain,
+                     DomainPartition & domain,
                      DofManager const & dofManager,
                      CRSMatrixView< real64, globalIndex const > const & localMatrix,
                      arrayView1d< real64 > const & localRhs ) override;
 
-  virtual void setUpDflux_dApertureMatrix( DomainPartition & domain,
-                                           DofManager const & dofManager,
-                                           CRSMatrix< real64, globalIndex > & localMatrix ) override final;
+  /**
+   * @brief assembles the flux terms for all cells for the poroelastic case
+   * @param time_n previous time value
+   * @param dt time step
+   * @param domain the physical domain object
+   * @param dofManager degree-of-freedom manager associated with the linear system
+   * @param localMatrix the system matrix
+   * @param localRhs the system right-hand side vector
+   */
+  virtual void
+  assemblePoroelasticFluxTerms( real64 const time_n,
+                                real64 const dt,
+                                DomainPartition & domain,
+                                DofManager const & dofManager,
+                                CRSMatrixView< real64, globalIndex const > const & localMatrix,
+                                arrayView1d< real64 > const & localRhs,
+                                string const & jumpDofKey ) override;
+
+  void assemblePoroelasticFluxTerms( real64 const time_n,
+                                     real64 const dt,
+                                     DomainPartition & domain,
+                                     DofManager const & dofManager,
+                                     CRSMatrixView< real64, globalIndex const > const & localMatrix,
+                                     arrayView1d< real64 > const & localRhs,
+                                     CRSMatrixView< real64, localIndex const > const & dR_dAper );
 
   /**@}*/
 
@@ -229,7 +248,6 @@ private:
   // no data needed here, see SinglePhaseBase
 
 };
-
 
 } /* namespace geosx */
 

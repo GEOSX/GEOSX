@@ -1,0 +1,242 @@
+<?xml version="1.0" ?>
+
+<Problem>
+  <Solvers
+    gravityVector="{0.0, 0.0, -9.81}">
+    <CompositionalMultiphhaseFVM
+      name="SinglePhaseFlow"
+      logLevel="1"
+      discretization="singlePhaseTPFA"
+      targetRegions="{ Reservoir, Fault }"
+      fluidNames="{ fluid }"
+      relPermNames="{ relperm }"      
+      permeabilityNames="{ rock_permeability, fault_permeability }"
+      solidNames ="{ rock, faultFilling }">
+      <NonlinearSolverParameters
+        newtonTol="1.0e-5"
+        newtonMaxIter="8"
+        allowNonConverged="0"/>
+      <LinearSolverParameters
+        solverType="direct"
+        directParallel="0"
+        logLevel="0"/>
+    </CompositionalMultiphhaseFVM>
+
+    <SurfaceGenerator
+      name="SurfaceGen"
+      logLevel="0"
+      solidMaterialNames="{ rock }"
+      faultRegion="Fault"
+      targetRegions="{ Fault }"
+      rockToughness="1e6"
+      mpiCommOrder="1"/>
+  </Solvers>
+
+  <Mesh>
+    <InternalMesh
+      name="mesh1"
+      elementTypes="{ C3D8 }"
+      xCoords="{ 0, 10 }"
+      yCoords="{ 0, 10 }"
+      zCoords="{ 0, 1 }"
+      nx="{ 10 }"
+      ny="{ 10 }"
+      nz="{ 1 }"
+      cellBlockNames="{ cb1 }"/>
+  </Mesh>
+
+  <Geometry>
+    <Box
+      name="fault"
+      xMin="{ 4.99, -0.01, -0.01}"
+      xMax="{ 5.01, 10.01, 1.01}"/>
+
+    <Box
+      name="sourceWell"
+      xMin="{-0.01, -0.01, -0.01}"
+      xMax="{ 1.01, 1.01, 1.01}"/>
+  </Geometry>
+
+  <Events
+    maxTime="50000">
+    <!--SoloEvent
+            name="output0"
+            target="/Outputs/vtkOutput" / -->
+    <SoloEvent
+      name="preFault"
+      target="/Solvers/SurfaceGen"/>
+
+    <!--SoloEvent
+            name="output1"
+            target="/Outputs/vtkOutput" / -->
+    <PeriodicEvent
+      name="solverApplications"
+      forceDt="1e3"
+      target="/Solvers/SinglePhaseFlow"/>
+
+    <PeriodicEvent
+      name="outputs"
+      cycleFrequency="1"
+      targetExactTimestep="1"
+      target="/Outputs/vtkOutput"/>
+
+    <PeriodicEvent
+      name="restarts"
+      timeFrequency="25000"
+      targetExactTimestep="0"
+      target="/Outputs/restartOutput"/>
+  </Events>
+
+  <NumericalMethods>
+    <FiniteVolume>
+      <TwoPointFluxApproximation
+        name="singlePhaseTPFA"
+        fieldName="pressure"
+        coefficientName="permeability"/>
+    </FiniteVolume>
+  </NumericalMethods>
+
+  <ElementRegions>
+     <CellElementRegion
+      name="Reservoir"
+      cellBlocks="{ cb1 }"
+      materialList="{ fluid, rock_permeability, rock }"/>
+
+    <SurfaceElementRegion
+      name="Fault"
+      defaultAperture = "1e-4"
+      materialList="{ fluid, fault_permeability, faultFilling }"/>
+  </ElementRegions>
+
+  <Constitutive>
+    <CO2BrineFluid
+      name="fluid"
+      phaseNames="{ gas, water }"
+      componentNames="{ co2, water }"
+      componentMolarWeight="{ 44e-3, 18e-3 }"
+      phasePVTParaFiles="{ pvt_tables/pvtgas.txt, pvt_tables/pvtliquid.txt }"
+      flashModelParaFile="pvt_tables/co2flash.txt"/>
+
+    <BrooksCoreyRelativePermeability
+      name="relperm"
+      phaseNames="{ gas, water }"
+      phaseMinVolumeFraction="{0.05, 0.30}"
+      phaseRelPermExponent="{2.0, 2.0}"
+      phaseRelPermMaxValue="{1, 1}"/>
+
+    <CompressibleRock
+      name="rock"
+      referencePressure="0.0"
+      defaultReferencePorosity ="0.01"
+      compressibility="1e-9"/>
+      
+    <ConstantPermeability
+      name="rock_permeability"
+      permeabilityComponents="5e-19, 5e-19, 5e-19"/>
+      
+    <CompressibleRock
+      name="faultFilling"
+      referencePressure="0.0"
+      defaultReferencePorosity ="1.00"
+      compressibility="0.0"/>
+      
+    <ParallelPlatesPermeability
+      name="fault_permeability"/>  
+      
+     
+  </Constitutive>
+
+  <FieldSpecifications>
+  <!-- Reservoir initial conditions -->
+    <FieldSpecification
+      name="initialPressure"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir/cb1"
+      fieldName="pressure"
+      scale="0.0"/>
+      
+    <FieldSpecification
+      name="initialPressureReservoir"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="pressure"
+      scale="2e7"/>
+    <FieldSpecification
+      name="initialCompositionReservoir_co2"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="globalCompFraction"
+      component="0"
+      scale="0.0001"/>
+    <FieldSpecification
+      name="initialCompositionReservoir_water"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Reservoir"
+      fieldName="globalCompFraction"
+      component="1"
+      scale="0.9999"/>
+      
+  <!-- Fault initial conditions -->
+    <FieldSpecification
+      name="frac"
+      initialCondition="1"
+      setNames="{ fault }"
+      objectPath="faceManager"
+      fieldName="ruptureState"
+      scale="1"/>
+    <FieldSpecification
+      name="initialPressureFault"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Fault"
+      fieldName="pressure"
+      scale="2e7"/>
+    <FieldSpecification
+      name="initialCompositionFault_co2"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Fault"
+      fieldName="globalCompFraction"
+      component="0"
+      scale="0.0001"/>
+    <FieldSpecification
+      name="initialCompositionFault_water"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Fault"
+      fieldName="globalCompFraction"
+      component="1"
+      scale="0.9999"/>
+     
+   <!-- Injection well -->  
+    <SourceFlux
+      name="sourceTerm"
+      objectPath="ElementRegions/Reservoir"
+      scale="-30.0"
+      component="0"
+      functionName="sourceWellFunction"
+      setNames="{ sourceWell }"/>
+      
+  </FieldSpecifications>
+
+  <Functions>
+   <TableFunction
+      name="sourceWellFunction"
+      inputVarNames="{time}"
+      coordinates="{0, 3.1536e8 }"
+      values="{1, 1}" />  
+  </Functions>
+
+  <Outputs>
+    <VTK
+      name="vtkOutput"
+      plotFileRoot="faultMatrixFlow"
+      plotLevel="1"/>
+    <Restart
+      name="restartOutput"/>
+  </Outputs>
+</Problem>

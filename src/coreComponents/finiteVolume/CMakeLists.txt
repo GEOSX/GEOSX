@@ -5,7 +5,9 @@ set( finiteVolume_headers
      BoundaryStencil.hpp
      CellElementStencilMPFA.hpp
      CellElementStencilTPFA.hpp
-     FaceElementStencil.hpp
+     SurfaceElementStencil.hpp
+     EmbeddedSurfaceToCellStencil.hpp
+     FaceElementToCellStencil.hpp
      FiniteVolumeManager.hpp
      FluxApproximationBase.hpp
      TwoPointFluxApproximation.hpp
@@ -27,7 +29,9 @@ set( finiteVolume_sources
      BoundaryStencil.cpp
      CellElementStencilMPFA.cpp
      CellElementStencilTPFA.cpp
-     FaceElementStencil.cpp
+     SurfaceElementStencil.cpp
+     FaceElementToCellStencil.cpp
+     EmbeddedSurfaceToCellStencil.cpp
      FiniteVolumeManager.cpp
      FluxApproximationBase.cpp
      TwoPointFluxApproximation.cpp

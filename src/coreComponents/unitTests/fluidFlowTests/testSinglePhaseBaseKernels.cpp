@@ -57,7 +57,6 @@ TEST( SinglePhaseBaseKernels, mobility )
  * @brief Test the assembly of accumulation contribution
  *
  * @note This only tests uncoupled version.
- * In future, porosity update will be elsewhere and this will be simplified.
  */
 TEST( SinglePhaseBaseKernels, accumulation )
 {
@@ -66,11 +65,9 @@ TEST( SinglePhaseBaseKernels, accumulation )
   real64 const densOld[NTEST]       = { 700.0, 1200.0, 1500.0 };
   real64 const densNew[NTEST]       = { 800.0, 1000.0, 1500.0 };
   real64 const dDens_dPres[NTEST]   = { 1e-5, 1e-10, 0.0   };
-  real64 const dVol[NTEST]          = { 1e-2, 2e-2, 1e-1   };
   real64 const poroOld[NTEST]       = { 6e-2, 1e-1, 2e-1   };
-  real64 const poroRef[NTEST]       = { 5e-2, 2e-1, 3e-1   };
-  real64 const pvMult[NTEST]        = { 1.20, 1.10, 1.05   };
-  real64 const dPvMult_dPres[NTEST] = { 1e-5, 1e-7, 0.0    };
+  real64 const poroNew[NTEST]       = { 7e-2, 2e-1, 3e-1   };
+  real64 const dPoro_dPres[NTEST]   = { 0.0, 1e-1, 2e-1   };
   real64 const volume               = 1.0;
 
 
@@ -80,19 +77,20 @@ TEST( SinglePhaseBaseKernels, accumulation )
 
     real64 accum;
     real64 accumJacobian;
-    real64 poroNew;
 
-    AccumulationKernel< CellElementSubRegion >::compute< false >( 0.0, densNew[i], densOld[i], dDens_dPres[i], volume, dVol[i],
-                                                                  poroRef[i], poroOld[i], pvMult[i], dPvMult_dPres[i],
-                                                                  0.0, 0.0, 0.0, 0.0, poroNew, accum, accumJacobian );
+    real64 const poreVolumeNew = volume * poroNew[i];
+    real64 const poreVolumeOld = volume * poroOld[i];
+    real64 const dPoreVol_dPres = dPoro_dPres[i] * volume;
+
+
+    AccumulationKernel::compute( densNew[i], densOld[i], dDens_dPres[i],
+                                 poreVolumeNew, poreVolumeOld, dPoreVol_dPres,
+                                 accum, accumJacobian );
 
     // compute etalon
-    real64 const poroNew_et = poroRef[i] * pvMult[i];
-    real64 const accum_et = poroNew_et * densNew[i] * (volume + dVol[i]) - poroOld[i] * densOld[i] * volume;
-    real64 const accumJacobian_et = dPvMult_dPres[i] * poroRef[i] * densNew[i] * (volume + dVol[i])
-                                    + poroNew_et * dDens_dPres[i] * (volume + dVol[i]);
+    real64 const accum_et = poroNew[i] * densNew[i] * volume - poroOld[i] * densOld[i] * volume;
+    real64 const accumJacobian_et = dPoreVol_dPres * densNew[i] + dDens_dPres[i] * poreVolumeNew;
 
-    EXPECT_DOUBLE_EQ( poroNew, poroNew_et );
     EXPECT_DOUBLE_EQ( accum, accum_et );
     EXPECT_DOUBLE_EQ( accumJacobian, accumJacobian_et );
   }

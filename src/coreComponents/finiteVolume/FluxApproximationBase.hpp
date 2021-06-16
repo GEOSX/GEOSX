@@ -23,7 +23,10 @@
 #include "dataRepository/Group.hpp"
 #include "finiteVolume/FluxStencil.hpp"
 #include "CellElementStencilTPFA.hpp"
-#include "FaceElementStencil.hpp"
+#include "SurfaceElementStencil.hpp"
+#include "FaceElementToCellStencil.hpp"
+#include "EmbeddedSurfaceToCellStencil.hpp"
+#include "SurfaceElementStencil.hpp"
 #include "mesh/DomainPartition.hpp"
 
 namespace geosx
@@ -149,6 +152,26 @@ public:
   void forStencils( MeshLevel const & mesh, LAMBDA && lambda ) const;
 
   /**
+   * @brief Call a user-provided function for each stencil.
+   * @tparam LAMBDA The type of lambda function passed into the parameter list.
+   * @param[in] mesh the mesh level containing the stencils
+   * @param[in] lambda The LAMBDA function
+   */
+  template< typename LAMBDA >
+  void forAllStencils( MeshLevel & mesh, LAMBDA && lambda );
+
+  /**
+   * @brief Call a user-provided function for the each stencil according to the provided TYPE.
+   * @tparam TYPE The type to be passed to forWrappers
+   * @tparam TYPES Other types to be passed to forWrappers
+   * @tparam LAMBDA The type of lambda function passed into the parameter list.
+   * @param[in] mesh the mesh level containing the stencils
+   * @param[in] lambda The LAMBDA function
+   */
+  template< typename TYPE, typename ... TYPES, typename LAMBDA >
+  void forStencils( MeshLevel & mesh, LAMBDA && lambda );
+
+  /**
    * @brief Add a new fracture stencil.
    * @param[in,out] mesh the mesh on which to add the fracture stencil
    * @param[in] faceElementRegionName the face element region name
@@ -179,6 +202,9 @@ public:
 
     /// @return The key for targetRegions
     static constexpr char const * targetRegionsString() { return "targetRegions"; }
+
+    /// @return The key for coefficientModelNames
+    static constexpr char const * coefficientModelNamesString() { return "coefficientModelNames"; }
 
     /// @return The key for areaRelTol
     static constexpr char const * areaRelativeToleranceString() { return "areaRelTol"; }
@@ -267,6 +293,9 @@ protected:
   /// names of target regions to build the stencil for
   string_array m_targetRegions;
 
+  /// names of target regions to build the stencil for
+  string_array m_coefficientModelNames;
+
   /// relative tolerance
   real64 m_areaRelTol;
 
@@ -292,8 +321,11 @@ TYPE & FluxApproximationBase::getStencil( MeshLevel & mesh, string const & name 
 template< typename LAMBDA >
 void FluxApproximationBase::forAllStencils( MeshLevel const & mesh, LAMBDA && lambda ) const
 {
-  //TODO remove dependence on CellElementStencilTPFA and FaceElementStencil
-  forStencils< CellElementStencilTPFA, FaceElementStencil >( mesh, std::forward< LAMBDA >( lambda ) );
+  //TODO remove dependence on CellElementStencilTPFA and SurfaceElementStencil
+  forStencils< CellElementStencilTPFA,
+               SurfaceElementStencil,
+               EmbeddedSurfaceToCellStencil,
+               FaceElementToCellStencil >( mesh, std::forward< LAMBDA >( lambda ) );
 }
 
 template< typename TYPE, typename ... TYPES, typename LAMBDA >
@@ -301,6 +333,26 @@ void FluxApproximationBase::forStencils( MeshLevel const & mesh, LAMBDA && lambd
 {
   Group const & stencilGroup = mesh.getGroup( groupKeyStruct::stencilMeshGroupString() ).getGroup( getName() );
   stencilGroup.forWrappers< TYPE, TYPES... >( [&] ( auto const & wrapper )
+  {
+    lambda( wrapper.reference() );
+  } );
+}
+
+template< typename LAMBDA >
+void FluxApproximationBase::forAllStencils( MeshLevel & mesh, LAMBDA && lambda )
+{
+  //TODO remove dependence on CellElementStencilTPFA and SurfaceElementStencil
+  forStencils< CellElementStencilTPFA,
+               SurfaceElementStencil,
+               EmbeddedSurfaceToCellStencil,
+               FaceElementToCellStencil >( mesh, std::forward< LAMBDA >( lambda ) );
+}
+
+template< typename TYPE, typename ... TYPES, typename LAMBDA >
+void FluxApproximationBase::forStencils( MeshLevel & mesh, LAMBDA && lambda )
+{
+  Group & stencilGroup = mesh.getGroup( groupKeyStruct::stencilMeshGroupString() ).getGroup( getName() );
+  stencilGroup.forWrappers< TYPE, TYPES... >( [&] ( auto & wrapper )
   {
     lambda( wrapper.reference() );
   } );

@@ -21,6 +21,7 @@
 
 #include "common/DataTypes.hpp"
 #include "constitutive/fluid/SingleFluidBase.hpp"
+#include "constitutive/permeability/PermeabilityBase.hpp"
 #include "finiteVolume/mimeticInnerProducts/MimeticInnerProductBase.hpp"
 #include "finiteVolume/mimeticInnerProducts/TPFAInnerProduct.hpp"
 #include "finiteVolume/mimeticInnerProducts/QuasiTPFAInnerProduct.hpp"
@@ -522,6 +523,7 @@ struct FluxKernel
           localIndex esr,
           CellElementSubRegion const & subRegion,
           constitutive::SingleFluidBase const & fluid,
+          constitutive::PermeabilityBase const & permeabilityModel,
           SortedArrayView< localIndex const > const & regionFilter,
           arrayView2d< real64 const, nodes::REFERENCE_POSITION_USD > const & nodePosition,
           arrayView2d< localIndex const > const & elemRegionList,
@@ -560,8 +562,10 @@ struct FluxKernel
       subRegion.getReference< array2d< real64 > >( CellBlock::viewKeyStruct::elementCenterString() );
     arrayView1d< real64 const > const elemVolume =
       subRegion.getReference< array1d< real64 > >( CellBlock::viewKeyStruct::elementVolumeString() );
-    arrayView2d< real64 const > const elemPerm =
-      subRegion.getReference< array2d< real64 > >( SinglePhaseBase::viewKeyStruct::permeabilityString() );
+
+    arrayView3d< real64 const > const elemPerm = permeabilityModel.permeability();
+    // TODO add this dependency to the compute function
+    //arrayView3d< real64 const > const elemdPermdPres = permeabilityModel.dPerm_dPressure();
 
     // get the cell-centered depth
     arrayView1d< real64 const > const elemGravCoef =
@@ -580,7 +584,7 @@ struct FluxKernel
       // transmissibility matrix
       stackArray2d< real64, NF *NF > transMatrix( NF, NF );
 
-      real64 const perm[ 3 ] = { elemPerm[ei][0], elemPerm[ei][1], elemPerm[ei][2] };
+      real64 const perm[ 3 ] = { elemPerm[ei][0][0], elemPerm[ei][0][1], elemPerm[ei][0][2] };
 
       // recompute the local transmissibility matrix at each iteration
       // we can decide later to precompute transMatrix if needed

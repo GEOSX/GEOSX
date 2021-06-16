@@ -56,9 +56,22 @@ public:
                                      arrayView1d< real64 const > const & c33,
                                      arrayView1d< real64 const > const & c44,
                                      arrayView1d< real64 const > const & c66,
+                                     arrayView2d< real64 > const & newPorosity,
+                                     arrayView2d< real64 > const & oldPorosity,
+                                     arrayView2d< real64 > const & dPorosity_dPressure,
+                                     arrayView1d< real64 > const & referencePorosity,
+                                     real64 const & grainBulkModulus,
+                                     arrayView2d< real64 > const & grainDensity,
                                      arrayView3d< real64, solid::STRESS_USD > const & newStress,
                                      arrayView3d< real64, solid::STRESS_USD > const & oldStress ):
-    SolidBaseUpdates( newStress, oldStress ),
+    SolidBaseUpdates( newPorosity,
+                      oldPorosity,
+                      dPorosity_dPressure,
+                      referencePorosity,
+                      grainBulkModulus,
+                      grainDensity,
+                      newStress,
+                      oldStress ),
     m_c11( c11 ),
     m_c13( c13 ),
     m_c33( c33 ),
@@ -131,6 +144,18 @@ public:
                                   real64 ( &stress )[6],
                                   DiscretizationOps & stiffness ) const final;
 
+  GEOSX_HOST_DEVICE
+  virtual void smallStrainUpdate_porosity( localIndex const k,
+                                           localIndex const q,
+                                           real64 const & pressure,
+                                           real64 const & deltaPressure,
+                                           real64 const ( &strainIncrement )[6],
+                                           real64 & porosity,
+                                           real64 & dPorosity_dPressure,
+                                           real64 & dPorosity_dVolStrainIncrement,
+                                           real64 ( &stress )[6],
+                                           real64 & dTotalStress_dPressure,
+                                           DiscretizationOps & stiffness ) const final;
   // hypo interface
 
   GEOSX_HOST_DEVICE
@@ -279,6 +304,32 @@ void ElasticTransverseIsotropicUpdates::smallStrainUpdate( localIndex const k,
   stiffness.m_c33 = m_c33[k];
   stiffness.m_c44 = m_c44[k];
   stiffness.m_c66 = m_c66[k];
+}
+
+
+GEOSX_HOST_DEVICE
+GEOSX_FORCE_INLINE
+void ElasticTransverseIsotropicUpdates::smallStrainUpdate_porosity( localIndex const k,
+                                                                    localIndex const q,
+                                                                    real64 const & pressure,
+                                                                    real64 const & deltaPressure,
+                                                                    real64 const ( &strainIncrement )[6],
+                                                                    real64 & porosity,
+                                                                    real64 & dPorosity_dPressure,
+                                                                    real64 & dPorosity_dVolStrainIncrement,
+                                                                    real64 ( & stress )[6],
+                                                                    real64 & dTotalStress_dPressure,
+                                                                    DiscretizationOps & stiffness ) const
+{
+  smallStrainUpdate( k, q, strainIncrement, stress, stiffness );
+
+  //TODO need something better here to avoid copying this everywhere.
+  GEOSX_UNUSED_VAR( pressure );
+  GEOSX_UNUSED_VAR( deltaPressure );
+  GEOSX_UNUSED_VAR( porosity );
+  GEOSX_UNUSED_VAR( dPorosity_dPressure );
+  GEOSX_UNUSED_VAR( dPorosity_dVolStrainIncrement );
+  GEOSX_UNUSED_VAR( dTotalStress_dPressure );
 }
 
 
@@ -545,6 +596,12 @@ public:
                                               m_c33,
                                               m_c44,
                                               m_c66,
+                                              m_newPorosity,
+                                              m_oldPorosity,
+                                              m_dPorosity_dPressure,
+                                              m_referencePorosity,
+                                              m_grainBulkModulus,
+                                              m_grainDensity,
                                               m_newStress,
                                               m_oldStress );
   }
@@ -566,6 +623,12 @@ public:
                           m_c33,
                           m_c44,
                           m_c66,
+                          m_newPorosity,
+                          m_oldPorosity,
+                          m_dPorosity_dPressure,
+                          m_referencePorosity,
+                          m_grainBulkModulus,
+                          m_grainDensity,
                           m_newStress,
                           m_oldStress );
   }

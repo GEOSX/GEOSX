@@ -21,9 +21,78 @@
 
 #include "common/DataTypes.hpp"
 #include "codingUtilities/Utilities.hpp"
+#include "mesh/ElementRegionManager.hpp"
 
 namespace geosx
 {
+
+template< typename LEAFCLASSTRAITS >
+class StencilWrapperBase
+{
+public:
+  StencilWrapperBase( typename LEAFCLASSTRAITS::IndexContainerType & elementRegionIndices,
+                      typename LEAFCLASSTRAITS::IndexContainerType & elementSubRegionIndices,
+                      typename LEAFCLASSTRAITS::IndexContainerType & elementIndices,
+                      typename LEAFCLASSTRAITS::WeightContainerType & weights ):
+    m_elementRegionIndices( elementRegionIndices.toViewConst() ),
+    m_elementSubRegionIndices( elementSubRegionIndices.toViewConst() ),
+    m_elementIndices( elementIndices.toViewConst() ),
+    m_weights( weights.toViewConst() )
+  {};
+
+  /// Default copy constructor
+  StencilWrapperBase( StencilWrapperBase const & ) = default;
+
+  /// Default move constructor
+  StencilWrapperBase( StencilWrapperBase && ) = default;
+
+  /// Deleted copy assignment operator
+  StencilWrapperBase & operator=( StencilWrapperBase const & ) = delete;
+
+  /// Deleted move assignment operator
+  StencilWrapperBase & operator=( StencilWrapperBase && ) = delete;
+
+  /**
+   * @brief Const access to the element regions indices.
+   * @return A view to const
+   */
+  typename LEAFCLASSTRAITS::IndexContainerViewConstType getElementRegionIndices() const { return m_elementRegionIndices; }
+
+  /**
+   * @brief Const access to the element subregions indices.
+   * @return A view to const
+   */
+  typename LEAFCLASSTRAITS::IndexContainerViewConstType getElementSubRegionIndices() const { return m_elementSubRegionIndices; }
+
+  /**
+   * @brief Const access to the element indices.
+   * @return A view to const
+   */
+  typename LEAFCLASSTRAITS::IndexContainerViewConstType getElementIndices() const { return m_elementIndices; }
+
+  /**
+   * @brief Const access to the stencil weights.
+   * @return A view to const
+   */
+  typename LEAFCLASSTRAITS::WeightContainerViewConstType getWeights() const { return m_weights; }
+
+  /**
+   * @brief Give the number of stencil entries.
+   * @return The number of stencil entries
+   */
+  virtual localIndex size() const = 0;
+
+protected:
+  typename LEAFCLASSTRAITS::IndexContainerViewConstType m_elementRegionIndices;
+
+  typename LEAFCLASSTRAITS::IndexContainerViewConstType m_elementSubRegionIndices;
+
+  typename LEAFCLASSTRAITS::IndexContainerViewConstType m_elementIndices;
+
+  typename LEAFCLASSTRAITS::WeightContainerViewConstType m_weights;
+
+};
+
 
 /**
  * @class StencilBase
@@ -195,7 +264,6 @@ void StencilBase< LEAFCLASSTRAITS, LEAFCLASS >::move( LvArray::MemorySpace const
   m_elementIndices.move( space, true );
   m_weights.move( space, true );
 }
-
 
 } /* namespace geosx */
 

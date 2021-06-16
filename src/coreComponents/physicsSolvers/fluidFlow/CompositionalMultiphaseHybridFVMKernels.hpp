@@ -23,6 +23,7 @@
 #include "linearAlgebra/interfaces/InterfaceTypes.hpp"
 #include "mesh/MeshLevel.hpp"
 #include "physicsSolvers/fluidFlow/CompositionalMultiphaseBase.hpp"
+#include "constitutive/permeability/PermeabilityBase.hpp"
 
 namespace geosx
 {
@@ -624,6 +625,7 @@ struct FluxKernel
   static void
   launch( localIndex er, localIndex esr,
           CellElementSubRegion const & subRegion,
+          constitutive::PermeabilityBase const & permeabilityModel,
           SortedArrayView< localIndex const > const & regionFilter,
           arrayView2d< real64 const, nodes::REFERENCE_POSITION_USD > const & nodePosition,
           arrayView2d< localIndex const > const & elemRegionList,
@@ -828,7 +830,7 @@ struct PrecomputeKernel
           ArrayOfArraysView< localIndex const > const & faceToNodes,
           arrayView2d< real64 const > const & elemCenter,
           arrayView1d< real64 const > const & elemVolume,
-          arrayView2d< real64 const > const & elemPerm,
+          arrayView3d< real64 const > const & elemPerm,
           arrayView1d< real64 const > const & elemGravCoef,
           arrayView2d< localIndex const > const & elemToFaces,
           arrayView1d< real64 const > const & transMultiplier,
@@ -841,7 +843,7 @@ struct PrecomputeKernel
     {
       stackArray2d< real64, NF *NF > transMatrix( NF, NF );
 
-      real64 const perm[ 3 ] = { elemPerm[ei][0], elemPerm[ei][1], elemPerm[ei][2] };
+      real64 const perm[ 3 ] = { elemPerm[ei][0][0], elemPerm[ei][0][1], elemPerm[ei][0][2] };
 
       IP_TYPE::template compute< NF >( nodePosition,
                                        transMultiplier,

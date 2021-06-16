@@ -80,6 +80,7 @@ public:
 
   using UPDATE_BASE::smallStrainNoStateUpdate;
   using UPDATE_BASE::smallStrainUpdate;
+  using UPDATE_BASE::smallStrainUpdate_porosity;
   using UPDATE_BASE::smallStrainNoStateUpdate_StressOnly;
   using UPDATE_BASE::smallStrainUpdate_StressOnly;
   using UPDATE_BASE::hypoUpdate;
@@ -128,6 +129,29 @@ public:
     LvArray::tensorOps::scale< 6 >( stress, factor );
     stiffness.scaleParams( factor );
   }
+
+//  GEOSX_HOST_DEVICE
+//  virtual void smallStrainUpdate_porosity( localIndex const k,
+//                                           localIndex const q,
+//                                           real64 const & pressure,
+//                                           real64 const & deltaPressure,
+//                                           real64 const ( &strainIncrement )[6],
+//                                           real64 & porosity,
+//                                           real64 & dPorosity_dPressure,
+//                                           real64 & dPorosity_dVolStrainIncrement,
+//                                           real64 ( & stress )[6],
+//
+//                                           DiscretizationOps & stiffness ) const override
+//  {
+//    // TODO: fill this function properly.
+//    GEOSX_UNUSED_VAR( pressure );
+//    GEOSX_UNUSED_VAR( deltaPressure );
+//    GEOSX_UNUSED_VAR( porosity );
+//    GEOSX_UNUSED_VAR( dPorosity_dPressure );
+//    GEOSX_UNUSED_VAR( dPorosity_dVolStrainIncrement );
+//    smallStrainUpdate( k, q, strainIncrement, stress, stiffness );
+//  }
+
 
 
   // TODO: The code below assumes the strain energy density will never be

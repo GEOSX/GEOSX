@@ -275,7 +275,7 @@ void SinglePhaseWell::updateFluidModel( WellElementSubRegion & subRegion, localI
   } );
 }
 
-void SinglePhaseWell::updateState( WellElementSubRegion & subRegion, localIndex const targetIndex )
+void SinglePhaseWell::updateSubRegionState( WellElementSubRegion & subRegion, localIndex const targetIndex )
 {
   // update volumetric rates for the well constraints
   // Warning! This must be called before updating the fluid model
@@ -340,7 +340,7 @@ void SinglePhaseWell::initializeWells( DomainPartition & domain )
     // 4) Recompute the pressure-dependent properties
     // Note: I am leaving that here because I would like to use the perforationRates (computed in UpdateState)
     //       to better initialize the rates
-    updateState( subRegion, targetIndex );
+    updateSubRegionState( subRegion, targetIndex );
 
     SingleFluidBase const & fluid = getConstitutiveModel< SingleFluidBase >( subRegion, m_fluidModelNames[targetIndex] );
     arrayView2d< real64 const > const & wellElemDens = fluid.density();
@@ -664,7 +664,7 @@ SinglePhaseWell::applySystemSolution( DofManager const & dofManager,
                                                        true );
 
   // update properties
-  updateStateAll( domain );
+  updateState( domain );
 }
 
 void SinglePhaseWell::resetStateToBeginningOfStep( DomainPartition & domain )
@@ -689,7 +689,7 @@ void SinglePhaseWell::resetStateToBeginningOfStep( DomainPartition & domain )
   } );
 
   // call constitutive models
-  updateStateAll( domain );
+  updateState( domain );
 }
 
 

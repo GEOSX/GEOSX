@@ -52,12 +52,12 @@ void SinglePhaseReservoir::setupSystem( DomainPartition & domain,
                                     localSolution,
                                     setSparsity );
 
-  // we need to set the dR_dAper CRS matrix in SinglePhaseFVM to handle the presence of fractures
-  if( dynamicCast< SinglePhaseFVM< SinglePhaseBase > * >( m_flowSolver ) )
-  {
-    SinglePhaseFVM< SinglePhaseBase > * fvmSolver = dynamicCast< SinglePhaseFVM< SinglePhaseBase > * >( m_flowSolver );
-    fvmSolver->setUpDflux_dApertureMatrix( domain, dofManager, localMatrix );
-  }
+//  // we need to set the dR_dAper CRS matrix in SinglePhaseFVM to handle the presence of fractures
+//  if( dynamicCast< SinglePhaseFVM< SinglePhaseBase > * >( m_flowSolver ) )
+//  {
+//    SinglePhaseFVM< SinglePhaseBase > * fvmSolver = dynamicCast< SinglePhaseFVM< SinglePhaseBase > * >( m_flowSolver );
+//    fvmSolver->setUpDflux_dApertureMatrix( domain, dofManager, localMatrix );
+//  }
 }
 
 

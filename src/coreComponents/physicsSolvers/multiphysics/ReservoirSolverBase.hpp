@@ -135,6 +135,8 @@ public:
                        real64 const scalingFactor,
                        DomainPartition & domain ) override;
 
+  virtual void updateState( DomainPartition & domain ) override;
+
   virtual void
   resetStateToBeginningOfStep( DomainPartition & domain ) override;
 

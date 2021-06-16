@@ -9,6 +9,7 @@
       discretization="singlePhaseTPFA"
       fluidNames="{ water }"
       solidNames="{ rock }"
+      permeabilityNames="{ rockPermeability }"
       targetRegions="{ Channel }">
       <NonlinearSolverParameters
         newtonTol="1.0e-6"
@@ -69,7 +70,7 @@
     <CellElementRegion
       name="Channel"
       cellBlocks="{ b08, b00, b01, b05, b06, b14, b15, b11 }"
-      materialList="{ water, rock }"/>
+      materialList="{ water, rock, rockPermeability }"/>
 
     <CellElementRegion
       name="Barrier"
@@ -83,7 +84,8 @@
         name="singlePhaseTPFA"
         fieldName="pressure"
         targetRegions="{ Channel }"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{rockPermeability}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -98,20 +100,25 @@
       referenceViscosity="0.001"
       viscosibility="0.0"/>
 
-    <PoreVolumeCompressibleSolid
+    <CompressibleRock
       name="rock"
       referencePressure="0.0"
+      defaultReferencePorosity="0.5"
       compressibility="1e-9"/>
+    
+    <ConstantPermeability
+      name="rockPermeability"
+      permeabilityComponents="5e-16, 5e-16, 5e-16"/>    
   </Constitutive>
 
-  <FieldSpecifications>
+  <FieldSpecifications>  
     <FieldSpecification
       name="permx_channel"
       component="0"
       initialCondition="1"
       setNames="{ all }"
       objectPath="ElementRegions/Channel"
-      fieldName="permeability"
+      fieldName="rockPermeability_permeability"
       scale="2.0e-16"/>
 
     <FieldSpecification
@@ -120,7 +127,7 @@
       initialCondition="1"
       setNames="{ all }"
       objectPath="ElementRegions/Channel"
-      fieldName="permeability"
+      fieldName="rockPermeability_permeability"
       scale="2.0e-16"/>
 
     <FieldSpecification
@@ -129,7 +136,7 @@
       initialCondition="1"
       setNames="{ all }"
       objectPath="ElementRegions/Channel"
-      fieldName="permeability"
+      fieldName="rockPermeability_permeability"
       scale="2.0e-16"/>
 
     <FieldSpecification
@@ -137,9 +144,9 @@
       initialCondition="1"
       setNames="{ all }"
       objectPath="ElementRegions/Channel"
-      fieldName="referencePorosity"
+      fieldName="rock_referencePorosity"
       scale="0.1"/>
-
+      
     <FieldSpecification
       name="initialPressure_channel"
       initialCondition="1"

@@ -139,6 +139,12 @@ public:
                        real64 const scalingFactor,
                        DomainPartition & domain ) override;
 
+  virtual void updateState( DomainPartition & domain ) override final
+  {
+    // There should be nothing to update
+    GEOSX_UNUSED_VAR( domain );
+  };
+
   virtual void applyBoundaryConditions( real64 const time,
                                         real64 const dt,
                                         DomainPartition & domain,

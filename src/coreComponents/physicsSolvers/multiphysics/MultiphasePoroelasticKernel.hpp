@@ -131,10 +131,9 @@ public:
     m_flowDofNumber( elementSubRegion.template getReference< array1d< globalIndex > >( inputFlowDofKey )),
     m_fluidPressure( elementSubRegion.template getReference< array1d< real64 > >( FlowSolverBase::viewKeyStruct::pressureString() ) ),
     m_deltaFluidPressure( elementSubRegion.template getReference< array1d< real64 > >( FlowSolverBase::viewKeyStruct::deltaPressureString() ) ),
-    m_poroRef( elementSubRegion.template getReference< array1d< real64 > >( FlowSolverBase::viewKeyStruct::referencePorosityString() ) ),
     m_numComponents( numComponents ),
     m_numPhases( numPhases ),
-    m_biotCoefficient( m_constitutiveUpdate.getBiotCoefficient() )
+    m_oldPorosity( inputConstitutiveType.getOldPorosity() )
   {
     if( m_numComponents > numMaxComponentsMultiphasePoroelastic )
     {
@@ -251,34 +250,22 @@ public:
     // Evaluate total stress tensor
     real64 strainIncrement[6] = {0};
     real64 totalStress[6];
+    real64 porosityNew, dPorosity_dPressure, dPorosity_dVolStrainIncrement, dTotalStress_dPressure;
 
     // --- Update effective stress tensor (stored in totalStress)
     typename CONSTITUTIVE_TYPE::KernelWrapper::DiscretizationOps stiffness;
     FE_TYPE::symmetricGradient( dNdX, stack.uhat_local, strainIncrement );
-    m_constitutiveUpdate.smallStrainUpdate( k, q, strainIncrement, totalStress, stiffness );
+    m_constitutiveUpdate.smallStrainUpdate_porosity( k, q,
+                                                     m_fluidPressure[k],
+                                                     m_deltaFluidPressure[k],
+                                                     strainIncrement,
+                                                     porosityNew,
+                                                     dPorosity_dPressure,
+                                                     dPorosity_dVolStrainIncrement,
+                                                     totalStress,
+                                                     dTotalStress_dPressure,
+                                                     stiffness );
 
-    // --- Subtract pressure term
-    real64 const biotTimesPressure = m_biotCoefficient * ( m_fluidPressure[k] + m_deltaFluidPressure[k] );
-    totalStress[0] -= biotTimesPressure;
-    totalStress[1] -= biotTimesPressure;
-    totalStress[2] -= biotTimesPressure;
-
-    // Evaluate fluid phase mass content
-    // --- TODO: temporary solution -----------------------------------------------------------------------------------//
-    //           see SinglePhasePoromechanicsKernel                                                                    //
-    real64 const biotSkeletonModulusInverse = 0.0; //TODO: 1/N = 0 correct only for biotCoefficient = 1                //
-    real64 const volumetricStrainNew = FE_TYPE::symmetricGradientTrace( dNdX, stack.u_local );                         //
-    real64 const volumetricStrainOld = volumetricStrainNew - FE_TYPE::symmetricGradientTrace( dNdX, stack.uhat_local );//
-    real64 const porosityOld = m_poroRef( k ) + m_biotCoefficient * volumetricStrainOld;// +  DeltaPoro                //
-    real64 const dPorosity_dPressure = biotSkeletonModulusInverse;                                                     //
-    real64 const dPorosity_dVolStrainIncrement =  m_biotCoefficient;                                                   //
-    GEOSX_ERROR_IF_GT_MSG( fabs( m_biotCoefficient - 1.0 ),                                                            //
-                           1e-10,                                                                                      //
-                           "Correct only for Biot's coefficient equal to 1" );                                         //
-    // --------------------------------------------------------------------------------------------------------------- //
-    real64 const porosityNew = porosityOld
-                               + m_biotCoefficient * (strainIncrement[0] + strainIncrement[1] + strainIncrement[2] )
-                               + biotSkeletonModulusInverse * m_deltaFluidPressure[k];
 
     // Evaluate body force vector
     real64 bodyForce[3] = { m_gravityVector[0],
@@ -318,9 +305,9 @@ public:
 
     for( integer a = 0; a < numNodesPerElem; ++a )
     {
-      stack.localDispFlowJacobian[a*3+0][0] += dNdX[a][0] * m_biotCoefficient * detJxW;
-      stack.localDispFlowJacobian[a*3+1][0] += dNdX[a][1] * m_biotCoefficient * detJxW;
-      stack.localDispFlowJacobian[a*3+2][0] += dNdX[a][2] * m_biotCoefficient * detJxW;
+      stack.localDispFlowJacobian[a*3+0][0] += dNdX[a][0] * dTotalStress_dPressure * detJxW;
+      stack.localDispFlowJacobian[a*3+1][0] += dNdX[a][1] * dTotalStress_dPressure * detJxW;
+      stack.localDispFlowJacobian[a*3+2][0] += dNdX[a][2] * dTotalStress_dPressure * detJxW;
     }
 
     if( m_gravityAcceleration > 0.0 )
@@ -341,7 +328,7 @@ public:
     for( localIndex ip = 0; ip < NP; ++ip )
     {
       real64 const phaseAmountNew = porosityNew * m_fluidPhaseSaturation( k, ip ) * m_fluidPhaseDensity( k, q, ip );
-      real64 const phaseAmountOld = porosityOld * m_fluidPhaseSaturationOld( k, ip ) * m_fluidPhaseDensityOld( k, ip );
+      real64 const phaseAmountOld = m_oldPorosity[k][q] * m_fluidPhaseSaturationOld( k, ip ) * m_fluidPhaseDensityOld( k, ip );
 
       real64 const dPhaseAmount_dP = dPorosity_dPressure * m_fluidPhaseSaturation( k, ip ) * m_fluidPhaseDensity( k, q, ip )
                                      + porosityNew * (m_dFluidPhaseSaturation_dPressure( k, ip ) * m_fluidPhaseDensity( k, q, ip )
@@ -513,8 +500,6 @@ protected:
   /// The rank-global delta-fluid pressure array.
   arrayView1d< real64 const > const m_deltaFluidPressure;
 
-  /// The rank-global reference porosity array
-  arrayView1d< real64 const > const m_poroRef;
 
   /// Number of components
   localIndex const m_numComponents;
@@ -522,8 +507,9 @@ protected:
   /// Number of phases
   localIndex const m_numPhases;
 
-  /// Biot's coefficient
-  real64 const m_biotCoefficient;
+  /// The rank-global old porosity
+  arrayView2d< real64 const > const m_oldPorosity;
+
 };
 
 using MultiphaseKernelFactory = finiteElement::KernelFactory< Multiphase,

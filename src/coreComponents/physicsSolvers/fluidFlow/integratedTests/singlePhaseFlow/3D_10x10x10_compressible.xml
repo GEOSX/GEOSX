@@ -11,6 +11,7 @@
       logLevel="1"
       discretization="singlePhaseTPFA"
       fluidNames="{ water }"
+      permeabilityNames="{ rock_permeability }"
       solidNames="{ rock }"
       targetRegions="{ mainRegion }">
       <NonlinearSolverParameters
@@ -89,7 +90,7 @@
     <CellElementRegion
       name="mainRegion"
       cellBlocks="{ cb1 }"
-      materialList="{ water, rock }"/>
+      materialList="{ water, rock, rock_permeability }"/>
   </ElementRegions>
 
   <!-- SPHINX_TUT_INT_HEX_ELEM_REGIONS_END -->
@@ -105,50 +106,20 @@
       referenceViscosity="0.001"
       viscosibility="0.0"/>
 
-    <PoreVolumeCompressibleSolid
+    <CompressibleRock	
       name="rock"
       referencePressure="0.0"
-      compressibility="1e-9"/>
+      defaultReferencePorosity ="0.05"
+      compressibility="1.0e-9"/>
+      
+    <ConstantPermeability
+      name="rock_permeability"
+      permeabilityComponents="1.0e-12, 1.0e-12, 1.0e-15"/>
   </Constitutive>
 
   <!-- SPHINX_TUT_INT_HEX_CONSTITUTIVE_END -->
   <!-- SPHINX_TUT_INT_HEX_FIELDS -->
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/mainRegion/elementSubRegions/cb1"
-      fieldName="permeability"
-      scale="1.0e-12"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/mainRegion/elementSubRegions/cb1"
-      fieldName="permeability"
-      scale="1.0e-12"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/mainRegion/elementSubRegions/cb1"
-      fieldName="permeability"
-      scale="1.0e-15"/>
-
-    <FieldSpecification
-      name="referencePorosity"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/mainRegion/elementSubRegions/cb1"
-      fieldName="referencePorosity"
-      scale="0.05"/>
-
     <FieldSpecification
       name="initialPressure"
       initialCondition="1"

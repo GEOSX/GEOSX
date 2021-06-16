@@ -484,8 +484,25 @@ real64 SurfaceGenerator::solverStep( real64 const & time_n,
           fractureRegion.getSubRegion< FaceElementSubRegion >( 0 ).m_newFaceElements.clear();
         }
       }
+
+      // Create set "all" on the faceElementSubregion
+      FaceElementSubRegion & fractureSubRegion  = fractureRegion.getSubRegion< FaceElementSubRegion >( 0 );
+
+      dataRepository::Group & setGroup =
+        fractureSubRegion.getGroup( ObjectManagerBase::groupKeyStruct::setsString() );
+
+      SortedArray< localIndex > & targetSet =
+        setGroup.getWrapper< SortedArray< localIndex > >( "all" ).reference();
+
+      forAll< serialPolicy >( fractureSubRegion.size(), [&] ( localIndex const ei )
+
+      {
+        targetSet.insert( ei );
+      } );
     }
   }
+
+
 
   return rval;
 }
@@ -1618,7 +1635,7 @@ void SurfaceGenerator::performFracture( const localIndex nodeID,
   array1d< integer > const & edgeIsExternal = edgeManager.isExternal();
   array1d< integer > const & nodeIsExternal = nodeManager.isExternal();
 
-  SurfaceElementRegion & fractureElementRegion = elementManager.getRegion< SurfaceElementRegion >( "Fracture" );
+  SurfaceElementRegion & fractureElementRegion = elementManager.getRegion< SurfaceElementRegion >( m_fractureRegionName );
   array1d< integer > const & isFaceSeparable = faceManager.getExtrinsicData< extrinsicMeshData::IsFaceSeparable >();
 
   array2d< real64 > const & faceNormals = faceManager.faceNormal();

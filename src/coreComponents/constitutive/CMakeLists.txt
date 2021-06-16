@@ -42,9 +42,9 @@ set( constitutive_headers
      solid/DruckerPragerExtended.hpp
      solid/ElasticIsotropic.hpp
      solid/ElasticTransverseIsotropic.hpp
-     solid/PoroElastic.hpp
-     solid/PoreVolumeCompressibleSolid.hpp
+     solid/CompressibleRock.hpp
      solid/PropertyConversions.hpp
+     solid/RockBase.hpp
      solid/SolidBase.hpp
      solid/SolidModelDiscretizationOps.hpp
      solid/SolidModelDiscretizationOpsFullyAnisotroipic.hpp
@@ -58,6 +58,13 @@ set( constitutive_headers
      relativePermeability/VanGenuchtenBakerRelativePermeability.hpp
      relativePermeability/TableRelativePermeability.hpp
      relativePermeability/RelativePermeabilityInterpolators.hpp
+     permeability/PermeabilityBase.hpp
+     permeability/ConstantPermeability.hpp
+     permeability/CarmanKozenyPermeability.hpp
+     permeability/ParallelPlatesPermeability.hpp
+     permeability/permeabilitySelector.hpp
+     permeability/StrainDependentPermeability.hpp
+     permeability/PoroMechanicsPermeabilityKernel.hpp
      capillaryPressure/CapillaryPressureBase.hpp
      capillaryPressure/BrooksCoreyCapillaryPressure.hpp
      capillaryPressure/VanGenuchtenCapillaryPressure.hpp
@@ -96,8 +103,8 @@ set( constitutive_sources
      solid/DruckerPragerExtended.cpp
      solid/ElasticIsotropic.cpp
      solid/ElasticTransverseIsotropic.cpp
-     solid/PoroElastic.cpp
-     solid/PoreVolumeCompressibleSolid.cpp
+     solid/CompressibleRock.cpp
+     solid/RockBase.cpp
      solid/SolidBase.cpp
      solid/TriaxialDriver.cpp
      relativePermeability/RelativePermeabilityBase.cpp
@@ -105,6 +112,11 @@ set( constitutive_sources
      relativePermeability/BrooksCoreyBakerRelativePermeability.cpp
      relativePermeability/VanGenuchtenBakerRelativePermeability.cpp
      relativePermeability/TableRelativePermeability.cpp     
+     permeability/PermeabilityBase.cpp
+     permeability/ConstantPermeability.cpp
+     permeability/CarmanKozenyPermeability.cpp
+     permeability/ParallelPlatesPermeability.cpp
+     permeability/StrainDependentPermeability.cpp
      capillaryPressure/CapillaryPressureBase.cpp
      capillaryPressure/BrooksCoreyCapillaryPressure.cpp
      capillaryPressure/VanGenuchtenCapillaryPressure.cpp

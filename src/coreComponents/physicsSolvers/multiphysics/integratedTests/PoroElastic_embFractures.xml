@@ -11,7 +11,7 @@
       fluidSolverName = "flowSolver"
       solidSolverName = "matrixMechSolver"
       couplingTypeOption="FIM"
-      logLevel="1">
+      logLevel="4">
       <NonlinearSolverParameters
         newtonMaxIter="5"
         maxTimeStepCuts="1"/>
@@ -42,7 +42,8 @@
       discretization="singlePhaseTPFA"
       targetRegions="{ Domain, Fracture }"
       fluidNames="{ water }"
-      solidNames="{ rock }"/>
+      solidNames="{ rock, fracFilling }"
+      permeabilityNames = "{ rockPermeability, fracturePermeability }"/>
 
     <EmbeddedSurfaceGenerator
       name="SurfaceGenerator"
@@ -89,7 +90,7 @@
 
     <PeriodicEvent
       name="outputs"
-      cycleFrequency="10"
+      cycleFrequency="1"
       targetExactTimestep="1"
       target="/Outputs/vtkOutput"/>
 
@@ -111,7 +112,8 @@
       <TwoPointFluxApproximation
         name="singlePhaseTPFA"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{rockPermeability, fracturePermeability}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -119,22 +121,23 @@
     <CellElementRegion
       name="Domain"
       cellBlocks="{ cb1 }"
-      materialList="{ rock, water }"/>
+      materialList="{ rock, water, rockPermeability }"/>
 
     <SurfaceElementRegion
       name="Fracture"
       subRegionType="embeddedElement"
-      materialList="{ rock, water }"
+      materialList="{ fracFilling, water, fracturePermeability }"
       defaultAperture="1e-3"/>
   </ElementRegions>
 
 <Constitutive>
-    <PoroElasticIsotropic
+    <ElasticIsotropic
       name="rock"
-      defaultDensity="1"
       defaultBulkModulus="5555555555.5556"
       defaultShearModulus="4166666666.6667"
-      BiotCoefficient="1.0"/>
+      defaultReferencePorosity ="0.2"
+      defaultGrainDensity="1"
+      grainBulkModulus="1.0e15"/>
 
     <CompressibleSinglePhaseFluid
       name="water"
@@ -146,6 +149,14 @@
       referenceViscosity="1e-3"
       viscosibility="0.0"/>
       
+   <CompressibleRock
+      name="fracFilling"
+      referencePressure="0.0"
+      defaultReferencePorosity ="1.0"
+      compressibility="0.0"
+      defaultGrainDensity="1"
+      grainBulkModulus="1.0e9"/>
+      
      <Contact
       name="fractureContact"
       penaltyStiffness="0.0e8">
@@ -154,9 +165,24 @@
         coordinates="{ -1.0e-3, 0.0 }"
         values="{ 1.0e-6, 1.0e-3 }"/>
     </Contact>
+    
+    <ConstantPermeability
+      name="rockPermeability"
+      permeabilityComponents="1e-12, 1e-12, 1e-12"/>
+    
+    <ParallelPlatesPermeability
+      name="fracturePermeability"/>  
   </Constitutive>
   
 <FieldSpecifications>
+   <FieldSpecification
+      name="initialPorosity"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="rock_porosity"
+      scale="0.2"/>
+
    <FieldSpecification
       name="initialPressure"
       initialCondition="1"
@@ -197,41 +223,6 @@
       scale="0.0"
       setNames="{ zneg, zpos }"/>
       
-      <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="1.000e-12"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="1.000e-12"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="1.000e-12"/>
-
-    <FieldSpecification
-      name="referencePorosity"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="referencePorosity"
-      scale="0.2"/>
-      
      <FieldSpecification
       name="leftPressure"
       objectPath="faceManager"
@@ -251,7 +242,7 @@
     <VTK
       name="vtkOutput"
       plotFileRoot="PoroElastic_embedded"
-      plotLevel="2"
+      plotLevel="1"
       writeBinaryData="0"/>
 
     <Restart

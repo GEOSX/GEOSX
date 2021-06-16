@@ -70,12 +70,6 @@ public:
                   CRSMatrixView< real64, globalIndex const > const & localMatrix,
                   arrayView1d< real64 > const & localRhs ) override;
 
-  void
-  assembleCouplingTerms( DomainPartition const & domain,
-                         DofManager const & dofManager,
-                         CRSMatrixView< real64, globalIndex const > const & localMatrix,
-                         arrayView1d< real64 > const & localRhs );
-
   virtual void
   applyBoundaryConditions( real64 const time_n,
                            real64 const dt,
@@ -100,6 +94,12 @@ public:
                        arrayView1d< real64 const > const & localSolution,
                        real64 const scalingFactor,
                        DomainPartition & domain ) override;
+
+  virtual void updateState( DomainPartition & domain ) override;
+
+  void updatePermeability( NodeManager const & nodeManger,
+                           CellElementSubRegion & subRegion,
+                           localIndex const targetIndex ) const;
 
   virtual void
   implicitStepComplete( real64 const & time_n,
@@ -138,6 +138,7 @@ public:
 
     constexpr static char const * totalMeanStressString() { return "totalMeanStress"; }
     constexpr static char const * oldTotalMeanStressString() { return "oldTotalMeanStress"; }
+    constexpr static char const * dPerm_dDisplacementString() { return "dPerm_dDisplacement"; }
 
     constexpr static char const * solidSolverNameString() { return "solidSolverName"; }
     constexpr static char const * fluidSolverNameString() { return "fluidSolverName"; }

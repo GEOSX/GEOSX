@@ -126,14 +126,14 @@ public:
                         real64 const & dt,
                         DomainPartition & domain ) override;
 
-  template< bool ISPORO, typename POLICY >
+  template< typename POLICY >
   void accumulationLaunch( localIndex const targetIndex,
                            CellElementSubRegion & subRegion,
                            DofManager const & dofManager,
                            CRSMatrixView< real64, globalIndex const > const & localMatrix,
                            arrayView1d< real64 > const & localRhs );
 
-  template< bool ISPORO, typename POLICY >
+  template< typename POLICY >
   void accumulationLaunch( localIndex const targetIndex,
                            SurfaceElementSubRegion const & subRegion,
                            DofManager const & dofManager,
@@ -152,7 +152,7 @@ public:
    * @param localMatrix the system matrix
    * @param localRhs the system right-hand side vector
    */
-  template< bool ISPORO, typename POLICY >
+  template< typename POLICY >
   void assembleAccumulationTerms( DomainPartition & domain,
                                   DofManager const & dofManager,
                                   CRSMatrixView< real64, globalIndex const > const & localMatrix,
@@ -170,10 +170,28 @@ public:
   virtual void
   assembleFluxTerms( real64 const time_n,
                      real64 const dt,
-                     DomainPartition const & domain,
+                     DomainPartition & domain,
                      DofManager const & dofManager,
                      CRSMatrixView< real64, globalIndex const > const & localMatrix,
                      arrayView1d< real64 > const & localRhs ) = 0;
+
+  /**
+   * @brief assembles the flux terms for all cells for the poroelastic case
+   * @param time_n previous time value
+   * @param dt time step
+   * @param domain the physical domain object
+   * @param dofManager degree-of-freedom manager associated with the linear system
+   * @param localMatrix the system matrix
+   * @param localRhs the system right-hand side vector
+   */
+  virtual void
+  assemblePoroelasticFluxTerms( real64 const time_n,
+                                real64 const dt,
+                                DomainPartition & domain,
+                                DofManager const & dofManager,
+                                CRSMatrixView< real64, globalIndex const > const & localMatrix,
+                                arrayView1d< real64 > const & localRhs,
+                                string const & jumpDofKey ) = 0;
 
   void
   applyDirichletBC( real64 const time_n,
@@ -191,11 +209,27 @@ public:
                      CRSMatrixView< real64, globalIndex const > const & localMatrix,
                      arrayView1d< real64 > const & localRhs ) const;
 
+
+  virtual void updateState ( DomainPartition & domain ) override final;
+
   /**
    * @brief Function to update all constitutive state and dependent variables
    * @param dataGroup group that contains the fields
    */
-  virtual void updateState( Group & dataGroup, localIndex const targetIndex ) const;
+  void updateFluidState( Group & subRegion, localIndex const targetIndex ) const;
+
+
+  /**
+   * @brief Function to update all constitutive models
+   * @param dataGroup group that contains the fields
+   */
+  virtual void updateFluidModel( Group & dataGroup, localIndex const targetIndex ) const;
+
+  /**
+   * @brief Function to update fluid mobility
+   * @param dataGroup group that contains the fields
+   */
+  void updateMobility( Group & dataGroup, localIndex const targetIndex ) const;
 
   struct viewKeyStruct : FlowSolverBase::viewKeyStruct
   {
@@ -269,24 +303,6 @@ protected:
    * This design should DEFINITELY be revisited.
    */
   virtual arrayView1d< real64 const > getPoreVolumeMult( ElementSubRegionBase const & subRegion ) const;
-
-  /**
-   * @brief Function to update all constitutive models
-   * @param dataGroup group that contains the fields
-   */
-  virtual void updateFluidModel( Group & dataGroup, localIndex const targetIndex ) const;
-
-  /**
-   * @brief Function to update all constitutive models
-   * @param dataGroup group that contains the fields
-   */
-  void updateSolidModel( Group & dataGroup, localIndex const targetIndex ) const;
-
-  /**
-   * @brief Function to update fluid mobility
-   * @param dataGroup group that contains the fields
-   */
-  void updateMobility( Group & dataGroup, localIndex const targetIndex ) const;
 
   ElementRegionManager::ElementViewAccessor< arrayView1d< real64 const > > m_pressure;
   ElementRegionManager::ElementViewAccessor< arrayView1d< real64 const > > m_deltaPressure;

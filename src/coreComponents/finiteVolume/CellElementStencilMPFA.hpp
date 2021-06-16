@@ -50,6 +50,9 @@ struct CellElementStencilMPFA_Traits
   /// The array view to const type for the stencil weights
   using WeightContainerViewConstType = ArrayOfArraysView< real64 const >;
 
+  ///
+  using CoefficientAccessorViewConstType = ArrayOfArraysView< real64 const >;
+
   /// Number of points the flux is between (always 2)
   static localIndex constexpr NUM_POINT_IN_FLUX = 2;
 
@@ -96,6 +99,18 @@ public:
    */
   localIndex stencilSize( localIndex index ) const
   { return m_elementRegionIndices.sizeOfArray( index ); }
+
+
+  /**
+   * @brief Give the number of points between which the flux is.
+   * @param[in] index of the stencil entry for which to query the size
+   * @return the number of points.
+   */
+  constexpr localIndex numPointsInFlux( localIndex index ) const
+  {
+    GEOSX_UNUSED_VAR( index );
+    return NUM_POINT_IN_FLUX;
+  }
 
 };
 

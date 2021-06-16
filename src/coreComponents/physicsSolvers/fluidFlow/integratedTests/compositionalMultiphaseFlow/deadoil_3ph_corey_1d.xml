@@ -8,6 +8,7 @@
       discretization="fluidTPFA"
       fluidNames="{ fluid }"
       solidNames="{ rock }"
+      permeabilityNames="{ permeabilityModel }"
       relPermNames="{ relperm }"
       temperature="300"
       useMass="0"
@@ -91,7 +92,7 @@
     <CellElementRegion
       name="region"
       cellBlocks="{ block1 }"
-      materialList="{ fluid, rock, relperm }"/>
+      materialList="{ fluid, rock, permeabilityModel, relperm }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -102,10 +103,17 @@
       componentMolarWeight="{ 114e-3, 16e-3, 18e-3 }"
       tableFiles="{ pvdo.txt, pvdg.txt, pvtw.txt }"/>
 
-    <PoreVolumeCompressibleSolid
+   <CompressibleRock
       name="rock"
       referencePressure="0.0"
-      compressibility="1e-9"/>
+      defaultReferencePorosity ="0.2"
+      compressibility="1e-9"
+      defaultGrainDensity="1"
+      grainBulkModulus="1.0e9"/>
+      
+    <ConstantPermeability
+      name="permeabilityModel"
+      permeabilityComponents="1.0e-16, 1.0e-16, 1.0e-16"/>
 
     <BrooksCoreyRelativePermeability
       name="relperm"
@@ -116,41 +124,6 @@
   </Constitutive>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/region/block1"
-      fieldName="permeability"
-      scale="1.0e-16"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/region/block1"
-      fieldName="permeability"
-      scale="1.0e-16"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/region/block1"
-      fieldName="permeability"
-      scale="1.0e-16"/>
-
-    <FieldSpecification
-      name="referencePorosity"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/region/block1"
-      fieldName="referencePorosity"
-      scale="0.2"/>
-
     <!-- Initial pressure: ~75 bar -->
     <FieldSpecification
       name="initialPressure"
