@@ -457,7 +457,7 @@
 		<!--maxStableDt => Value of the Maximum Stable Timestep for this solver.-->
 		<xsd:attribute name="maxStableDt" type="real64" />
 		<!--pressureNp1AtReceivers => Pressure value at each receiver for each timestep-->
-		<xsd:attribute name="pressureNp1AtReceivers" type="real64_array" />
+		<xsd:attribute name="pressureNp1AtReceivers" type="real64_array2d" />
 		<!--receiverIsLocal => Flag that indicates whether the receiver is local to this MPI rank-->
 		<xsd:attribute name="receiverIsLocal" type="localIndex_array" />
 		<!--receiverNodeIds => Indices of the nodes (in the right order) for each receiver point-->

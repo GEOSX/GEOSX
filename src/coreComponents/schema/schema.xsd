@@ -965,10 +965,16 @@ the relative residual norm satisfies:
 		<xsd:attribute name="cflFactor" type="real64" default="0.5" />
 		<!--discretization => Name of discretization object (defined in the :ref:`NumericalMethodsManager`) to use for this solver. For instance, if this is a Finite Element Solver, the name of a :ref:`FiniteElement` should be specified. If this is a Finite Volume Method, the name of a :ref:`FiniteVolume` discretization should be specified.-->
 		<xsd:attribute name="discretization" type="string" use="required" />
+		<!--dtSismoTrace => Time step size to compute the sismo trace-->
+		<xsd:attribute name="dtSismoTrace" type="real64" default="0" />
+		<!--indexSismoTrace =>  Index of the sismo trace -->
+		<xsd:attribute name="indexSismoTrace" type="localIndex" default="0" />
 		<!--initialDt => Initial time-step value required by the solver to the event manager.-->
 		<xsd:attribute name="initialDt" type="real64" default="1e+99" />
 		<!--logLevel => Log level-->
 		<xsd:attribute name="logLevel" type="integer" default="0" />
+		<!--nSampleSismoTrace =>  Number of sismo trace to be coputed-->
+		<xsd:attribute name="nSampleSismoTrace" type="localIndex" default="0" />
 		<!--outputSismoTrace => Flag that indicates if we write the sismo trace in a file .txt, 0 no output, 1 otherwise-->
 		<xsd:attribute name="outputSismoTrace" type="localIndex" default="0" />
 		<!--receiverCoordinates => Coordinates (x,y,z) of the receivers-->

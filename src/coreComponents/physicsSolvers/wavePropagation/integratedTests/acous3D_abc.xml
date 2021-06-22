@@ -16,7 +16,9 @@
       timeSourceFrequency="5.0"
       receiverCoordinates="{ { 5, 5, 11 },
                              { 5, 50, 11 },
-                             { 5, 95, 11 } }"/>
+                             { 5, 95, 11 } }"
+      dtSismoTrace="0.005"
+      nSampleSismoTrace="40"/>
   </Solvers>
 
   <!-- hexahedral mesh generated internally by GEOSX -->

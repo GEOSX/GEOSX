@@ -30,6 +30,10 @@ namespace geosx
 class AcousticWaveEquationSEM : public SolverBase
 {
 public:
+
+  using EXEC_POLICY = parallelDevicePolicy<32>;
+  using OMP_EXEC_POLICY = parallelHostPolicy;
+  
   AcousticWaveEquationSEM( const std::string & name,
                            Group * const parent );
 
@@ -78,6 +82,13 @@ public:
   virtual
   real64 evaluateRicker( real64 const & time_n, real64 const & f0, localIndex order );
 
+  /**
+   * @brief Multiply the precomputed term by the Ricker and add to the right-hand side
+   * @param time_n the time of evaluation of the source
+   * @param rhs the right hand side vector to be computed
+   */
+  void addSourceToRightHandSide( real64 const & time_n, arrayView1d< real64 > const rhs );
+
   /**@}*/
 
 
@@ -99,6 +110,9 @@ public:
 
     static constexpr char const * rickerOrderString() { return "rickerOrder"; }
     static constexpr char const * outputSismoTraceString() { return "outputSismoTrace"; }
+    static constexpr char const * dtSismoTraceString() { return "dtSismoTrace"; }
+    static constexpr char const * nSampleSismoTraceString() { return "nSampleSismoTrace"; }
+    static constexpr char const * indexSismoTraceString() { return "indexSismoTrace"; }
 
 
   } waveEquationViewKeys;
@@ -139,13 +153,6 @@ private:
   void precomputeSourceAndReceiverTerm( MeshLevel & mesh );
 
   /**
-   * @brief Multiply the precomputed term by the Ricker and add to the right-hand side
-   * @param time_n the time of evaluation of the source
-   * @param rhs the right hand side vector to be computed
-   */
-  void addSourceToRightHandSide( real64 const & time_n, arrayView1d< real64 > const rhs );
-
-  /**
    * @brief Apply free surface condition to the face define in the geometry box from the xml
    * @param time the time to apply the BC
    * @param domain the partition domain
@@ -157,15 +164,14 @@ private:
    * @param num_timeStep the cycle number of timestep
    * @param pressure_np1 the array to save the pressure value at the receiver position
    */
-  void computeSismoTrace( localIndex const num_timestep, arrayView1d< real64 > const pressure_np1 );
+  void computeSismoTrace( real64 const time_n, real64 const dt, localIndex iSismoTrace, arrayView1d< real64 > const pressure_np1, arrayView1d< real64 > const pressure_n );
 
   /**
    * @brief Save the sismo trace in file
-   * @param isismo index number of the sismo trace
-   * @param val_pressure value of the pressure for isismo
+   * @param pressure_receivers array of pressure values at the receivers locations
    * @param filename name of the output file
    */
-  void saveSismo( localIndex isismo, real64 val_pressure, char *filename );
+  void saveSismo( arrayView2d< real64 const > const pressure_receivers );
 
   /// Coordinates of the sources in the mesh
   array2d< real64 > m_sourceCoordinates;
@@ -195,7 +201,7 @@ private:
   array1d< localIndex > m_receiverIsLocal;
 
   /// Pressure_np1 at the receiver location for each time step for each receiver
-  array1d< real64 > m_pressureNp1AtReceivers;
+  array2d< real64 > m_pressureNp1AtReceivers;
 
 
   /// Flag that indicates the order of the Ricker to be used, order 2 by default
@@ -204,6 +210,14 @@ private:
   /// Flag that indicates if we write the sismo trace in a file .txt, 0 no output, 1 otherwise
   localIndex m_outputSismoTrace;
 
+  /// Time step size to compute the sismo trace
+  real64 m_dtSismoTrace;
+
+  /// Number of sismo trace to be coputed
+  localIndex m_nSampleSismoTrace;
+
+  /// Index of the sismo trace
+  localIndex m_indexSismoTrace;
 
 
 };
