@@ -22,6 +22,7 @@
 
 #include "codingUtilities/EnumStrings.hpp"
 #include "dataRepository/Group.hpp"
+#include "functions/TableFunction.hpp"
 
 namespace geosx
 {
@@ -167,21 +168,30 @@ public:
    * @brief Get the target Bottom Hole Pressure value.
    * @return a value for the target Bottom Hole Pressure
    */
-  const real64 & getTargetBHP() const { return m_targetBHP; }
-
+//  const real64 & getTargetBHP() const { return m_targetBHP; }
+  real64 getTargetBHP( real64 const & currentTime )const
+  {
+    return m_targetBHPTable->evaluate( &currentTime );
+  }
 
   /**
    * @brief Get the target total rate
    * @return the target total rate
    */
-  const real64 & getTargetTotalRate() const { return m_targetTotalRate; }
+  real64 getTargetTotalRate( real64 const & currentTime )const
+  {
+    return m_targetTotalRateTable->evaluate( &currentTime );
+  }
 
   /**
    * @brief Get the target phase rate
    * @return the target phase rate
    */
-  const real64 & getTargetPhaseRate() const { return m_targetPhaseRate; }
-
+//  const real64 & getTargetPhaseRate() const { return m_targetPhaseRate; }
+  real64 getTargetPhaseRate( real64 const & currentTime )const
+  {
+    return m_targetPhaseRateTable->evaluate( &currentTime );
+  }
   /**
    * @brief Get the target phase name
    * @return the target phase name
@@ -243,6 +253,12 @@ public:
     static constexpr char const * surfacePressureString() { return "surfacePressure"; }
     /// String key for the surface temperature
     static constexpr char const * surfaceTemperatureString() { return "surfaceTemperature"; }
+    /// string key for total rate table name
+    static constexpr char const * targetTotalRateTableNameString() { return "targetTotalRateTableName"; }
+    /// string key for phase rate table name
+    static constexpr char const * targetPhaseRateTableNameString() { return "targetPhaseRateTableName"; }
+    /// string key for BHP table name
+    static constexpr char const * targetBHPTableNameString() { return "targetBHPTableName"; }
     /// ViewKey for the reference elevation
     dataRepository::ViewKey referenceElevation   = { refElevString() };
     /// ViewKey for the well type
@@ -265,7 +281,12 @@ public:
     dataRepository::ViewKey surfacePressure      = { surfacePressureString() };
     /// ViewKey for the surface temperature
     dataRepository::ViewKey surfaceTemperature   = { surfaceTemperatureString() };
-
+    /// ViewKey for the total rate table name
+    dataRepository::ViewKey targetTotalRateTableName = { targetTotalRateTableNameString() };
+    /// ViewKey for the phase rate table name
+    dataRepository::ViewKey targetPhaseRateTableName = { targetPhaseRateTableNameString() };
+    /// ViewKey for the BHP table name
+    dataRepository::ViewKey targetBHPTableName       = { targetBHPTableNameString() };
   }
   /// ViewKey struct for the WellControls class
   viewKeysWellControls;
@@ -314,6 +335,23 @@ private:
   /// Surface temperature
   real64 m_surfaceTemp;
 
+  /// Total rate table name
+  string m_targetTotalRateTableName;
+
+  /// Phase rate table name
+  string m_targetPhaseRateTableName;
+
+  /// BHP table name
+  string m_targetBHPTableName;
+
+  /// Total rate table
+  TableFunction * m_targetTotalRateTable;
+
+  /// Phase rate table
+  TableFunction * m_targetPhaseRateTable;
+
+  /// BHP table
+  TableFunction * m_targetBHPTable;
 };
 
 ENUM_STRINGS( WellControls::Type,

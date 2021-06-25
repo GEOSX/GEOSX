@@ -42,7 +42,7 @@
         control="totalVolRate"
         referenceElevation="12" 
         targetBHP="1e7"
-        targetTotalRate="1e-6"/>
+        targetTotalRateTableName="RateTable"/>
     </SinglePhaseWell>
   </Solvers>
 
@@ -200,6 +200,14 @@
       fieldName="pressure"
       scale="1e6"/>
   </FieldSpecifications>
+
+  <Functions>
+    <TableFunction name="RateTable"
+                   inputVarNames="{time}"
+                   coordinates="{0, 5e4}"
+                   values="{1e-6, 2e-6}" 
+                   interpolation = "lower"/>
+  </Functions>
 
   <Outputs>
     <Silo

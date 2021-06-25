@@ -18,6 +18,7 @@
 
 #include "WellControls.hpp"
 #include "dataRepository/InputFlags.hpp"
+#include "functions/FunctionManager.hpp"
 
 namespace geosx
 {
@@ -36,7 +37,13 @@ WellControls::WellControls( string const & name, Group * const parent )
   m_targetPhaseName( "" ),
   m_useSurfaceConditions( 0 ),
   m_surfacePres( 0.0 ),
-  m_surfaceTemp( 0.0 )
+  m_surfaceTemp( 0.0 ),
+  m_targetTotalRateTableName( "" ),
+  m_targetPhaseRateTableName( "" ),
+  m_targetBHPTableName( "" ),
+  m_targetTotalRateTable( nullptr ),
+  m_targetPhaseRateTable( nullptr ),
+  m_targetBHPTable( nullptr )
 {
   setInputFlags( InputFlags::OPTIONAL_NONUNIQUE );
 
@@ -50,7 +57,7 @@ WellControls::WellControls( string const & name, Group * const parent )
 
   registerWrapper( viewKeyStruct::targetBHPString(), &m_targetBHP ).
     setDefaultValue( -1 ).
-    setInputFlag( InputFlags::REQUIRED ).
+    setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "Target bottom-hole pressure" );
 
   registerWrapper( viewKeyStruct::targetTotalRateString(), &m_targetTotalRate ).
@@ -95,6 +102,17 @@ WellControls::WellControls( string const & name, Group * const parent )
     setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "Surface temperature used to compute volumetric rates when surface conditions are used" );
 
+  registerWrapper( viewKeyStruct::targetBHPTableNameString(), &m_targetBHPTableName ).
+    setInputFlag( InputFlags::OPTIONAL ).
+    setDescription( "Name of the BHP table when the rate is a time dependent function" );
+
+  registerWrapper( viewKeyStruct::targetTotalRateTableNameString(), &m_targetTotalRateTableName ).
+    setInputFlag( InputFlags::OPTIONAL ).
+    setDescription( "Name of the rate table when the rate is a time dependent function" );
+
+  registerWrapper( viewKeyStruct::targetPhaseRateTableNameString(), &m_targetPhaseRateTableName ).
+    setInputFlag( InputFlags::OPTIONAL ).
+    setDescription( "Name of the phase rate table when the rate is a time dependent function" );
 }
 
 
@@ -160,20 +178,117 @@ void WellControls::postProcessInput()
                   "When useSurfaceConditions == 1, the surface pressure must be defined" );
 
   // 7) check that at least one rate constraint has been defined
-  GEOSX_ERROR_IF( m_targetPhaseRate <= 0.0 && m_targetTotalRate <= 0.0,
-                  "You need to specify a phase rate constraint for producers, and a total rate constraint for injectors" );
+  GEOSX_ERROR_IF( ((m_targetPhaseRate <= 0.0 && m_targetPhaseRateTableName == "") &&
+                   (m_targetTotalRate <= 0.0 && m_targetTotalRateTableName == "")),
+                  "You need to specify a phase rate constraint or a total rate constraint for injectors" );
+
+  // 8) check whether redundant information has been provided
+  GEOSX_ERROR_IF( ((m_targetPhaseRate > 0.0 && m_targetPhaseRateTableName != "")),
+                  "You are provided redundant information for well phase rate" );
+
+  GEOSX_ERROR_IF( ((m_targetTotalRate > 0.0 && m_targetTotalRateTableName != "")),
+                  "You are provided redundant information for well total rate" );
+
+  GEOSX_ERROR_IF( ((m_targetBHP > 0.0 && m_targetBHPTableName != "")),
+                  "You are provided redundant information for well BHP" );
+
+  GEOSX_ERROR_IF( ((m_targetBHP <= 0.0 && m_targetBHPTableName == "")),
+                  "You have to provide well BHP by specifying either " << viewKeyStruct::targetBHPString() << " or " << viewKeyStruct::targetBHPTableNameString() );
+
+  //  9) Create time-dependent BHP table
+  FunctionManager & functionManager = FunctionManager::getInstance();
+  if( m_targetBHPTableName != "" )
+  {
+    m_targetBHPTable = &(functionManager.getGroup< TableFunction >( m_targetBHPTableName ));
+  }
+  else
+  {
+    array1d< array1d< real64 > > timeCoord;
+    timeCoord.resize( 1 );
+    timeCoord[0].emplace_back( 0 );
+    array1d< real64 > constantBHPValue;
+    constantBHPValue.emplace_back( m_targetBHP );
+
+    m_targetBHPTable = dynamicCast< TableFunction * >( functionManager.createChild( "TableFunction", getName()+"constantBHPTable" ));
+    m_targetBHPTable->setTableCoordinates( timeCoord );
+    m_targetBHPTable->setTableValues( constantBHPValue );
+    m_targetBHPTable->reInitializeFunction();
+    m_targetBHPTable->setInterpolationMethod( TableFunction::InterpolationType::Lower );
+  }
+  //  10) Create time-dependent total rate table
+  if( m_targetTotalRateTableName != "" )
+  {
+    m_targetTotalRateTable = &(functionManager.getGroup< TableFunction >( m_targetTotalRateTableName ));
+    GEOSX_THROW_IF( m_targetTotalRateTable->getInterpolationMethod() != TableFunction::InterpolationType::Lower,
+                    "The interpolation method for the time-dependent rate table " << m_targetTotalRateTable->getName() << " should be TableFunction::InterpolationType::Lower",
+                    InputError );
+  }
+  else
+  {
+    array1d< array1d< real64 > > timeCoord;
+    timeCoord.resize( 1 );
+    timeCoord[0].emplace_back( 0 );
+    array1d< real64 > constantTotalRateValue;
+    constantTotalRateValue.emplace_back( m_targetTotalRate );
+
+    m_targetTotalRateTable = dynamicCast< TableFunction * >( functionManager.createChild( "TableFunction", getName()+"constantTotalRateTable" ));
+    m_targetTotalRateTable->setTableCoordinates( timeCoord );
+    m_targetTotalRateTable->setTableValues( constantTotalRateValue );
+    m_targetTotalRateTable->reInitializeFunction();
+    m_targetTotalRateTable->setInterpolationMethod( TableFunction::InterpolationType::Lower );
+
+  }
+
+  //  11) Create time-dependent phase rate table
+  if( m_targetPhaseRateTableName != "" )
+  {
+    m_targetPhaseRateTable = &(functionManager.getGroup< TableFunction >( m_targetPhaseRateTableName ));
+    GEOSX_THROW_IF( m_targetPhaseRateTable->getInterpolationMethod() != TableFunction::InterpolationType::Lower,
+                    "The interpolation method for the time-dependent rate table " << m_targetPhaseRateTable->getName() << " should be TableFunction::InterpolationType::Lower",
+                    InputError );
+  }
+  else
+  {
+    array1d< array1d< real64 > > timeCoord;
+    timeCoord.resize( 1 );
+    timeCoord[0].emplace_back( 0 );
+    array1d< real64 > constantPhaseRateValue;
+    constantPhaseRateValue.emplace_back( m_targetPhaseRate );
+
+    m_targetPhaseRateTable = dynamicCast< TableFunction * >( functionManager.createChild( "TableFunction", getName()+"constantPhaseRateTable" ));
+    m_targetPhaseRateTable->setTableCoordinates( timeCoord );
+    m_targetPhaseRateTable->setTableValues( constantPhaseRateValue );
+    m_targetPhaseRateTable->reInitializeFunction();
+    m_targetPhaseRateTable->setInterpolationMethod( TableFunction::InterpolationType::Lower );
+  }
+
+  // For producer, the rate is timed by -1 to reflect mass extraction from the grid cell
+  if( getType() == Type::PRODUCER )
+  {
+    array1d< real64 > & PhaseRatetableValues = m_targetPhaseRateTable->getValues();
+    for( localIndex i = 0; i < PhaseRatetableValues.size(); ++i )
+    {
+      PhaseRatetableValues( i ) *= -1;
+    }
+
+    array1d< real64 > & TotalRatetableValues = m_targetTotalRateTable->getValues();
+    for( localIndex i = 0; i < TotalRatetableValues.size(); ++i )
+    {
+      TotalRatetableValues( i ) *= -1;
+    }
+  }
 
 }
 
 void WellControls::initializePostInitialConditionsPreSubGroups()
 {
-  // for a producer, the solvers compute negative rates, so we adjust the input here
-  if( getType() == Type::PRODUCER
-      && (m_targetPhaseRate > 0.0 || m_targetTotalRate > 0.0) )
-  {
-    m_targetTotalRate *= -1;
-    m_targetPhaseRate *= -1;
-  }
+//   // for a producer, the solvers compute negative rates, so we adjust the input here
+//   if( getType() == Type::PRODUCER
+//       && (m_targetPhaseRate > 0.0 || m_targetTotalRate > 0.0) )
+//   {
+//     m_targetTotalRate *= -1;
+//     m_targetPhaseRate *= -1;
+//   }
 }
 
 } //namespace geosx

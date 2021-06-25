@@ -121,6 +121,7 @@ void WellSolverBase::implicitStepSetup( real64 const & time_n,
   // bind the stored reservoir views to the current domain
   resetViews( domain );
 
+  m_currentTime = time_n;
   // Initialize the primary and secondary variables for the first time step
   if( time_n <= 0.0 )
   {

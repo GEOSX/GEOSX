@@ -45,7 +45,7 @@
         control="phaseVolRate"
         referenceElevation="12"
         targetBHP="1e6"
-        targetPhaseRate="1.0e-7"
+        targetPhaseRateTableName="PhaseRateTable"
         targetPhaseName="water"/>
       <WellControls
         name="wellControls2"
@@ -234,6 +234,16 @@
       component="1"
       scale="0.995"/>
   </FieldSpecifications>
+
+
+  <Functions>
+    <TableFunction name="PhaseRateTable"
+                   inputVarNames="{time}"
+                   coordinates="{0, 5e4}"
+                   values="{1e-7, 2e-7}" 
+                   interpolation = "lower"/>
+  </Functions>
+
 
   <Outputs>
     <Silo

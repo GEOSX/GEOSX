@@ -299,6 +299,9 @@ protected:
   /// the number of Degrees of Freedom per reservoir element
   integer m_numDofPerResElement;
 
+  // copy of the current time saved in this class for time-dependent
+  real64 m_currentTime;
+
   /// copy of the time step size saved in this class for residual normalization
   real64 m_currentDt;
 

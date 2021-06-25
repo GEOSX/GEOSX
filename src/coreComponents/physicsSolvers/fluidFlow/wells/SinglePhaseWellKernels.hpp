@@ -265,6 +265,7 @@ struct PressureRelationKernel
           bool const isLocallyOwned,
           localIndex const iwelemControl,
           WellControls const & wellControls,
+          real64 const & currentTime,
           arrayView1d< globalIndex const > const & wellElemDofNumber,
           arrayView1d< real64 const > const & wellElemGravCoef,
           arrayView1d< localIndex const > const & nextWellElemIndex,
@@ -278,8 +279,8 @@ struct PressureRelationKernel
     // static well control data
     WellControls::Type const wellType = wellControls.getType();
     WellControls::Control const currentControl = wellControls.getControl();
-    real64 const targetBHP = wellControls.getTargetBHP();
-    real64 const targetRate = wellControls.getTargetTotalRate();
+    real64 const targetBHP = wellControls.getTargetBHP( currentTime );
+    real64 const targetRate = wellControls.getTargetTotalRate( currentTime );
 
     // dynamic well control data
     real64 const & currentBHP =
@@ -534,6 +535,7 @@ struct PresInitializationKernel
           localIndex const subRegionSize,
           localIndex const numPerforations,
           WellControls const & wellControls,
+          real64 const & currentTime,
           ElementViewConst< arrayView1d< real64 const > > const & resPressure,
           ElementViewConst< arrayView2d< real64 const > > const & resDensity,
           arrayView1d< localIndex const > const & resElementRegion,
@@ -542,7 +544,7 @@ struct PresInitializationKernel
           arrayView1d< real64 const > const & wellElemGravCoef,
           arrayView1d< real64 > const & wellElemPressure )
   {
-    real64 const targetBHP = wellControls.getTargetBHP();
+    real64 const targetBHP = wellControls.getTargetBHP( currentTime );
     real64 const refWellElemGravCoef = wellControls.getReferenceGravityCoef();
     WellControls::Control const currentControl = wellControls.getControl();
     WellControls::Type const wellType = wellControls.getType();
@@ -609,10 +611,11 @@ struct RateInitializationKernel
   static void
   launch( localIndex const subRegionSize,
           WellControls const & wellControls,
+          real64 const & currentTime,
           arrayView2d< real64 const > const & wellElemDens,
           arrayView1d< real64 > const & connRate )
   {
-    real64 const targetRate = wellControls.getTargetTotalRate();
+    real64 const targetRate = wellControls.getTargetTotalRate( currentTime );
     WellControls::Control const control = wellControls.getControl();
     WellControls::Type const wellType = wellControls.getType();
 
@@ -654,6 +657,7 @@ struct ResidualNormKernel
           bool const isLocallyOwned,
           localIndex const iwelemControl,
           WellControls const & wellControls,
+          real64 const & currentTime,
           arrayView1d< globalIndex const > const & wellElemDofNumber,
           arrayView1d< integer const > const & wellElemGhostRank,
           arrayView2d< real64 const > const & wellElemDens,
@@ -661,8 +665,8 @@ struct ResidualNormKernel
           real64 * localResidualNorm )
   {
     WellControls::Control const currentControl = wellControls.getControl();
-    real64 const targetBHP = wellControls.getTargetBHP();
-    real64 const targetRate = wellControls.getTargetTotalRate();
+    real64 const targetBHP = wellControls.getTargetBHP( currentTime );
+    real64 const targetRate = wellControls.getTargetTotalRate( currentTime );
     real64 const absTargetRate = fabs( targetRate );
 
     RAJA::ReduceSum< REDUCE_POLICY, real64 > sumScaled( 0.0 );

@@ -106,8 +106,8 @@ void SinglePhaseWell::validateWellConstraints( MeshLevel const & meshLevel ) con
   {
     WellControls const & wellControls = getWellControls( subRegion );
     WellControls::Control const currentControl = wellControls.getControl();
-    real64 const targetTotalRate = wellControls.getTargetTotalRate();
-    real64 const targetPhaseRate = wellControls.getTargetPhaseRate();
+    real64 const targetTotalRate = wellControls.getTargetTotalRate( m_currentTime );
+    real64 const targetPhaseRate = wellControls.getTargetPhaseRate( m_currentTime );
     GEOSX_ERROR_IF( currentControl == WellControls::Control::PHASEVOLRATE,
                     "Phase rate control is not available for SinglePhaseWell" );
     GEOSX_ERROR_IF( isZero( targetTotalRate ),
@@ -329,6 +329,7 @@ void SinglePhaseWell::initializeWells( DomainPartition & domain )
                                                                 subRegion.size(),
                                                                 perforationData.getNumPerforationsGlobal(),
                                                                 wellControls,
+                                                                m_currentTime,
                                                                 m_resPressure.toNestedViewConst(),
                                                                 m_resDensity.toNestedViewConst(),
                                                                 resElementRegion,
@@ -348,6 +349,7 @@ void SinglePhaseWell::initializeWells( DomainPartition & domain )
     // 5) Estimate the well rates
     RateInitializationKernel::launch< parallelDevicePolicy<> >( subRegion.size(),
                                                                 wellControls,
+                                                                m_currentTime,
                                                                 wellElemDens,
                                                                 connRate );
   } );
@@ -438,6 +440,7 @@ void SinglePhaseWell::formPressureRelations( DomainPartition const & domain,
                                                               subRegion.isLocallyOwned(),
                                                               subRegion.getTopWellElementIndex(),
                                                               wellControls,
+                                                              m_currentTime,
                                                               wellElemDofNumber,
                                                               wellElemGravCoef,
                                                               nextWellElemIndex,
@@ -455,13 +458,13 @@ void SinglePhaseWell::formPressureRelations( DomainPartition const & domain,
 
       if( wellControls.getControl() == WellControls::Control::BHP )
       {
-        wellControls.switchToTotalRateControl( wellControls.getTargetTotalRate() );
+        wellControls.switchToTotalRateControl( wellControls.getTargetTotalRate( m_currentTime ) );
         GEOSX_LOG_LEVEL_RANK_0( 1, "Control switch for well " << subRegion.getName()
                                                               << " from BHP constraint to rate constraint" );
       }
       else
       {
-        wellControls.switchToBHPControl( wellControls.getTargetBHP() );
+        wellControls.switchToBHPControl( wellControls.getTargetBHP( m_currentTime ) );
         GEOSX_LOG_LEVEL_RANK_0( 1, "Control switch for well " << subRegion.getName()
                                                               << " from rate constraint to BHP constraint" );
       }
@@ -579,6 +582,7 @@ SinglePhaseWell::calculateResidualNorm( DomainPartition const & domain,
                                                         subRegion.isLocallyOwned(),
                                                         subRegion.getTopWellElementIndex(),
                                                         wellControls,
+                                                        m_currentTime,
                                                         wellElemDofNumber,
                                                         wellElemGhostRank,
                                                         wellElemDensity,

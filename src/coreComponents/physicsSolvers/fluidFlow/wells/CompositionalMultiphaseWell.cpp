@@ -296,8 +296,8 @@ void CompositionalMultiphaseWell::validateWellConstraints( MeshLevel const & mes
     WellControls const & wellControls = getWellControls( subRegion );
     WellControls::Type const wellType = wellControls.getType();
     WellControls::Control const currentControl = wellControls.getControl();
-    real64 const & targetTotalRate = wellControls.getTargetTotalRate();
-    real64 const & targetPhaseRate = wellControls.getTargetPhaseRate();
+    real64 const & targetTotalRate = wellControls.getTargetTotalRate( m_currentTime );
+    real64 const & targetPhaseRate = wellControls.getTargetPhaseRate( m_currentTime );
     integer const useSurfaceConditions = wellControls.useSurfaceConditions();
     real64 const & surfaceTemp = wellControls.getSurfaceTemperature();
 
@@ -865,6 +865,7 @@ void CompositionalMultiphaseWell::initializeWells( DomainPartition & domain )
                                                                         NP,
                                                                         perforationData.getNumPerforationsGlobal(),
                                                                         wellControls,
+                                                                        m_currentTime,
                                                                         m_resPres.toNestedViewConst(),
                                                                         m_resCompDens.toNestedViewConst(),
                                                                         m_resPhaseVolFrac.toNestedViewConst(),
@@ -909,6 +910,7 @@ void CompositionalMultiphaseWell::initializeWells( DomainPartition & domain )
     CompositionalMultiphaseWellKernels::RateInitializationKernel::launch< parallelDevicePolicy<> >( subRegion.size(),
                                                                                                     m_targetPhaseIndex,
                                                                                                     wellControls,
+                                                                                                    m_currentTime,
                                                                                                     wellElemPhaseDens,
                                                                                                     wellElemTotalDens,
                                                                                                     connRate );
@@ -1052,6 +1054,7 @@ CompositionalMultiphaseWell::calculateResidualNorm( DomainPartition const & doma
                                                         numDofPerWellElement(),
                                                         m_targetPhaseIndex,
                                                         wellControls,
+                                                        m_currentTime,
                                                         wellElemDofNumber,
                                                         wellElemGhostRank,
                                                         phaseDens,
@@ -1566,6 +1569,7 @@ void CompositionalMultiphaseWell::formPressureRelations( DomainPartition const &
                                                               m_targetPhaseIndex,
                                                               numDofPerResElement(),
                                                               wellControls,
+                                                              m_currentTime,
                                                               wellElemDofNumber,
                                                               wellElemGravCoef,
                                                               nextWellElemIndex,
@@ -1587,20 +1591,20 @@ void CompositionalMultiphaseWell::formPressureRelations( DomainPartition const &
         WellControls::Type const wellType = wellControls.getType();
         if( wellType == WellControls::Type::PRODUCER )
         {
-          wellControls.switchToPhaseRateControl( wellControls.getTargetPhaseRate() );
+          wellControls.switchToPhaseRateControl( wellControls.getTargetPhaseRate( m_currentTime ) );
           GEOSX_LOG_LEVEL_RANK_0( 1, "Control switch for well " << subRegion.getName()
                                                                 << " from BHP constraint to phase volumetric rate constraint" );
         }
         else
         {
-          wellControls.switchToTotalRateControl( wellControls.getTargetTotalRate() );
+          wellControls.switchToTotalRateControl( wellControls.getTargetTotalRate( m_currentTime ) );
           GEOSX_LOG_LEVEL_RANK_0( 1, "Control switch for well " << subRegion.getName()
                                                                 << " from BHP constraint to total volumetric rate constraint" );
         }
       }
       else
       {
-        wellControls.switchToBHPControl( wellControls.getTargetBHP() );
+        wellControls.switchToBHPControl( wellControls.getTargetBHP( m_currentTime ) );
         GEOSX_LOG_LEVEL_RANK_0( 1, "Control switch for well " << subRegion.getName()
                                                               << " from rate constraint to BHP constraint" );
       }

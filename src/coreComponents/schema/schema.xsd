@@ -1128,13 +1128,19 @@ the relative residual norm satisfies:
 		<!--surfaceTemperature => Surface temperature used to compute volumetric rates when surface conditions are used-->
 		<xsd:attribute name="surfaceTemperature" type="real64" default="0" />
 		<!--targetBHP => Target bottom-hole pressure-->
-		<xsd:attribute name="targetBHP" type="real64" use="required" />
+		<xsd:attribute name="targetBHP" type="real64" default="-1" />
+		<!--targetBHPTableName => Name of the BHP table when the rate is a time dependent function-->
+		<xsd:attribute name="targetBHPTableName" type="string" default="" />
 		<!--targetPhaseName => Name of the target phase-->
 		<xsd:attribute name="targetPhaseName" type="string" default="" />
 		<!--targetPhaseRate => Target phase volumetric rate-->
 		<xsd:attribute name="targetPhaseRate" type="real64" default="0" />
+		<!--targetPhaseRateTableName => Name of the phase rate table when the rate is a time dependent function-->
+		<xsd:attribute name="targetPhaseRateTableName" type="string" default="" />
 		<!--targetTotalRate => Target total volumetric rate-->
 		<xsd:attribute name="targetTotalRate" type="real64" default="0" />
+		<!--targetTotalRateTableName => Name of the rate table when the rate is a time dependent function-->
+		<xsd:attribute name="targetTotalRateTableName" type="string" default="" />
 		<!--type => Well type. Valid options:
 * producer
 * injector-->

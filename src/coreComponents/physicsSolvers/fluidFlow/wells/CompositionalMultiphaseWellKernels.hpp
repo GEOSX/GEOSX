@@ -486,6 +486,7 @@ struct PressureRelationKernel
           localIndex const targetPhaseIndex,
           localIndex const numDofPerResElement,
           WellControls const & wellControls,
+          real64 const & currentTime,
           arrayView1d< globalIndex const > const & wellElemDofNumber,
           arrayView1d< real64 const > const & wellElemGravCoef,
           arrayView1d< localIndex const > const & nextWellElemIndex,
@@ -503,9 +504,9 @@ struct PressureRelationKernel
     // static well control data
     WellControls::Type const wellType = wellControls.getType();
     WellControls::Control const currentControl = wellControls.getControl();
-    real64 const targetBHP = wellControls.getTargetBHP();
-    real64 const targetTotalRate = wellControls.getTargetTotalRate();
-    real64 const targetPhaseRate = wellControls.getTargetPhaseRate();
+    real64 const targetBHP = wellControls.getTargetBHP( currentTime );
+    real64 const targetTotalRate = wellControls.getTargetTotalRate( currentTime );
+    real64 const targetPhaseRate = wellControls.getTargetPhaseRate( currentTime );
 
     // dynamic well control data
     real64 const & currentBHP =
@@ -1143,6 +1144,7 @@ struct PresCompFracInitializationKernel
           localIndex const numPhases,
           localIndex const numPerforations,
           WellControls const & wellControls,
+          real64 const & currentTime,
           ElementViewConst< arrayView1d< real64 const > > const & resPressure,
           ElementViewConst< arrayView2d< real64 const > > const & resCompDens,
           ElementViewConst< arrayView2d< real64 const > > const & resPhaseVolFrac,
@@ -1158,7 +1160,7 @@ struct PresCompFracInitializationKernel
     localIndex const NC = numComponents;
     localIndex const NP = numPhases;
 
-    real64 const targetBHP = wellControls.getTargetBHP();
+    real64 const targetBHP = wellControls.getTargetBHP( currentTime );
     real64 const refWellElemGravCoef = wellControls.getReferenceGravityCoef();
     WellControls::Control const currentControl = wellControls.getControl();
     WellControls::Type const wellType = wellControls.getType();
@@ -1312,14 +1314,15 @@ struct RateInitializationKernel
   launch( localIndex const subRegionSize,
           localIndex const targetPhaseIndex,
           WellControls const & wellControls,
+          real64 const & currentTime,
           arrayView3d< real64 const > const & phaseDens,
           arrayView2d< real64 const > const & totalDens,
           arrayView1d< real64 > const & connRate )
   {
     WellControls::Control const control = wellControls.getControl();
     WellControls::Type const wellType = wellControls.getType();
-    real64 const targetTotalRate = wellControls.getTargetTotalRate();
-    real64 const targetPhaseRate = wellControls.getTargetPhaseRate();
+    real64 const targetTotalRate = wellControls.getTargetTotalRate( currentTime );
+    real64 const targetPhaseRate = wellControls.getTargetPhaseRate( currentTime );
 
     // Estimate the connection rates
     forAll< POLICY >( subRegionSize, [=] GEOSX_HOST_DEVICE ( localIndex const iwelem )
@@ -1423,6 +1426,7 @@ struct ResidualNormKernel
           localIndex const numDofPerWellElement,
           localIndex const targetPhaseIndex,
           WellControls const & wellControls,
+          real64 const & currentTime,
           arrayView1d< globalIndex const > const & wellElemDofNumber,
           arrayView1d< integer const > const & wellElemGhostRank,
           arrayView3d< real64 const > const & wellElemPhaseDens,
@@ -1432,9 +1436,9 @@ struct ResidualNormKernel
   {
     WellControls::Type const wellType = wellControls.getType();
     WellControls::Control const currentControl = wellControls.getControl();
-    real64 const targetBHP = wellControls.getTargetBHP();
-    real64 const targetTotalRate = wellControls.getTargetTotalRate();
-    real64 const targetPhaseRate = wellControls.getTargetPhaseRate();
+    real64 const targetBHP = wellControls.getTargetBHP( currentTime );
+    real64 const targetTotalRate = wellControls.getTargetTotalRate( currentTime );
+    real64 const targetPhaseRate = wellControls.getTargetPhaseRate( currentTime );
     real64 const absTargetTotalRate = fabs( targetTotalRate );
     real64 const absTargetPhaseRate = fabs( targetPhaseRate );
 
