@@ -50,7 +50,9 @@ set( physicsSolvers_headers
      solidMechanics/SolidMechanicsSmallStrainExplicitNewmarkKernel.hpp
      surfaceGeneration/SurfaceGenerator.hpp
      surfaceGeneration/EmbeddedSurfaceGenerator.hpp
+     wavePropagation/WaveSolverBase.hpp
      wavePropagation/AcousticWaveEquationSEM.hpp
+     wavePropagation/AcousticWaveEquationSEMKernel.hpp
      )
 
 #
@@ -90,6 +92,7 @@ set( physicsSolvers_sources
      solidMechanics/SolidMechanicsLagrangianSSLE.cpp
      surfaceGeneration/SurfaceGenerator.cpp
      surfaceGeneration/EmbeddedSurfaceGenerator.cpp
+     wavePropagation/WaveSolverBase.cpp
      wavePropagation/AcousticWaveEquationSEM.cpp
      )
 
