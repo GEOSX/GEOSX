@@ -157,13 +157,13 @@ void DomainPartition::setupCommunications( bool use_nonblocking )
     MPI_Comm cartcomm;
     {
       int reorder = 0;
-      MPI_Cart_create( MPI_COMM_GEOSX, 3, partition.m_Partitions.data(), partition.m_Periodic.data(), reorder, &cartcomm );
+      MpiWrapper::cartCreate( MPI_COMM_GEOSX, 3, partition.m_Partitions.data(), partition.m_Periodic.data(), reorder, &cartcomm );
       GEOSX_ERROR_IF( cartcomm == MPI_COMM_NULL, "Fail to run MPI_Cart_create and establish communications" );
     }
     int const rank = MpiWrapper::commRank( MPI_COMM_GEOSX );
     int nsdof = 3;
 
-    MPI_Cart_coords( cartcomm, rank, nsdof, partition.m_coords.data());
+    MpiWrapper::cartCoords( cartcomm, rank, nsdof, partition.m_coords.data() );
 
     int ncoords[3];
     addNeighbors( 0, cartcomm, ncoords );
@@ -269,9 +269,9 @@ void DomainPartition::addNeighbors( const unsigned int idim,
         break;
       }
     }
-    if( !me )
+    int const neighborRank = MpiWrapper::cartRank( cartcomm, ncoords );
+    if( !me && !std::any_of( m_neighbors.begin(), m_neighbors.end(), [=](NeighborCommunicator const & nn) { return nn.neighborRank( ) == neighborRank; } ) )
     {
-      int const neighborRank = MpiWrapper::cartRank( cartcomm, ncoords );
       m_neighbors.emplace_back( NeighborCommunicator( neighborRank ) );
     }
   }

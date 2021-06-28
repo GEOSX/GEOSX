@@ -585,12 +585,16 @@ stress - traction is applied to the faces as specified by the inner product of i
 		<xsd:attribute name="name" type="string" use="required" />
 	</xsd:complexType>
 	<xsd:complexType name="InternalWellboreType">
-		<!--autoSpaceRadialElems => Automatically set number and spacing of elements in the radial direction. This overrides the values of nr-->
-		<xsd:attribute name="autoSpaceRadialElems" type="integer_array" default="{0}" />
+		<!--autoSpaceRadialElems => Automatically set number and spacing of elements in the radial direction. This overrides the values of nr!Value in each block indicates factor to scale the radial increment.Larger numbers indicate larger radial elements.-->
+		<xsd:attribute name="autoSpaceRadialElems" type="real64_array" default="{-1}" />
+		<!--cartesianMappingInnerRadius => If using a Cartesian aligned outer boundary, this is inner radius at which to start the mapping.-->
+		<xsd:attribute name="cartesianMappingInnerRadius" type="real64" default="1e+99" />
 		<!--cellBlockNames => Names of each mesh block-->
 		<xsd:attribute name="cellBlockNames" type="string_array" use="required" />
 		<!--elementTypes => Element types of each mesh block-->
 		<xsd:attribute name="elementTypes" type="string_array" use="required" />
+		<!--hardRadialCoords => Sets the radial spacing to specified values-->
+		<xsd:attribute name="hardRadialCoords" type="real64_array" default="{0}" />
 		<!--nr => Number of elements in the radial direction-->
 		<xsd:attribute name="nr" type="integer_array" use="required" />
 		<!--nt => Number of elements in the tangent direction-->

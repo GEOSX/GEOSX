@@ -477,8 +477,7 @@ void InternalMeshGenerator::generateMesh( DomainPartition & domain )
           getNodePosition( globalIJK, m_trianglePattern, X[localNodeIndex] );
 
           // Alter global node map for radial mesh
-          setNodeGlobalIndicesOnPeriodicBoundary( partition,
-                                                  globalIJK );
+          setNodeGlobalIndicesOnPeriodicBoundary( partition, globalIJK );
 
           nodeLocalToGlobal[localNodeIndex] = nodeGlobalIndex( globalIJK );
 
@@ -543,6 +542,18 @@ void InternalMeshGenerator::generateMesh( DomainPartition & domain )
     regionOffset = 0;
     SortedArray< string > processedRegionNames;
     localIndex iR = 0;
+
+    // Reset the number of nodes in each dimension in case of periodic BCs so the element firstNodeIndex 
+    //  calculation is correct? Not actually needed in parallel since we still have ghost nodes in that case and
+    //  the count has not been altered due to periodicity.
+    if( std::any_of( partition.m_Periodic.begin(), partition.m_Periodic.end(), [](int & dimPeriodic) { return dimPeriodic == 1; } ) )
+    {
+      for( int i = 0; i < m_dim; ++i )
+      {
+        numNodesInDir[i] = lastElemIndexInPartition[i] - firstElemIndexInPartition[i] + 2;
+      }
+      numNodes = numNodesInDir[0] * numNodesInDir[1] * numNodesInDir[2];
+    }
 
     for( int iblock = 0; iblock < m_nElems[0].size(); ++iblock )
     {
@@ -677,6 +688,11 @@ void InternalMeshGenerator::generateMesh( DomainPartition & domain )
   }
 
   coordinateTransformation( nodeManager );
+
+  GEOSX_LOG_RANK_0( "Total number of nodes:"<<(m_numElemsTotal[0]+1)*(m_numElemsTotal[1]+1)*(m_numElemsTotal[2]+1) );
+  GEOSX_LOG_RANK_0( "Total number of elems:"<<m_numElemsTotal[0]*m_numElemsTotal[1]*m_numElemsTotal[2] );
+
+  GEOSX_LOG_RANK( "Total number of nodes:"<<nodeManager.size() );
 
 }
 
@@ -982,8 +998,8 @@ InternalMeshGenerator::
 {
   // Condition is:
   // 1) element is last index in component direction
-  // 2) first element in partition is zero
-  if( ( globalIJK[component] == m_numElemsTotal[component]-1 )&&
+  // 2) first local element in component partition is zero
+  if( ( globalIJK[component] == m_numElemsTotal[component] - 1 ) &&
       ( firstElemIndexInPartition[component] == 0) )
   {
     // Last set of nodes

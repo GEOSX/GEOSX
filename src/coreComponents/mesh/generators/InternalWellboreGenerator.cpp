@@ -88,11 +88,27 @@ InternalWellboreGenerator::InternalWellboreGenerator( string const & name,
     setDescription( "Enforce a Cartesian aligned outer boundary on the outer "
                     "block starting with the radial block specified in this value" );
 
+  registerWrapper( viewKeyStruct::cartesianMappingInnerRadiusString(), &m_cartesianMappingInnerRadius ).
+    setApplyDefaultValue( 1e99 ).
+    setSizedFromParent( 0 ).
+    setInputFlag( InputFlags::OPTIONAL ).
+    setDescription( "If using a Cartesian aligned outer boundary, this is inner "
+                    "radius at which to start the mapping." );
+
   registerWrapper( viewKeyStruct::autoSpaceRadialElemsString(), &m_autoSpaceRadialElems ).
+    setApplyDefaultValue( -1.0 ).
     setSizedFromParent( 0 ).
     setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "Automatically set number and spacing of elements in the radial direction. "
-                    "This overrides the values of nr" );
+                    "This overrides the values of nr!"
+                    "Value in each block indicates factor to scale the radial increment."
+                    "Larger numbers indicate larger radial elements." );
+
+  registerWrapper( viewKeyStruct::setRadialCoordsString(), &m_radialCoords ).
+    setSizedFromParent( 0 ).
+    setInputFlag( InputFlags::OPTIONAL ).
+    setDescription( "Sets the radial spacing to specified values" );
+
 
 }
 
@@ -156,7 +172,7 @@ void InternalWellboreGenerator::postProcessInput()
       }
 
       // Are we going to auto-size this block??
-      if( m_autoSpaceRadialElems[iBlock] == 1 )
+      if( m_autoSpaceRadialElems[iBlock] > 0 )
       {
         // We have to set the starting index for this block so that we skip any
         // values that are fixed from the last block when we scale the radial
@@ -185,7 +201,7 @@ void InternalWellboreGenerator::postProcessInput()
 
           // set the next radius a some combination of the inner and outer radius for this "element".
           constexpr real64 c = 0.5;
-          real64 const r_ip1 = m_radialCoords.back() + ( 1.0 - c ) * t_i + c * tElemSize_ip1_0;
+          real64 const r_ip1 = m_radialCoords.back() + m_autoSpaceRadialElems[iBlock] * ( ( 1.0 - c ) * t_i + c * tElemSize_ip1_0 );
 
           // if the radius of the next layer is bigger than rOuter, we figure
           // out where to cut off the layer.
@@ -241,6 +257,30 @@ void InternalWellboreGenerator::postProcessInput()
     }
   }
 
+
+  GEOSX_LOG_RANK_0( "radial elements: "<<m_nElems[0] );
+  GEOSX_LOG_RANK_0( "Radial Coordinates: "<<m_radialCoords );
+
+
+  if( m_cartesianOuterBoundary < 1000000 )
+  {
+    GEOSX_ERROR_IF( m_cartesianOuterBoundary < 0, "useCartesianOuterBoundary must be > 0" );
+    real64 const innerLimit = m_vertices[0][m_cartesianOuterBoundary];
+    real64 const outerLimit = m_vertices[0].size();
+    GEOSX_ERROR_IF( m_cartesianMappingInnerRadius < 1e98 &&
+                    m_cartesianMappingInnerRadius > outerLimit,
+                    "cartesianMappingInnerRadius must be inside the outer radius of the mesh");
+
+    GEOSX_ERROR_IF( m_cartesianMappingInnerRadius < innerLimit,
+                    "cartesianMappingInnerRadius must be outside the radius "
+                    "of the inner boundary of the region specified by useCartesianOuterBoundary");
+
+    if( m_cartesianMappingInnerRadius > 1e98 )
+    {
+      m_cartesianMappingInnerRadius = innerLimit;
+    }
+  }
+
   InternalMeshGenerator::postProcessInput();
 }
 
@@ -249,11 +289,11 @@ void InternalWellboreGenerator::reduceNumNodesForPeriodicBoundary( SpatialPartit
 {
   if( m_isFullAnnulus )
   {
-    if( partition.m_Partitions[1]==0 )
+    if( partition.m_Partitions[1] == 1 )
     {
       numNodesInDir[1] -= 1;
     }
-    else if( partition.m_Partitions[1]>2 )
+    else if( partition.m_Partitions[1] > 1 )
     {
       partition.m_Periodic[1] = 1;
     }
@@ -269,8 +309,7 @@ void InternalWellboreGenerator::
   GEOSX_UNUSED_VAR( partition );
   if( m_isFullAnnulus )
   {
-    // TODO this only works for single theta partition.
-    if( globalIJK[1] == m_nElems[1].back() )
+    if( globalIJK[1] == m_nElems[1].back() + 1 )
     {
       globalIJK[1] = 0;
     }
@@ -307,10 +346,6 @@ void InternalWellboreGenerator::coordinateTransformation( NodeManager & nodeMana
   SortedArray< localIndex > & tnegNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( string( "tneg" ) ).reference();
   SortedArray< localIndex > & tposNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( string( "tpos" ) ).reference();
 
-  real64 const cartesianMappingInnerRadius = m_cartesianOuterBoundary < m_vertices[0].size() ?
-                                             m_vertices[0][m_cartesianOuterBoundary] :
-                                             1e99;
-
   // Map to radial mesh
   for( localIndex a = 0; a<nodeManager.size(); ++a )
   {
@@ -320,10 +355,10 @@ void InternalWellboreGenerator::coordinateTransformation( NodeManager & nodeMana
     real64 meshRout = m_max[0] / cos( meshPhi );
     real64 meshRact;
 
-    if( X[a][0] > cartesianMappingInnerRadius )
+    if( X[a][0] > m_cartesianMappingInnerRadius )
     {
-      real64 const cartesianScaling = ( meshRout - cartesianMappingInnerRadius ) / ( m_max[0] - cartesianMappingInnerRadius );
-      meshRact = cartesianScaling * ( X[a][0] - cartesianMappingInnerRadius ) + cartesianMappingInnerRadius;
+      real64 const cartesianScaling = ( meshRout - m_cartesianMappingInnerRadius ) / ( m_max[0] - m_cartesianMappingInnerRadius );
+      meshRact = cartesianScaling * ( X[a][0] - m_cartesianMappingInnerRadius ) + m_cartesianMappingInnerRadius;
     }
     else
     {
@@ -468,6 +503,16 @@ void InternalWellboreGenerator::coordinateTransformation( NodeManager & nodeMana
       }
     }
   }
+  /*
+  std::cout<<"xnegNodes: "<<xnegNodes<<std::endl;
+  std::cout<<"xposNodes: "<<xposNodes<<std::endl;
+  std::cout<<"ynegNodes: "<<ynegNodes<<std::endl;
+  std::cout<<"yposNodes: "<<yposNodes<<std::endl;
+  std::cout<<"rnegNodes: "<<rnegNodes<<std::endl;
+  std::cout<<"rposNodes: "<<rposNodes<<std::endl;
+  std::cout<<"tnegNodes: "<<tnegNodes<<std::endl;
+  std::cout<<"tposNodes: "<<tposNodes<<std::endl;
+  */
 }
 
 REGISTER_CATALOG_ENTRY( MeshGeneratorBase, InternalWellboreGenerator, string const &, Group * const )

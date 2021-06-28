@@ -2208,6 +2208,7 @@ void SiloFile::writeDataField( string const & meshName,
   string_array varnamestring( nvars );
   array1d< array1d< OUTTYPE > > castedField( nvars );
 
+  field.move( LvArray::MemorySpace::host );
 
   for( int i = 0; i < nvars; ++i )
   {
@@ -2219,10 +2220,10 @@ void SiloFile::writeDataField( string const & meshName,
     {
       castedField[i].resize( nels );
       vars[i] = static_cast< void * >( (castedField[i]).data() );
-      for( int k = 0; k < nels; ++k )
+      forAll<serialPolicy>( nels, [=,&castedField] GEOSX_HOST ( localIndex const k )
       {
         castedField[i][k] = SiloFileUtilities::CastField< OUTTYPE >( field[k], i );
-      }
+      } );
     }
   }
 
@@ -2333,6 +2334,7 @@ void SiloFile::writeDataField( string const & meshName,
 {
   int const primaryDimIndex = 0;
   int const secondaryDimIndex = 1;
+  field.move( LvArray::MemorySpace::host );
 
   localIndex const npts = field.size( primaryDimIndex );
   localIndex const nvar = field.size( secondaryDimIndex );
@@ -2371,6 +2373,7 @@ void SiloFile::writeDataField( string const & meshName,
   int const primaryDimIndex = 0;
   int const secondaryDimIndex1 = 1;
   int const secondaryDimIndex2 = 2;
+  field.move( LvArray::MemorySpace::host );
 
   localIndex const npts  = field.size( primaryDimIndex );
   localIndex const nvar1 = field.size( secondaryDimIndex1 );
@@ -2463,6 +2466,8 @@ void SiloFile::writeDataField( string const & meshName,
                                string const & multiRoot )
 {
   int nvars = 1;
+  field.move( LvArray::MemorySpace::host );
+
   for( int i=1; i<NDIM; ++i )
   {
     nvars *= field.size( i );
