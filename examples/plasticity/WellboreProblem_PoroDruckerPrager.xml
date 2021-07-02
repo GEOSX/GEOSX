@@ -1,0 +1,309 @@
+<!--
+Problem: wellbore problem subjected to mixed mode loading and anisotropic far-field stresses
+Created by: Jian Huang
+Last update: June 18 2021
+Objective: to verify the poroelastic solver in GEOSX against analytical solution
+Reference: Cheng, A. H. D. (2016). Poroelasticity (Vol. 877). Switzerland: Springer International Publishing.
+-->
+
+
+<Problem>
+<!-- SPHINX_WELLBORE_TABLE -->
+<Functions>
+  <TableFunction 
+    name="timeFunction"
+    inputVarNames="{time}"
+    coordinates="{0.0, 0.1, 1e6}"
+    values="{0.0, 1.0, 1.0}" 
+  />
+</Functions>
+<!-- SPHINX_WELLBORE_TABLE_END -->
+
+<!-- SPHINX_WELLBORE_MESH -->
+<Mesh>
+  <InternalWellbore
+    name="mesh1"
+    elementTypes="{ C3D8 }"
+    radius="{ 0.1, 5.0 }"
+    theta="{ 0, 180 }"
+    zCoords="{ -1, 1 }"
+    nr="{ 40 }"
+    nt="{ 80 }"
+    nz="{ 2 }"
+    trajectory="{ { 0.0, 0.0, -1.0 },
+                  { 0.0, 0.0,  1.0 } }"
+    autoSpaceRadialElems="{ 1 }"
+    useCartesianOuterBoundary="0"
+    cellBlockNames="{ cb1 }"/>
+</Mesh> 
+<!-- SPHINX_WELLBORE_MESH_END -->
+
+<!-- SPHINX_WELLBORE_MATERIAL -->
+<Constitutive>
+  <PoroExtendedDruckerPrager 
+    name="rock"
+    defaultDensity="2700"
+    defaultBulkModulus="11111111111.1"
+    defaultShearModulus="8333333333.33"
+    defaultCohesion="1.0e6"
+    defaultInitialFrictionAngle="15.27"
+    defaultResidualFrictionAngle="23.05"
+    defaultDilationRatio="1.0"
+    defaultHardening="0.01"
+    BiotCoefficient="1.0"
+  />
+  <CompressibleSinglePhaseFluid 
+    name="water"
+    defaultDensity="1000"
+    defaultViscosity="0.001"
+    referencePressure="0e6"
+    referenceDensity="1000"
+    compressibility="2.09028227021e-10"
+    referenceViscosity="0.001"
+    viscosibility="0.0"
+  />
+</Constitutive>
+<!-- SPHINX_WELLBORE_MATERIAL_END -->
+
+<!-- SPHINX_WELLBORE_ELEMENTREGIONS -->
+<ElementRegions>
+  <CellElementRegion 
+    name="Omega" 
+    cellBlocks="{cb1}" 
+    materialList="{rock, water}"
+  />
+</ElementRegions>
+<!-- SPHINX_WELLBORE_ELEMENTREGIONS_END -->
+
+<!-- SPHINX_WELLBORE_BC -->
+<FieldSpecifications>
+  <FieldSpecification 
+    name="stressXX"
+    initialCondition="1"
+    setNames="{all}"
+    objectPath="ElementRegions/Omega/cb1"
+    fieldName="rock_stress"
+    component="0"
+    scale="-9.0e6"
+  />
+
+  <FieldSpecification 
+    name="stressYY"
+    initialCondition="1"
+    setNames="{all}"
+    objectPath="ElementRegions/Omega/cb1"
+    fieldName="rock_stress"
+    component="1"
+    scale="-11.0e6"
+  />
+
+  <FieldSpecification 
+    name="stressZZ"
+    initialCondition="1"
+    setNames="{all}"
+    objectPath="ElementRegions/Omega/cb1"
+    fieldName="rock_stress"
+    component="2"
+    scale="-12.0e6"
+  />
+
+  <FieldSpecification 
+    name="permx"
+    component="0"
+    initialCondition="1"  
+    setNames="{all}"
+    objectPath="ElementRegions/Omega/cb1"
+    fieldName="permeability"
+    scale="1e-20"
+  />
+
+  <FieldSpecification 
+    name="permy"
+    component="1"
+    initialCondition="1"  
+    setNames="{all}"
+    objectPath="ElementRegions/Omega/cb1"
+    fieldName="permeability"
+    scale="1e-20"
+  />
+
+  <FieldSpecification 
+    name="permz"
+    component="2"
+    initialCondition="1"  
+    setNames="{all}"
+    objectPath="ElementRegions/Omega/cb1"
+    fieldName="permeability"
+    scale="1e-20"
+  />
+
+  <FieldSpecification 
+    name="referencePorosity"
+    initialCondition="1"
+    setNames="{all}"
+    objectPath="ElementRegions/Omega/cb1"
+    fieldName="referencePorosity"
+    scale="0.3"
+  />
+
+  <FieldSpecification 
+    name="initialPressure"
+    initialCondition="1"
+    setNames="{all}"
+    objectPath="ElementRegions/Omega/cb1"
+    fieldName="pressure"
+    scale="0e6"
+  />
+
+  <FieldSpecification 
+    name="xconstraint"    
+    objectPath="nodeManager" 
+    fieldName="TotalDisplacement" 
+    component="0" 
+    scale="0.0" 
+    setNames="{xneg, xpos}"
+  />
+
+  <FieldSpecification 
+    name="yconstraint"    
+    objectPath="nodeManager" 
+    fieldName="TotalDisplacement" 
+    component="1" 
+    scale="0.0" 
+    setNames="{tneg, tpos, ypos}"
+  />
+
+  <FieldSpecification 
+    name="zconstraint" 
+    objectPath="nodeManager" 
+    fieldName="TotalDisplacement" 
+    component="2" 
+    scale="0.0" 
+    setNames="{zneg, zpos}"
+  />
+
+  <Traction 
+    name="InnerMechanicalLoad"
+    setNames="{ rneg }"
+    objectPath="faceManager"
+    scale="-10.0e6"
+    tractionType="1"
+    functionName="timeFunction"     
+  />
+
+  <FieldSpecification 
+    name="InnerFluidLoad"
+    setNames="{ rneg }"
+    objectPath="faceManager"
+    fieldName="pressure"
+    scale="10e6"
+    functionName="timeFunction"   
+  />
+</FieldSpecifications>
+<!-- SPHINX_WELLBORE_BC_END -->
+
+<!-- SPHINX_WELLBORE_OUTPUT -->
+<Outputs>
+  <Silo 
+    name="siloOutput"
+    parallelThreads="1"
+    plotFileRoot="plot"
+  />
+</Outputs>
+<!-- SPHINX_WELLBORE_OUTPUT_END -->
+
+<!-- SPHINX_WELLBORE_POROELASTICSOLVER -->
+<Solvers gravityVector="0.0, 0.0, 0.0">
+<Poroelastic 
+  name="PoroelasticitySolver" 
+  solidSolverName="mechanicsSolver"
+  fluidSolverName="SinglePhaseFlowSolver"
+  couplingTypeOption="FIM"
+  logLevel="1"
+  discretization="FE1"
+  targetRegions="{Omega}">
+  <LinearSolverParameters 
+    solverType="direct"
+    directParallel="0"
+    logLevel="0"
+  />
+  <NonlinearSolverParameters
+    newtonMaxIter = "40"
+  />
+</Poroelastic>
+<!-- SPHINX_WELLBORE_POROELASTICSOLVER_END -->
+
+<!-- SPHINX_WELLBORE_MECHANICALSOLVER -->
+<SolidMechanics_LagrangianFEM 
+  name="mechanicsSolver" 
+  timeIntegrationOption="QuasiStatic"
+  logLevel="1"
+  discretization="FE1"
+  targetRegions="{ Omega }"
+  solidMaterialNames="{ rock }">
+  <LinearSolverParameters 
+    solverType="direct"
+  />
+  <NonlinearSolverParameters
+    newtonTol = "1.0e-5"
+    newtonMaxIter = "15"
+  />
+</SolidMechanics_LagrangianFEM>
+<!-- SPHINX_WELLBORE_MECHANICALSOLVER_END -->
+
+<!-- SPHINX_WELLBORE_SINGLEPHASEFVM -->
+<SinglePhaseFVM 
+  name="SinglePhaseFlowSolver"
+  logLevel="1"
+  discretization="singlePhaseTPFA"
+  targetRegions="{Omega}"
+  fluidNames="{ water }"
+  solidNames="{ rock }">
+  <LinearSolverParameters 
+    solverType="direct"
+  />
+  <NonlinearSolverParameters
+    newtonTol = "1.0e-6"
+    newtonMaxIter = "8"
+  />
+</SinglePhaseFVM>
+</Solvers>
+<!-- SPHINX_WELLBORE_SINGLEPHASEFVM_END -->
+
+<!-- SPHINX_WELLBORE_EXECUTION -->
+<Events maxTime="497639.940531">
+
+<PeriodicEvent 
+  name="outputs"
+  timeFrequency="4976.39940531"
+  targetExactTimestep="497639.940531"
+  target="/Outputs/siloOutput"
+/>
+
+<PeriodicEvent 
+  name="solverApplication0"
+  beginTime="0"
+  endTime="497639.940531"   
+  forceDt="497.639940531"
+  target="/Solvers/PoroelasticitySolver"
+/>
+</Events>
+<!-- SPHINX_WELLBORE_EXECUTION_END -->
+
+<!-- SPHINX_WELLBORE_NUMERICAL -->
+<NumericalMethods>
+  <FiniteElements>
+    <FiniteElementSpace 
+      name="FE1"
+      order="1"/>
+    </FiniteElements>
+  <FiniteVolume>
+    <TwoPointFluxApproximation 
+      name="singlePhaseTPFA"
+      fieldName="pressure"
+      coefficientName="permeability"
+    />
+  </FiniteVolume>
+</NumericalMethods>
+<!-- SPHINX_WELLBORE_NUMERICAL_END -->
+</Problem>
