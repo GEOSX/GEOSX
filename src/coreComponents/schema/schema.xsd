@@ -528,6 +528,7 @@ stress - traction is applied to the faces as specified by the inner product of i
 			<xsd:element name="InternalWell" type="InternalWellType" />
 			<xsd:element name="InternalWellbore" type="InternalWellboreType" />
 			<xsd:element name="PAMELAMeshGenerator" type="PAMELAMeshGeneratorType" />
+			<xsd:element name="VTKMeshGenerator" type="VTKMeshGeneratorType" />
 		</xsd:choice>
 	</xsd:complexType>
 	<xsd:complexType name="InternalMeshType">
@@ -640,6 +641,12 @@ stress - traction is applied to the faces as specified by the inner product of i
 		<xsd:attribute name="reverseZ" type="integer" default="0" />
 		<!--scale => Scale the coordinates of the vertices-->
 		<xsd:attribute name="scale" type="real64" default="1" />
+		<!--name => A name is required for any non-unique nodes-->
+		<xsd:attribute name="name" type="string" use="required" />
+	</xsd:complexType>
+	<xsd:complexType name="VTKMeshGeneratorType">
+		<!--file => path to the mesh file-->
+		<xsd:attribute name="file" type="path" use="required" />
 		<!--name => A name is required for any non-unique nodes-->
 		<xsd:attribute name="name" type="string" use="required" />
 	</xsd:complexType>
