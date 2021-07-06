@@ -1,0 +1,63 @@
+<?xml version="1.0" ?>
+
+<Pygeosx>
+
+  <Acquisition
+      sourceFrequency="5"
+      domainBoundaries="{{0,2000},{0,2000},{0,2000}}">
+    <Equispaced
+	startSourcePos="{}"
+	endSourcePos="{}"
+	startReceiversPos="{}"
+	endReceiversPos="{}"
+	sourceDepth=""
+	receiversDepth=""
+	Source=""
+	Receivers="{}"
+	export=""/>
+    <Moving
+	SourceX=""
+	SourceY=""
+	ReceiversX=""
+	ReceiversY=""
+	sourceDepth=""
+	receiversDepth=""
+	zoneReceiversX=""
+	zoneReceiversY=""
+	export=""/>
+    <Random
+	Source=""
+	ReceiversX=""
+	ReceiversY=""
+	sourceDepth=""
+	receiversDepth=""
+	export=""/>
+    <Segy
+	segyFile=""/>
+
+  </Acquisition>
+
+  <ShotSimulation
+      solver="Acoustic"
+      xmlFile=""
+      geosxDirectory=""
+      segyTimeStep="">
+    <MultiProcessing
+	processes="1"
+	MPIcores=""
+	xPartition=""
+	yPartition=""
+	zpartition=""/>
+    <DaskProcessing
+	processes="1"
+	MPIcores=""
+	memory=""
+	nodes=""
+	xPartition=""
+	yPartition=""
+	zPartition=""
+	clusterType=""/>
+
+  </ShotSimulation>
+
+</Pygeosx>

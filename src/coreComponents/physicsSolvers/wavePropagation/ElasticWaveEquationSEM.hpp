@@ -14,11 +14,11 @@
 
 
 /**
- * @file AcousticWaveEquationSEM.hpp
+ * @file ElasticWaveEquationSEM.hpp
  */
 
-#ifndef GEOSX_PHYSICSSOLVERS_WAVEPROPAGATION_ACOUSTICWAVEEQUATIONSEM_HPP_
-#define GEOSX_PHYSICSSOLVERS_WAVEPROPAGATION_ACOUSTICWAVEEQUATIONSEM_HPP_
+#ifndef SRC_CORECOMPONENTS_PHYSICSSOLVERS_WAVEPROPAGATION_ELASTICWAVEEQUATIONSEM_HPP_
+#define SRC_CORECOMPONENTS_PHYSICSSOLVERS_WAVEPROPAGATION_ELASTICWAVEEQUATIONSEM_HPP_
 
 #include "mesh/ExtrinsicMeshData.hpp"
 #include "physicsSolvers/SolverBase.hpp"
@@ -27,27 +27,23 @@
 namespace geosx
 {
 
-class AcousticWaveEquationSEM : public SolverBase
+class ElasticWaveEquationSEM : public SolverBase
 {
 public:
-
-  using EXEC_POLICY = parallelDevicePolicy<32>;
-  using OMP_EXEC_POLICY = parallelHostPolicy;
-  
-  AcousticWaveEquationSEM( const std::string & name,
+  ElasticWaveEquationSEM( const std::string & name,
                            Group * const parent );
 
-  virtual ~AcousticWaveEquationSEM() override;
+  virtual ~ElasticWaveEquationSEM() override;
 
-  AcousticWaveEquationSEM() = delete;
-  AcousticWaveEquationSEM( AcousticWaveEquationSEM const & ) = delete;
-  AcousticWaveEquationSEM( AcousticWaveEquationSEM && ) = default;
+  ElasticWaveEquationSEM() = delete;
+  ElasticWaveEquationSEM( ElasticWaveEquationSEM const & ) = delete;
+  ElasticWaveEquationSEM( ElasticWaveEquationSEM && ) = default;
 
-  AcousticWaveEquationSEM & operator=( AcousticWaveEquationSEM const & ) = delete;
-  AcousticWaveEquationSEM & operator=( AcousticWaveEquationSEM && ) = delete;
+  ElasticWaveEquationSEM & operator=( ElasticWaveEquationSEM const & ) = delete;
+  ElasticWaveEquationSEM & operator=( ElasticWaveEquationSEM && ) = delete;
 
 
-  static string catalogName() { return "AcousticSEM"; }
+  static string catalogName() { return "ElasticSEM"; }
 
   virtual void initializePreSubGroups() override;
 
@@ -82,14 +78,8 @@ public:
   virtual
   real64 evaluateRicker( real64 const & time_n, real64 const & f0, localIndex order );
 
-  /**
-   * @brief Multiply the precomputed term by the Ricker and add to the right-hand side
-   * @param time_n the time of evaluation of the source
-   * @param rhs the right hand side vector to be computed
-   */
-  void addSourceToRightHandSide( real64 const & time_n, arrayView1d< real64 > const rhs );
-
   /**@}*/
+
 
 
   struct viewKeyStruct : SolverBase::viewKeyStruct
@@ -106,14 +96,11 @@ public:
     static constexpr char const * receiverConstantsString() {return "receiverConstants"; }
     static constexpr char const * receiverIsLocalString() { return "receiverIsLocal"; }
 
-    static constexpr char const * pressureNp1AtReceiversString() { return "pressureNp1AtReceivers"; }
-
     static constexpr char const * rickerOrderString() { return "rickerOrder"; }
-    static constexpr char const * outputSismoTraceString() { return "outputSismoTrace"; }
-    static constexpr char const * dtSismoTraceString() { return "dtSismoTrace"; }
-    static constexpr char const * nSampleSismoTraceString() { return "nSampleSismoTrace"; }
-    static constexpr char const * indexSismoTraceString() { return "indexSismoTrace"; }
+    
+    static constexpr char const * displacementNp1AtReceiversString() { return "displacementNp1AtReceivers"; }
 
+    static constexpr char const * outputSismoTraceString() { return "outputSismoTrace";}
 
   } waveEquationViewKeys;
 
@@ -126,8 +113,7 @@ protected:
 
 private:
 
-
-  /**
+   /**
    * @brief Convert a mesh element point coordinate into a coorinate on the reference element
    * @param coords coordinate of the point
    * @param coordsOnRefElem to contain the coordinate computed in the reference element
@@ -145,33 +131,24 @@ private:
                                              arrayView2d< localIndex const, cells::NODE_MAP_USD > const elemsToNodes,
                                              arrayView2d< real64 const, nodes::REFERENCE_POSITION_USD > const X );
 
-  /**
-   * @brief Locate sources and receivers position in the mesh elements, evaluate the basis functions at each point and save them to the
-   * corresponding elements nodes.
-   * @param mesh mesh of the computational domain
-   */
+  /// Locates the source term and precomputes the constant part of the source term
+  /// And locate receivers and pre_evaluate the basis functions at each receiver coordinate
   void precomputeSourceAndReceiverTerm( MeshLevel & mesh );
 
-  /**
-   * @brief Apply free surface condition to the face define in the geometry box from the xml
-   * @param time the time to apply the BC
-   * @param domain the partition domain
-   */
+  /// Multiply the precomputed term by the ricker and add to the right-hand side
+  void addSourceToRightHandSide( real64 const & time, arrayView1d< real64 > const rhs_x, arrayView1d< real64 > const rhs_y, arrayView1d< real64 > const rhs_z);
+
+  /// Apply free surface condition to the face define in the geometry box from the xml
   void applyFreeSurfaceBC( real64 const time, DomainPartition & domain );
 
-  /**
-   * @brief Compute the pressure at each receiver coordinate in one time step
-   * @param num_timeStep the cycle number of timestep
-   * @param pressure_np1 the array to save the pressure value at the receiver position
-   */
-  void computeSismoTrace( real64 const time_n, real64 const dt, localIndex iSismoTrace, arrayView1d< real64 > const pressure_np1, arrayView1d< real64 > const pressure_n );
+  /// Apply absorbing boundary condition to the face define in the geometry box from the xml
+  void applyABC( real64 const time, DomainPartition & domain );
 
-  /**
-   * @brief Save the sismo trace in file
-   * @param pressure_receivers array of pressure values at the receivers locations
-   * @param filename name of the output file
-   */
-  void saveSismo( arrayView2d< real64 const > const pressure_receivers );
+  /// Compute the pressure at each receiver coordinate in one time step
+  void computeSismoTrace( localIndex const num_timestep, arrayView1d< real64 > const displacementx_np1, arrayView1d< real64 > const displacementy_np1, arrayView1d< real64 > const displacementz_np1 );
+
+  /// save the sismo trace in file
+  void saveSismo( localIndex isismo, real64 val_displacement, char *filename );
 
   /// Coordinates of the sources in the mesh
   array2d< real64 > m_sourceCoordinates;
@@ -181,6 +158,15 @@ private:
 
   /// Constant part of the source for the nodes listed in m_sourceNodeIds
   array2d< real64 > m_sourceConstants;
+
+    /// Constant part of the source for the nodes listed in m_sourceNodeIds
+  array2d< real64 > m_sourceConstants_x;
+
+    /// Constant part of the source for the nodes listed in m_sourceNodeIds
+  array2d< real64 > m_sourceConstants_y;
+
+    /// Constant part of the source for the nodes listed in m_sourceNodeIds
+  array2d< real64 > m_sourceConstants_z;
 
   /// Flag that indicates whether the source is local or not to the MPI rank
   array1d< localIndex > m_sourceIsLocal;
@@ -200,31 +186,19 @@ private:
   /// Flag that indicates whether the receiver is local or not to the MPI rank
   array1d< localIndex > m_receiverIsLocal;
 
-  /// Pressure_np1 at the receiver location for each time step for each receiver
-  array2d< real64 > m_pressureNp1AtReceivers;
+  /// Displacement_np1 at the receiver location for each time step for each receiver
+  array2d< real64 > m_displacementNp1AtReceivers;
 
-
-  /// Flag that indicates the order of the Ricker to be used, order 2 by default
+    /// Flag that indicates the order of the Ricker to be used, order 2 by default
   localIndex m_rickerOrder;
 
   /// Flag that indicates if we write the sismo trace in a file .txt, 0 no output, 1 otherwise
   localIndex m_outputSismoTrace;
 
-  /// Time step size to compute the sismo trace
-  real64 m_dtSismoTrace;
-
-  /// Number of sismo trace to be coputed
-  localIndex m_nSampleSismoTrace;
-
-  /// Index of the sismo trace
-  localIndex m_indexSismoTrace;
-
-
 };
 
-
 template< typename FE_TYPE >
-bool AcousticWaveEquationSEM::computeCoordinatesOnReferenceElement( real64 const (&coords)[3],
+bool ElasticWaveEquationSEM::computeCoordinatesOnReferenceElement( real64 const (&coords)[3],
                                                                     real64 (& coordsOnRefElem)[3],
                                                                     localIndex const & indexElement,
                                                                     array1d< array1d< localIndex > > const & faceNodes,
@@ -272,36 +246,100 @@ bool AcousticWaveEquationSEM::computeCoordinatesOnReferenceElement( real64 const
   }
 }
 
-
 namespace extrinsicMeshData
 {
 
-EXTRINSIC_MESH_DATA_TRAIT( Pressure_nm1,
-                           "pressure_nm1",
+EXTRINSIC_MESH_DATA_TRAIT( Displacementx_nm1,
+                           "displacementx_nm1",
                            array1d< real64 >,
                            0,
                            NOPLOT,
                            WRITE_AND_READ,
-                           "Scalar pressure at time n-1." );
+                           "x-component of displacement at time n-1." );
 
-EXTRINSIC_MESH_DATA_TRAIT( Pressure_n,
-                           "pressure_n",
+EXTRINSIC_MESH_DATA_TRAIT( Displacementy_nm1,
+                           "displacementy_nm1",
                            array1d< real64 >,
                            0,
                            NOPLOT,
                            WRITE_AND_READ,
-                           "Scalar pressure at time n." );
+                           "y-component of displacement at time n-1." );
 
-EXTRINSIC_MESH_DATA_TRAIT( Pressure_np1,
-                           "pressure_np1",
+EXTRINSIC_MESH_DATA_TRAIT( Displacementz_nm1,
+                           "displacementz_nm1",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "z-component of displacement at time n-1." );
+
+
+EXTRINSIC_MESH_DATA_TRAIT( Displacementx_n,
+                           "displacementx_n",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "x-component of displacement at time n." );
+
+EXTRINSIC_MESH_DATA_TRAIT( Displacementy_n,
+                           "displacementy_n",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "y-component of displacement at time n." );
+
+EXTRINSIC_MESH_DATA_TRAIT( Displacementz_n,
+                           "displacementz_n",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "z-component of displacement at time n." );
+
+EXTRINSIC_MESH_DATA_TRAIT( Displacementx_np1,
+                           "displacementx_np1",
                            array1d< real64 >,
                            0,
                            LEVEL_0,
                            WRITE_AND_READ,
-                           "Scalar pressure at time n+1." );
+                           "x-component of displacement at time n+1." );
 
-EXTRINSIC_MESH_DATA_TRAIT( ForcingRHS,
-                           "rhs",
+EXTRINSIC_MESH_DATA_TRAIT( Displacementy_np1,
+                           "displacementy_np1",
+                           array1d< real64 >,
+                           0,
+                           LEVEL_0,
+                           WRITE_AND_READ,
+                           "y-component of displacement at time n+1." );
+
+EXTRINSIC_MESH_DATA_TRAIT( Displacementz_np1,
+                           "displacementz_np1",
+                           array1d< real64 >,
+                           0,
+                           LEVEL_0,
+                           WRITE_AND_READ,
+                           "z-component of displacement at time n+1." );
+
+EXTRINSIC_MESH_DATA_TRAIT( ForcingRHS_x,
+                           "rhs_x",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "RHS" );
+                          
+EXTRINSIC_MESH_DATA_TRAIT( ForcingRHS_y,
+                           "rhs_y",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "RHS" );
+          
+EXTRINSIC_MESH_DATA_TRAIT( ForcingRHS_z,
+                           "rhs_z",
                            array1d< real64 >,
                            0,
                            NOPLOT,
@@ -314,31 +352,95 @@ EXTRINSIC_MESH_DATA_TRAIT( MassVector,
                            0,
                            NOPLOT,
                            WRITE_AND_READ,
-                           "Diagonal of the Mass Matrix." );
+                           "Diagonal Mass Matrix." );
 
-EXTRINSIC_MESH_DATA_TRAIT( DampingVector,
-                           "dampingVector",
+EXTRINSIC_MESH_DATA_TRAIT( DampingVector_x,
+                           "dampingVector_x",
                            array1d< real64 >,
                            0,
                            NOPLOT,
                            WRITE_AND_READ,
-                           "Diagonal of the Damping Matrix." );
+                           "Diagonal Damping Matrix in x-direction." );
 
-EXTRINSIC_MESH_DATA_TRAIT( MediumVelocity,
-                           "mediumVelocity",
+EXTRINSIC_MESH_DATA_TRAIT( DampingVector_y,
+                           "dampingVector_y",
                            array1d< real64 >,
                            0,
                            NOPLOT,
                            WRITE_AND_READ,
-                           "Medium velocity of the cell" );
+                           "Diagonal Damping Matrix in y-direction." );
 
-EXTRINSIC_MESH_DATA_TRAIT( StiffnessVector,
-                           "stiffnessVector",
+EXTRINSIC_MESH_DATA_TRAIT( DampingVector_z,
+                           "dampingVector_z",
                            array1d< real64 >,
                            0,
                            NOPLOT,
                            WRITE_AND_READ,
-                           "Stiffness vector contains R_h*Pressure_n." );
+                           "Diagonal Damping Matrix in z-direction." );
+
+EXTRINSIC_MESH_DATA_TRAIT( MediumVelocityVp,
+                           "mediumVelocityVp",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "P-waves speed in the cell" );
+
+EXTRINSIC_MESH_DATA_TRAIT( MediumVelocityVs,
+                           "mediumVelocityVs",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "S-waves speed in the cell" );
+
+EXTRINSIC_MESH_DATA_TRAIT( MediumDensity,
+                           "mediumDensity",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "Medium density of the cell" );
+
+EXTRINSIC_MESH_DATA_TRAIT( StiffnessVector_x,
+                           "stiffnessVector_x",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "x-component of stiffness vector." );
+                          
+EXTRINSIC_MESH_DATA_TRAIT( StiffnessVector_y,
+                           "stiffnessVector_y",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "y-component of stiffness vector." );
+          
+EXTRINSIC_MESH_DATA_TRAIT( StiffnessVector_z,
+                           "stiffnessVector_z",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "z-component of stiffness vector." );
+
+EXTRINSIC_MESH_DATA_TRAIT( LameCoefficientLambda,
+                           "lambda",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "First coefficient of Lame." );
+
+EXTRINSIC_MESH_DATA_TRAIT( LameCoefficientMu,
+                           "mu",
+                           array1d< real64 >,
+                           0,
+                           NOPLOT,
+                           WRITE_AND_READ,
+                           "Second coefficient of Lame." );                        
 
 EXTRINSIC_MESH_DATA_TRAIT( FreeSurfaceFaceIndicator,
                            "freeSurfaceFaceIndicator",
@@ -362,4 +464,4 @@ EXTRINSIC_MESH_DATA_TRAIT( FreeSurfaceNodeIndicator,
 
 } /* namespace geosx */
 
-#endif /* GEOSX_PHYSICSSOLVERS_WAVEPROPAGATION_ACOUSTICWAVEEQUATIONSEM_HPP_ */
+#endif /* SRC_CORECOMPONENTS_PHYSICSSOLVERS_WAVEPROPAGATION_ELASSTICWAVEEQUATIONSEM_HPP_ */
