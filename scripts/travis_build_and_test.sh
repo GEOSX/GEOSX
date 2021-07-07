@@ -16,13 +16,20 @@ function or_die () {
 # Working in the root of the cloned repository
 or_die cd $(dirname $0)/..
 
-if [[ $ENABLE_HYPRE == ON ]]; then
-    GEOSX_LA_INTERFACE="Hypre"
-else
-    GEOSX_LA_INTERFACE="Trilinos"
+if [[ -z "${HOST_CONFIG}" ]]; then
+  echo "Environment variable \"HOST_CONFIG\" is undefined."
+  exit 1
 fi
 
-echo $GEOSX_LA_INTERFACE
+if [[ -z "${CMAKE_BUILD_TYPE}" ]]; then
+  echo "Environment variable \"CMAKE_BUILD_TYPE\" is undefined."
+  exit 1
+fi
+
+if [[ -z "${GEOSX_DIR}" ]]; then
+  echo "Environment variable \"GEOSX_DIR\" is undefined."
+  exit 1
+fi
 
 # The -DBLT_MPI_COMMAND_APPEND:STRING=--allow-run-as-root option is added for openmpi
 # which prevents from running as root user by default.
@@ -31,19 +38,11 @@ echo $GEOSX_LA_INTERFACE
 # to run the unit tests.
 GEOSX_BUILD_DIR=/tmp/build
 or_die python scripts/config-build.py \
-              -hc host-configs/environment.cmake \
+              -hc ${HOST_CONFIG} \
               -bt ${CMAKE_BUILD_TYPE} \
               -bp ${GEOSX_BUILD_DIR} \
               -ip ${GEOSX_DIR} \
-              -DBLT_MPI_COMMAND_APPEND:STRING=--allow-run-as-root \
-              -DENABLE_CUDA:BOOL=${ENABLE_CUDA:-OFF} \
-              -DCMAKE_CUDA_FLAGS:STRING=\""${CMAKE_CUDA_FLAGS:-Unused}"\" \
-              -DCUDA_TOOLKIT_ROOT_DIR:PATH=${CUDA_TOOLKIT_ROOT_DIR:-/usr/local/cuda} \
-              -DCUDA_ARCH:STRING=${CUDA_ARCH:sm_70} \
-              -DENABLE_HYPRE:BOOL=${ENABLE_HYPRE:-ON} \
-              -DENABLE_HYPRE_CUDA:BOOL=${ENABLE_HYPRE_CUDA:-OFF} \
-              -DENABLE_TRILINOS:BOOL=${ENABLE_TRILINOS:-ON} \
-              -DGEOSX_LA_INTERFACE:STRING=${GEOSX_LA_INTERFACE}
+              -DBLT_MPI_COMMAND_APPEND:STRING=--allow-run-as-root
 
 or_die cd ${GEOSX_BUILD_DIR}
 

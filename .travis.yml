@@ -2,7 +2,7 @@ language: minimal
 
 env:
   global:
-  - GEOSX_TPL_TAG=156-642
+  - GEOSX_TPL_TAG=146-652
   - secure: CGs2uH6efq1Me6xJWRr0BnwtwxoujzlowC4FHXHdWbNOkPsXf7nCgdaW5vthfD3bhnOeEUQSrfxdhTRtyU/NfcKLmKgGBnZOdUG4/JJK4gDSJ2Wp8LZ/mB0QEoODKVxbh+YtoAiHe3y4M9PGCs+wkNDw/3eEU00cK12DZ6gad0RbLjI3xkhEr/ZEZDZkcYg9yHAhl5bmpqoh/6QGnIg8mxIqdAtGDw+6tT0EgUqjeqc5bG5WwsamKzJItHSXD5zx8IJAlgDk4EzEGjZe0m56YnNfb9iwqqUsmL3Cuwgs7ByVDYw78JC5Kv42YqoxA5BxMT2mFsEe37TpYNXlzofU7ma2Duw9DGXWQd4IkTCcBxlyR0I0bfo0TmgO+y7PYG9lIyHPUkENemdozsZcWamqqkqegiEdRhDVYlSRo3mu7iCwTS6ZTALliVyEYjYxYb7oAnR3cNywXjblTCI8oKfgLSY+8WijM9SRl57JruIHLkLMCjmRI+cZBfv5tS2tYQTBPkygGrigrrN77ZiC7/TGyfggSN0+y0oYtOAgqEnBcKcreiibMW7tKcV2Z1RFD9ZvIkSc1EXLUPDP8FX1oyhmqBMqVo8LksrYLDJHQ05+F3YNgl2taSt7uMjQ4e8iZ3/IjFeMnbylDw+cj/RbS520HXsFPbWFm2Pb9pceA9n6GnY=
 
 # The integrated test repository contains large data (using git lfs) and we do not use them here.
@@ -17,7 +17,6 @@ geosx_before_script: &geosx_before_script
   - git submodule update --init src/coreComponents/mesh/PAMELA
   - git submodule update --init --recursive src/coreComponents/fileIO/coupling/hdf5_interface
   - git submodule update --init --recursive src/coreComponents/physicsSolvers/GEOSX_PTP
-  
 
 geosx_linux_build: &geosx_linux_build
   services: docker
@@ -44,11 +43,12 @@ geosx_linux_build: &geosx_linux_build
     --name=${CONTAINER_NAME}
     --volume=${TRAVIS_BUILD_DIR}:${TRAVIS_BUILD_DIR_MOUNT_POINT}
     --cap-add=ALL
+    -e HOST_CONFIG=${HOST_CONFIG:-host-configs/environment.cmake}
     -e CMAKE_BUILD_TYPE
     -e GEOSX_DIR=${GEOSX_DIR}
-    -e ENABLE_HYPRE=${ENABLE_HYPRE}
-    -e ENABLE_HYPRE_CUDA=${ENABLE_HYPRE_CUDA}
-    -e ENABLE_TRILINOS=${ENABLE_TRILINOS}
+    -e ENABLE_HYPRE=${ENABLE_HYPRE:-OFF}
+    -e ENABLE_HYPRE_CUDA=${ENABLE_HYPRE_CUDA:-OFF}
+    -e ENABLE_TRILINOS=${ENABLE_TRILINOS:-ON}
     ${DOCKER_REPOSITORY}:${GEOSX_TPL_TAG}
     ${TRAVIS_BUILD_DIR_MOUNT_POINT}/scripts/travis_build_and_test.sh ${BUILD_AND_TEST_ARGS};
 
@@ -80,7 +80,7 @@ geosx_osx_build: &geosx_osx_build
   - make -j $(nproc) VERBOSE=1
   # - ctest -V -E "testUncrustifyCheck|testDoxygenCheck|blt_mpi_smoke"
 
-geosx_pangea_build: &geosx_pangea_build
+geosx_totalenergies_cluster_build: &geosx_totalenergies_cluster_build
   <<: *geosx_linux_build
   # We use the most recent ubuntu distribution available in travis-ci to ensure maximum support of google cloud's sdk.
   dist: bionic
@@ -105,7 +105,7 @@ geosx_pangea_build: &geosx_pangea_build
   - openssl aes-256-cbc -K $encrypted_5ac030ea614b_key -iv $encrypted_5ac030ea614b_iv
     -in ${TRAVIS_BUILD_DIR}/geosx-key.json.enc -out ${GEOSX_GCLOUD_KEY} -d
   - gcloud auth activate-service-account --key-file=${GEOSX_GCLOUD_KEY}
-  - gsutil cp -a public-read ${GEOSX_BUNDLE} gs://geosx/Pangea2/
+  - gsutil cp -a public-read ${GEOSX_BUNDLE} gs://${GCP_BUCKET}/
 
 draft_script: &draft_script
   script:
@@ -178,7 +178,6 @@ jobs:
     - DOCKER_REPOSITORY=geosx/ubuntu18.04-clang8.0.0-cuda10.1.243
     - CMAKE_BUILD_TYPE=Release
     - BUILD_AND_TEST_ARGS=--disable-unit-tests
-    - ENABLE_HYPRE=OFF
   - stage: builds
     name: Ubuntu18.04_clang8.0.0_cuda10.1.243_release_hypreGPU
     <<: *geosx_linux_build
@@ -197,7 +196,6 @@ jobs:
     - DOCKER_REPOSITORY=geosx/ubuntu18.04-clang8.0.0-cuda10.1.243
     - CMAKE_BUILD_TYPE=Debug
     - BUILD_AND_TEST_ARGS="--disable-unit-tests --build-exe-only"
-    - ENABLE_HYPRE=OFF
   - stage: builds
     name: Centos7.6_gcc8.3.1_cuda10.1.243_release
     <<: *geosx_linux_build
@@ -205,13 +203,24 @@ jobs:
     - DOCKER_REPOSITORY=geosx/centos7.6.1810-gcc8.3.1-cuda10.1.243
     - CMAKE_BUILD_TYPE=Release
     - BUILD_AND_TEST_ARGS=--disable-unit-tests
-    - ENABLE_HYPRE=OFF
+  - stage: builds
+    name: Pecan_gcc8.2.0_cuda10.2.89p2_release
+    <<: *geosx_totalenergies_cluster_build
+    env:
+    - DOCKER_REPOSITORY=geosx/pecan-gcc8.2.0-openmpi4.0.1-mkl2019.5-cuda10.2.89p2
+    - CMAKE_BUILD_TYPE=Release
+    - BUILD_AND_TEST_ARGS=--disable-unit-tests
+    - HOST_CONFIG=host-configs/TOTAL/pecan.cmake
+    - GCP_BUCKET=geosx/Pecan
   - stage: builds
     name: Pangea2_gcc8.3.0_release
-    <<: *geosx_pangea_build
+    <<: *geosx_totalenergies_cluster_build
     env:
     - DOCKER_REPOSITORY=geosx/pangea2-gcc8.3.0-openmpi2.1.5-mkl2019.3
     - CMAKE_BUILD_TYPE=Release
+    - GCP_BUCKET=geosx/Pangea2
+    - ENABLE_HYPRE=ON
+    - ENABLE_TRILINOS=OFF
   - stage: builds
     name: Mac_OSX
     <<: *geosx_osx_build

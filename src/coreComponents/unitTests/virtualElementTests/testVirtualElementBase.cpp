@@ -40,7 +40,7 @@ static void checkIntegralMeanConsistency( VEMBASISDATATYPE const & basisData )
   {
     sum += basisFunctionsIntegralMean[iBasisFun];
   }
-  EXPECT_TRUE( abs( sum-1 ) < 1e-15 )
+  EXPECT_TRUE( std::abs( sum-1 ) < 1e-15 )
     << "Sum of basis functions integral mean is not 1, but " << sum << ". "
     << "The computed integral means are " << basisFunctionsIntegralMean;
 }
@@ -60,13 +60,13 @@ checkIntegralMeanDerivativesConsistency( BASISDATATYPE const & basisData )
       sumY += basisDerivativesIntegralMean[iBasisFun][1];
       sumZ += basisDerivativesIntegralMean[iBasisFun][2];
     }
-    EXPECT_TRUE( abs( sumX ) < 1e-15 )
+    EXPECT_TRUE( std::abs( sumX ) < 1e-15 )
       << "Sum of the x-derivatives of basis functions integral mean is not 0, but " << sumX << ". "
       << "The computed integral means are " << basisDerivativesIntegralMean;
-    EXPECT_TRUE( abs( sumY ) < 1e-15 )
+    EXPECT_TRUE( std::abs( sumY ) < 1e-15 )
       << "Sum of the y-derivatives of basis functions integral mean is not 0, but " << sumY << ". "
       << "The computed integral means are " << basisDerivativesIntegralMean;
-    EXPECT_TRUE( abs( sumZ ) < 1e-15 )
+    EXPECT_TRUE( std::abs( sumZ ) < 1e-15 )
       << "Sum of the z-derivatives of basis functions integral mean is not 0, but " << sumZ << ". "
       << "The computed integral means are " << basisDerivativesIntegralMean;
   }
@@ -121,7 +121,7 @@ checkStabilizationMatrixConsistency ( arrayView2d< real64 const,
     }
     stabTimeMonomialDofsNorm += stabTimeMonomialDofs( i ) * stabTimeMonomialDofs( i );
   }
-  EXPECT_TRUE( abs( stabTimeMonomialDofsNorm ) < 1e-15 )
+  EXPECT_TRUE( std::abs( stabTimeMonomialDofsNorm ) < 1e-15 )
     << "Product of stabilization matrix and monomial degrees of freedom is not zero for "
     << "monomial number 0. The computed product is " << stabTimeMonomialDofs;
   for( localIndex monomInd = 0; monomInd < 3; ++monomInd )
@@ -137,7 +137,7 @@ checkStabilizationMatrixConsistency ( arrayView2d< real64 const,
       }
       stabTimeMonomialDofsNorm += stabTimeMonomialDofs( i ) * stabTimeMonomialDofs( i );
     }
-    EXPECT_TRUE( abs( stabTimeMonomialDofsNorm ) < 1e-15 )
+    EXPECT_TRUE( std::abs( stabTimeMonomialDofsNorm ) < 1e-15 )
       << "Product of stabilization matrix and monomial degrees of freedom is not zero for "
       << "monomial number " << monomInd+1 << ". The computed product is " << stabTimeMonomialDofs;
   }
@@ -154,7 +154,7 @@ static void checkSumOfQuadratureWeights( real64 const & cellVolume,
       VEM::transformedQuadratureWeight( q, basisData );
     sum += weight;
   }
-  EXPECT_TRUE( abs( sum - cellVolume ) < 1e-15 )
+  EXPECT_TRUE( std::abs( sum - cellVolume ) < 1e-15 )
     << "Sum of quadrature weights does not equal the cell volume. Sum is " << sum
     << ". Cell volume is " << cellVolume;
 }
