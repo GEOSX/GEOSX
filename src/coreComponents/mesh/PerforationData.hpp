@@ -30,7 +30,6 @@ namespace geosx
 class DomainPartition;
 class MeshLevel;
 class WellElementSubRegion;
-class CellBlock;
 
 /**
  * @class PerforationData

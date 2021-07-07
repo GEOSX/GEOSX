@@ -26,7 +26,6 @@
 namespace geosx
 {
 
-class NodeManager;
 class SpatialPartition;
 
 /**
@@ -127,11 +126,13 @@ public:
 
   /**
    * @brief Performs a coordinate transformation of all nodes.
-   * @param nodeManager The node manager that contains coordinate data.
+   * @param X The nodes coordinates.
+   * @param nodeSets The name to node sets mapping.
    */
-  virtual void coordinateTransformation( NodeManager & nodeManager )
+  virtual void coordinateTransformation( array2d< real64, nodes::REFERENCE_POSITION_PERM > & X, std::map< string, SortedArray< localIndex > > & nodeSets )
   {
-    GEOSX_UNUSED_VAR( nodeManager );
+    GEOSX_UNUSED_VAR( X );
+    GEOSX_UNUSED_VAR( nodeSets );
   }
 
 

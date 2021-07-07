@@ -22,7 +22,6 @@
 #include "SurfaceElementRegion.hpp"
 #include "FaceManager.hpp"
 #include "constitutive/ConstitutiveManager.hpp"
-#include "CellBlockManager.hpp"
 #include "mesh/MeshManager.hpp"
 #include "schema/schemaUtilities.hpp"
 
@@ -40,16 +39,6 @@ ElementRegionManager::ElementRegionManager( string const & name, Group * const p
 ElementRegionManager::~ElementRegionManager()
 {
   // TODO Auto-generated destructor stub
-}
-
-localIndex ElementRegionManager::numCellBlocks() const
-{
-  localIndex numCellBlocks = 0;
-  this->forElementSubRegions< ElementSubRegionBase >( [&]( ElementSubRegionBase const & )
-  {
-    numCellBlocks += 1;
-  } );
-  return numCellBlocks;
 }
 
 void ElementRegionManager::resize( integer_array const & numElements,
@@ -131,70 +120,11 @@ void ElementRegionManager::setSchemaDeviations( xmlWrapper::xmlNode schemaRoot,
   }
 }
 
-void ElementRegionManager::generateMesh( Group & cellBlockManager )
+void ElementRegionManager::generateMesh( CellBlockManagerABC & cellBlockManager )
 {
   this->forElementRegions< CellElementRegion, SurfaceElementRegion >( [&]( auto & elemRegion )
   {
-    elemRegion.generateMesh( cellBlockManager.getGroup( keys::cellBlocks ) );
-  } );
-}
-
-void ElementRegionManager::generateCellToEdgeMaps( FaceManager const & faceManager )
-{
-  /*
-   * Create cell to edges map
-   * I use the existing maps from cells to faces and from faces to edges.
-   */
-  localIndex faceIndex, edgeIndex;
-  int count = 0;
-  bool isUnique = true;
-
-  this->forElementSubRegions< CellElementSubRegion >( [&]( CellElementSubRegion & subRegion )
-  {
-    FixedOneToManyRelation & cellToEdges = subRegion.edgeList();
-    FixedOneToManyRelation const & cellToFaces = subRegion.faceList();
-    InterObjectRelation< ArrayOfArrays< localIndex > > const & faceToEdges = faceManager.edgeList();
-
-    //loop over the cells
-    for( localIndex kc = 0; kc < subRegion.size(); kc++ )
-    {
-      count = 0;
-      for( localIndex kf = 0; kf < subRegion.numFacesPerElement(); kf++ )
-      {
-        // loop over edges of each face
-        faceIndex = cellToFaces[kc][kf];
-        for( localIndex ke = 0; ke < faceToEdges.sizeOfArray( faceIndex ); ke++ )
-        {
-          isUnique = true;
-          edgeIndex = faceToEdges[faceIndex][ke];
-
-          //loop over edges that have already been added to the element.
-          for( localIndex kec = 0; kec < count+1; kec++ )
-          {
-            // make sure that the edge has not been counted yet
-            if( cellToEdges( kc, kec ) == edgeIndex )
-            {
-              isUnique = false;
-              break;
-            }
-          }
-          if( isUnique )
-          {
-            cellToEdges( kc, count ) = edgeIndex;
-            count++;
-          }
-
-        } // end edge loop
-      } // end face loop
-    } // end cell loop
-  } );
-}
-
-void ElementRegionManager::generateAggregates( FaceManager const & faceManager, NodeManager const & nodeManager )
-{
-  this->forElementRegions< CellElementRegion >( [&]( CellElementRegion & elemRegion )
-  {
-    elemRegion.generateAggregates( faceManager, nodeManager );
+    elemRegion.generateMesh( cellBlockManager.getCellBlocks() );
   } );
 }
 

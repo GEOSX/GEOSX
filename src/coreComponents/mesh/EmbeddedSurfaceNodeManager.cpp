@@ -65,7 +65,7 @@ void EmbeddedSurfaceNodeManager::setEdgeMaps( EdgeManager const & embSurfEdgeMan
   localIndex const numEdges = edgeToNodeMap.size( 0 );
   localIndex const numNodes = size();
 
-  ArrayOfArrays< localIndex > toEdgesTemp( numNodes, embSurfEdgeManager.maxEdgesPerNode() );
+  ArrayOfArrays< localIndex > toEdgesTemp( numNodes, EdgeManager::maxEdgesPerNode() );
   RAJA::ReduceSum< parallelHostReduce, localIndex > totalNodeEdges = 0;
 
   forAll< parallelHostPolicy >( numEdges, [&]( localIndex const edgeID )

@@ -25,8 +25,6 @@
 namespace geosx
 {
 
-class EdgeManager;
-
 /**
  * @class EmbeddedSurfaceRegion
  *

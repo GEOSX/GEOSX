@@ -12,10 +12,6 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-/**
- * @file SpatialPartition.cpp
- */
-
 #include "SpatialPartition.hpp"
 #include "codingUtilities/Utilities.hpp"
 #include "LvArray/src/genericTensorOps.hpp"
@@ -24,7 +20,6 @@
 
 namespace geosx
 {
-using namespace dataRepository;
 
 namespace
 {
@@ -40,7 +35,6 @@ real64 Mod( real64 num, real64 denom )
 
   return num - denom * std::floor( num/denom );
 }
-
 
 // MapValueToRange
 // returns a periodic value in the range [min, max)
@@ -72,45 +66,20 @@ SpatialPartition::SpatialPartition():
 SpatialPartition::~SpatialPartition()
 {}
 
-void SpatialPartition::initializePostSubGroups()
+void SpatialPartition::setPartitions( unsigned int xPartitions,
+                                      unsigned int yPartitions,
+                                      unsigned int zPartitions )
 {
-  //get size of problem and decomposition
-  m_size = MpiWrapper::commSize( MPI_COMM_GEOSX );
-
-  //check to make sure our dimensions agree
+  m_Partitions.resize( 3 );
+  m_Partitions( 0 ) = xPartitions;
+  m_Partitions( 1 ) = yPartitions;
+  m_Partitions( 2 ) = zPartitions;
+  m_size = 1;
+  for( int i = 0; i < nsdof; i++ )
   {
-    int check = 1;
-    for( int i = 0; i < nsdof; i++ )
-    {
-      check *= this->m_Partitions( i );
-    }
-    GEOSX_ERROR_IF_NE( check, m_size );
+    m_size *= m_Partitions( i );
   }
-
-  //get communicator, rank, and coordinates
-  MPI_Comm cartcomm;
-  {
-    int reorder = 0;
-    MpiWrapper::cartCreate( MPI_COMM_GEOSX, nsdof, m_Partitions.data(), m_Periodic.data(), reorder, &cartcomm );
-  }
-  m_rank = MpiWrapper::commRank( cartcomm );
-  MpiWrapper::cartCoords( cartcomm, m_rank, nsdof, m_coords.data());
-
-
-  m_color = getColor();
-
-  //add neighbors
-  {
-    int ncoords[nsdof];
-    m_neighbors.clear();
-    addNeighbors( 0, cartcomm, ncoords );
-  }
-
-  MpiWrapper::commFree( cartcomm );
-
-  //initialize cached requests and status
-  m_mpiRequest.resize( 2 * m_neighbors.size() );
-  m_mpiStatus.resize( 2 * m_neighbors.size() );
+  setContactGhostRange( 0.0 );
 }
 
 int SpatialPartition::getColor()
@@ -213,9 +182,6 @@ void SpatialPartition::setSizes( real64 const ( &min )[ 3 ],
     m_rank = MpiWrapper::commRank( cartcomm );
     MpiWrapper::cartCoords( cartcomm, m_rank, nsdof, m_coords.data());
 
-
-    m_color = getColor();
-
     //add neighbors
     {
       int ncoords[nsdof];
@@ -279,14 +245,6 @@ void SpatialPartition::setSizes( real64 const ( &min )[ 3 ],
   }
 }
 
-void SpatialPartition::setPartitionGeometricalBoundary( real64 const ( &min )[ 3 ],
-                                                        real64 const ( &max )[ 3 ] )
-{
-  // We need this in mesh generator when we have extension zones.
-  LvArray::tensorOps::copy< 3 >( m_min, min );
-  LvArray::tensorOps::copy< 3 >( m_max, max );
-}
-
 bool SpatialPartition::isCoordInPartition( const real64 & coord, const int dir )
 {
   bool rval = true;
@@ -308,108 +266,6 @@ bool SpatialPartition::isCoordInPartition( const real64 & coord, const int dir )
   return rval;
 }
 
-bool SpatialPartition::isCoordInPartition( real64 const ( &coordinates )[ 3 ] )
-{
-  bool rval = true;
-  for( int i = 0; i < nsdof; i++ )
-  {
-    if( m_Periodic( i ))
-    {
-
-      if( m_Partitions( i ) != 1 )
-      {
-        real64 localCenter = MapValueToRange( coordinates[ i ], m_gridMin[ i ], m_gridMax[ i ] );
-        rval = rval && localCenter >= m_min[ i ] && localCenter < m_max[ i ];
-      }
-
-    }
-    else
-    {
-      rval = rval && (m_Partitions( i )==1 || (coordinates[ i ] >= m_min[ i ] && coordinates[ i ] < m_max[ i ]));
-    }
-  }
-  return rval;
-}
-
-bool SpatialPartition::isCoordInPartition( real64 const ( &coordinates )[ 3 ], const int numDistPartition )
-{
-  bool rval = true;
-  real64 m_xBoundingBoxMinTemp[3], m_xBoundingBoxMaxTemp[3];
-  for( unsigned int i = 0; i < nsdof; i++ )
-  {
-    m_xBoundingBoxMinTemp[ i ] = m_min[ i ] - numDistPartition * m_blockSize[ i ];
-    m_xBoundingBoxMaxTemp[ i ] = m_max[ i ] + numDistPartition * m_blockSize[ i ];
-  }
-
-  for( int i = 0; i < nsdof; i++ )
-  {
-    if( m_Periodic( i ))
-    {
-
-      if( m_Partitions( i ) != 1 )
-      {
-        real64 localCenter = MapValueToRange( coordinates[ i ], m_gridMin[ i ], m_gridMax[ i ] );
-        rval = rval && localCenter >= m_xBoundingBoxMinTemp[ i ] && localCenter <= m_xBoundingBoxMaxTemp[ i ];
-      }
-
-    }
-    else
-    {
-
-      rval = rval && (m_Partitions( i )==1 || (coordinates[ i ] >= m_xBoundingBoxMinTemp[ i ] && coordinates[ i ] <= m_xBoundingBoxMaxTemp[ i ]));
-    }
-  }
-  return rval;
-}
-
-bool SpatialPartition::isCoordInPartitionClosed( real64 const ( &coordinates )[ 3 ] )
-// A variant with intervals closed at both ends
-{
-  bool rval = true;
-  for( int i = 0; i < nsdof; i++ )
-  {
-    if( m_Periodic( i ))
-    {
-
-      if( m_Partitions( i ) != 1 )
-      {
-        real64 localCenter = MapValueToRange( coordinates[ i ], m_gridMin[ i ], m_gridMax[ i ] );
-        rval = rval && localCenter >= m_min[ i ] && localCenter < m_max[ i ];
-      }
-
-    }
-    else
-    {
-      rval = rval && (m_Partitions( i )==1 || (coordinates[ i ] >= m_min[ i ] && coordinates[ i ] <= m_max[ i ]));
-    }
-  }
-  return rval;
-}
-
-bool SpatialPartition::isCoordInPartitionBoundingBox( real64 const ( &coordinates )[ 3 ] )
-
-{
-  bool rval = true;
-  for( int i = 0; i < nsdof; i++ )
-  {
-    if( m_Periodic( i ))
-    {
-
-      if( m_Partitions( i ) != 1 )
-      {
-        real64 localCenter = MapValueToRange( coordinates[ i ], m_gridMin[ i ], m_gridMax[ i ] );
-        rval = rval && localCenter >= m_xBoundingBoxMin[ i ] && localCenter <= m_xBoundingBoxMax[ i ];
-      }
-
-    }
-    else
-    {
-      rval = rval && (m_Partitions( i )==1 || (coordinates[ i ] >= m_xBoundingBoxMin[ i ] && coordinates[ i ] <= m_xBoundingBoxMax[ i ]));
-    }
-  }
-  return rval;
-}
-
 void SpatialPartition::setContactGhostRange( const real64 bufferSize )
 {
   LvArray::tensorOps::copy< 3 >( m_contactGhostMin, m_min );
@@ -417,31 +273,6 @@ void SpatialPartition::setContactGhostRange( const real64 bufferSize )
 
   LvArray::tensorOps::copy< 3 >( m_contactGhostMax, m_max );
   LvArray::tensorOps::addScalar< 3 >( m_contactGhostMax, bufferSize );
-}
-
-bool SpatialPartition::isCoordInContactGhostRange( real64 const ( &coordinates )[ 3 ] )
-{
-  bool rval = true;
-  for( int i = 0; i < nsdof; i++ )
-  {
-    if( m_Periodic( i ))
-    {
-      if( m_Partitions( i ) != 1 )
-      {
-        real64 const minBuffer = m_min[ i ]-m_contactGhostMin[ i ];
-        real64 const maxBuffer = m_contactGhostMax[ i ]-m_max[ i ];
-        real64 const localCenterA = MapValueToRange( coordinates[ i ], m_gridMin[ i ]-minBuffer, m_gridMax[ i ]-minBuffer );
-        real64 const localCenterB = MapValueToRange( coordinates[ i ], m_gridMin[ i ]+maxBuffer, m_gridMax[ i ]+maxBuffer );
-
-        rval = rval && (m_Partitions( i )==1 || (localCenterA >= m_contactGhostMin[ i ] && localCenterB < m_contactGhostMax[ i ]));
-      }
-    }
-    else
-    {
-      rval = rval && (m_Partitions( i )==1 || (coordinates[ i ] >= m_contactGhostMin[ i ] && coordinates[ i ] < m_contactGhostMax[ i ]));
-    }
-  }
-  return rval;
 }
 
 }

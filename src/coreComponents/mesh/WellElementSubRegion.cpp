@@ -44,8 +44,8 @@ WellElementSubRegion::WellElementSubRegion( string const & name, Group * const p
 
   registerGroup( groupKeyStruct::perforationDataString(), &m_perforationData );
 
-  this->setNumNodesPerElement( 2 );
-  this->setNumFacesPerElement( 0 );
+  m_numNodesPerElement = 2;
+  m_numFacesPerElement = 0;
   m_toNodesRelation.resizeDimension< 1 >( this->numNodesPerElement() );
   m_elementTypeString = "BEAM";
 }
@@ -122,7 +122,7 @@ void collectLocalAndBoundaryNodes( InternalWellGenerator const & wellGeometry,
  */
 bool isPointInsideElement( NodeManager const & nodeManager,
                            R1Tensor const & location,
-                           CellBlock const & subRegion,
+                           CellElementSubRegion const & subRegion,
                            localIndex ei )
 {
   bool isInsideElement = false;
@@ -151,7 +151,7 @@ bool isPointInsideElement( NodeManager const & nodeManager,
  * @param[in] ei the index of the reservoir element
  * @param[inout] nodes the nodes that have already been visited
  */
-void collectElementNodes( CellBlock const & subRegion,
+void collectElementNodes( CellElementSubRegion const & subRegion,
                           localIndex ei,
                           SortedArray< localIndex > & nodes )
 {
@@ -220,7 +220,7 @@ bool visitNeighborElements( MeshLevel const & mesh,
       localIndex const eiLocal = toElementList[currNode][b];
 
       CellElementRegion const & region = elemManager.getRegion< CellElementRegion >( er );
-      CellBlock const & subRegion = region.getSubRegion< CellElementSubRegion >( esr );
+      CellElementSubRegion const & subRegion = region.getSubRegion< CellElementSubRegion >( esr );
       globalIndex const eiGlobal = subRegion.localToGlobalMap()[eiLocal];
 
       // if this element has not been visited yet, save it
@@ -321,7 +321,7 @@ bool searchLocalElements( MeshLevel const & mesh,
   bool resElemFound = false;
 
   CellElementRegion const & region = mesh.getElemManager().getRegion< CellElementRegion >( erInit );
-  CellBlock const & subRegion = region.getSubRegion< CellBlock >( esrInit );
+  CellElementSubRegion const & subRegion = region.getSubRegion< CellElementSubRegion >( esrInit );
 
   SortedArray< localIndex >  nodes;
   SortedArray< globalIndex > elements;

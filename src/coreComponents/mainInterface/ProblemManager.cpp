@@ -491,7 +491,7 @@ void ProblemManager::generateMesh()
 
   MeshManager & meshManager = this->getGroup< MeshManager >( groupKeys.meshManager );
   meshManager.generateMeshes( domain );
-  Group & cellBlockManager = domain.getGroup( keys::cellManager );
+  CellBlockManagerABC & cellBlockManager = domain.getGroup< CellBlockManagerABC >( keys::cellManager );
 
   Group & meshBodies = domain.getMeshBodies();
 
@@ -509,17 +509,22 @@ void ProblemManager::generateMesh()
 
       GeometricObjectManager & geometricObjects = this->getGroup< GeometricObjectManager >( groupKeys.geometricObjectManager );
 
+      // Nodes
+      nodeManager.setNodesInformation( cellBlockManager );
       MeshUtilities::generateNodesets( geometricObjects, nodeManager );
       nodeManager.constructGlobalToLocalMap();
 
+      // Elements
       elemManager.generateMesh( cellBlockManager );
-      nodeManager.setElementMaps( elemManager );
+      nodeManager.setElementMaps( cellBlockManager, elemManager );
 
-      faceManager.buildFaces( nodeManager, elemManager );
-      nodeManager.setFaceMaps( faceManager );
+      // Faces
+      faceManager.buildFaces( cellBlockManager, nodeManager, elemManager );
+      nodeManager.setFaceMaps( cellBlockManager, faceManager );
 
-      edgeManager.buildEdges( nodeManager, faceManager );
-      nodeManager.setEdgeMaps( edgeManager );
+      // Edges
+      edgeManager.buildEdges( cellBlockManager, nodeManager, faceManager );
+      nodeManager.setEdgeMaps( cellBlockManager, edgeManager );
 
       domain.generateSets();
 
@@ -533,13 +538,12 @@ void ProblemManager::generateMesh()
 
       elemManager.setMaxGlobalIndex();
 
-      elemManager.generateCellToEdgeMaps( faceManager );
-
-      elemManager.generateAggregates( faceManager, nodeManager );
-
       elemManager.generateWells( meshManager, meshLevel );
     }
   }
+
+  // The cell block manager is not meant to be used anymore, let's free space.
+  domain.deregisterGroup( keys::cellManager );
 
   GEOSX_THROW_IF_NE( meshBodies.numSubGroups(), 1, InputError );
   MeshBody & meshBody = meshBodies.getGroup< MeshBody >( 0 );

@@ -189,7 +189,7 @@ void CompositionalMultiphaseHybridFVM::precomputeData( MeshLevel & mesh )
                                                             auto const & subRegion )
   {
     arrayView2d< real64 const > const & elemCenter =
-      subRegion.template getReference< array2d< real64 > >( CellBlock::viewKeyStruct::elementCenterString() );
+      subRegion.template getReference< array2d< real64 > >( CellElementSubRegion::viewKeyStruct::elementCenterString() );
     arrayView2d< real64 const > const & elemPerm =
       subRegion.template getReference< array2d< real64 > >( CompositionalMultiphaseBase::viewKeyStruct::permeabilityString() );
     arrayView1d< real64 const > const elemGravCoef =

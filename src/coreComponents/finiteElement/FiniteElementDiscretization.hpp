@@ -29,10 +29,6 @@
 namespace geosx
 {
 
-class NodeManager;
-class CellBlockManager;
-class ElementSubRegionBase;
-
 // TODO remove when these quantities are placed inside the FiniteElementBase
 // class.
 namespace dataRepository
@@ -114,8 +110,6 @@ FiniteElementDiscretization::
   array4d< real64 > & dNdX = elementSubRegion->dNdX();
   array2d< real64 > & detJ = elementSubRegion->detJ();
   auto const & elemsToNodes = elementSubRegion->nodeList().toViewConst();
-
-  string const elementTypeString = elementSubRegion->getElementTypeString();
 
   constexpr localIndex numNodesPerElem = FE_TYPE::numNodes;
   constexpr localIndex numQuadraturePointsPerElem = FE_TYPE::numQuadraturePoints;

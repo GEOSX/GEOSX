@@ -33,9 +33,9 @@ public:
   /// Alias for the type of the element-to-node map
   using NodeMapType = InterObjectRelation< array2d< localIndex, cells::NODE_MAP_PERMUTATION > >;
   /// Alias for the type of the element-to-edge map
-  using EdgeMapType = FixedOneToManyRelation; // unused but needed in MeshLevel::GenerateAdjacencyLists
+  using EdgeMapType = FixedOneToManyRelation; // unused but needed in MeshLevel::generateAdjacencyLists
   /// Alias for the type of the element-to-face map
-  using FaceMapType = FixedOneToManyRelation; // unused but needed in MeshLevel::GenerateAdjacencyLists
+  using FaceMapType = FixedOneToManyRelation; // unused but needed in MeshLevel::generateAdjacencyLists
 
   /**
    * @brief enumeration for values in segmentStatusList parameter of Generate()
@@ -434,10 +434,10 @@ private:
   NodeMapType m_toNodesRelation;
 
   /// Element-to-edge relation
-  EdgeMapType m_toEdgesRelation;  // unused but needed in MeshLevel::GenerateAdjacencyLists
+  EdgeMapType m_toEdgesRelation;  // unused but needed in MeshLevel::generateAdjacencyLists
 
   /// Element-to-face relation
-  FaceMapType m_toFacesRelation;  // unused but needed in MeshLevel::GenerateAdjacencyLists
+  FaceMapType m_toFacesRelation;  // unused but needed in MeshLevel::generateAdjacencyLists
 
   /// Local indices of the next well element (used in solvers)
   array1d< localIndex > m_nextWellElementIndex;

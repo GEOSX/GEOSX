@@ -1654,7 +1654,7 @@
 	</xsd:complexType>
 	<xsd:complexType name="cellManagerType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
-			<xsd:element name="cellBlocks" type="cellBlocksType" />
+			<xsd:element name="cellBlocksKey" type="cellBlocksKeyType" />
 			<xsd:element name="neighborData" type="neighborDataType" />
 			<xsd:element name="sets" type="setsType" />
 		</xsd:choice>
@@ -1669,7 +1669,7 @@
 		<!--localToGlobalMap => Array that contains a map from localIndex to globalIndex.-->
 		<xsd:attribute name="localToGlobalMap" type="globalIndex_array" />
 	</xsd:complexType>
-	<xsd:complexType name="cellBlocksType" />
+	<xsd:complexType name="cellBlocksKeyType" />
 	<xsd:complexType name="CellElementRegionType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
 			<xsd:element name="elementSubRegions" type="elementSubRegionsType" />

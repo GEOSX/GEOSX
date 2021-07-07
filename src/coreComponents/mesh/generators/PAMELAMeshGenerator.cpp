@@ -22,15 +22,14 @@
 #include "MeshDataWriters/Variable.hpp"
 #include "mesh/DomainPartition.hpp"
 
-#include <math.h>
-
 #include "mesh/mpiCommunications/PartitionBase.hpp"
-#include "mesh/mpiCommunications/SpatialPartition.hpp"
 #include "Mesh/MeshFactory.hpp"
 
 #include "MeshDataWriters/MeshParts.hpp"
 
 #include "mesh/MeshBody.hpp"
+
+#include "CellBlockManager.hpp"
 
 namespace geosx
 {
@@ -87,26 +86,25 @@ void PAMELAMeshGenerator::generateMesh( DomainPartition & domain )
 {
   GEOSX_LOG_RANK_0( "Writing into the GEOSX mesh data structure" );
   domain.getMetisNeighborList() = m_pamelaMesh->getNeighborList();
-  Group & meshBodies = domain.getGroup( string( "MeshBodies" ));
+  Group & meshBodies = domain.getGroup( string( "MeshBodies" ) );
   MeshBody & meshBody = meshBodies.registerGroup< MeshBody >( this->getName() );
 
   //TODO for the moment we only consider on mesh level "Level0"
-  MeshLevel & meshLevel0 = meshBody.registerGroup< MeshLevel >( string( "Level0" ));
-  NodeManager & nodeManager = meshLevel0.getNodeManager();
-  CellBlockManager & cellBlockManager = domain.getGroup< CellBlockManager >( keys::cellManager );
-
+  meshBody.registerGroup< MeshLevel >( string( "Level0" ) );
+  CellBlockManager & cellBlockManager = domain.registerGroup< CellBlockManager >( keys::cellManager );
 
   // Use the PartMap of PAMELA to get the mesh
   auto const polyhedronPartMap = std::get< 0 >( PAMELA::getPolyhedronPartMap( m_pamelaMesh.get(), 0 ));
 
   // Vertices are written first
-  arrayView2d< real64, nodes::REFERENCE_POSITION_USD > const & X = nodeManager.referencePosition();
-  nodeManager.resize( m_pamelaMesh->get_PointCollection()->size_all());
+  array2d< real64, nodes::REFERENCE_POSITION_PERM > & X = cellBlockManager.getNodesPositions();
+  localIndex const numNodes = m_pamelaMesh->get_PointCollection()->size_all();
+  cellBlockManager.setNumNodes( numNodes );
 
-  arrayView1d< globalIndex > const & nodeLocalToGlobal = nodeManager.localToGlobalMap();
+  array1d< globalIndex > & nodeLocalToGlobal = cellBlockManager.getNodeLocalToGlobal();
 
-  Group & nodeSets = nodeManager.sets();
-  SortedArray< localIndex > & allNodes  = nodeSets.registerWrapper< SortedArray< localIndex > >( string( "all" ) ).reference();
+  auto & nodeSets = cellBlockManager.getNodeSets();
+  SortedArray< localIndex > & allNodes = nodeSets["all"];
 
   real64 xMax[3] = { std::numeric_limits< real64 >::min() };
   real64 xMin[3] = { std::numeric_limits< real64 >::max() };
@@ -159,10 +157,9 @@ void PAMELAMeshGenerator::generateMesh( DomainPartition & domain )
       if( cellBlockName == "HEX" )
       {
         localIndex const nbCells = cellBlockPAMELA->SubCollection.size_owned();
-        cellBlock =
-          &cellBlockManager.getGroup( keys::cellBlocks ).registerGroup< CellBlock >( DecodePAMELALabels::makeRegionLabel( regionName, cellBlockName ) );
+        cellBlock = &cellBlockManager.registerCellBlock( DecodePAMELALabels::makeRegionLabel( regionName, cellBlockName ) );
         cellBlock->setElementType( "C3D8" );
-        auto & cellToVertex = cellBlock->nodeList();
+        auto & cellToVertex = cellBlock->getElemToNode();
         cellBlock->resize( nbCells );
         cellToVertex.resize( nbCells, 8 );
 
@@ -200,10 +197,9 @@ void PAMELAMeshGenerator::generateMesh( DomainPartition & domain )
       else if( cellBlockName == "TETRA" )
       {
         localIndex const nbCells = cellBlockPAMELA->SubCollection.size_owned();
-        cellBlock =
-          &cellBlockManager.getGroup( keys::cellBlocks ).registerGroup< CellBlock >( DecodePAMELALabels::makeRegionLabel( regionName, cellBlockName ) );
+        cellBlock = &cellBlockManager.registerCellBlock( DecodePAMELALabels::makeRegionLabel( regionName, cellBlockName ) );
         cellBlock->setElementType( "C3D4" );
-        auto & cellToVertex = cellBlock->nodeList();
+        auto & cellToVertex = cellBlock->getElemToNode();
         cellBlock->resize( nbCells );
         cellToVertex.resize( nbCells, 4 );
 
@@ -233,10 +229,9 @@ void PAMELAMeshGenerator::generateMesh( DomainPartition & domain )
       else if( cellBlockName == "WEDGE" )
       {
         localIndex const nbCells = cellBlockPAMELA->SubCollection.size_owned();
-        cellBlock =
-          &cellBlockManager.getGroup( keys::cellBlocks ).registerGroup< CellBlock >( DecodePAMELALabels::makeRegionLabel( regionName, cellBlockName ) );
+        cellBlock = &cellBlockManager.registerCellBlock( DecodePAMELALabels::makeRegionLabel( regionName, cellBlockName ) );
         cellBlock->setElementType( "C3D6" );
-        auto & cellToVertex = cellBlock->nodeList();
+        auto & cellToVertex = cellBlock->getElemToNode();
         cellBlock->resize( nbCells );
         cellToVertex.resize( nbCells, 6 );
 
@@ -270,10 +265,9 @@ void PAMELAMeshGenerator::generateMesh( DomainPartition & domain )
       else if( cellBlockName == "PYRAMID" )
       {
         localIndex const nbCells = cellBlockPAMELA->SubCollection.size_owned();
-        cellBlock =
-          &cellBlockManager.getGroup( keys::cellBlocks ).registerGroup< CellBlock >( DecodePAMELALabels::makeRegionLabel( regionName, cellBlockName ) );
+        cellBlock = &cellBlockManager.registerCellBlock( DecodePAMELALabels::makeRegionLabel( regionName, cellBlockName ) );
         cellBlock->setElementType( "C3D5" );
-        auto & cellToVertex = cellBlock->nodeList();
+        auto & cellToVertex = cellBlock->getElemToNode();
         cellBlock->resize( nbCells );
         cellToVertex.resize( nbCells, 5 );
 
@@ -352,7 +346,7 @@ void PAMELAMeshGenerator::generateMesh( DomainPartition & domain )
     auto const surfacePtr = polygonPart.second;
 
     string surfaceName = DecodePAMELALabels::retrieveSurfaceOrRegionName( surfacePtr->Label );
-    SortedArray< localIndex > & curNodeSet  = nodeSets.registerWrapper< SortedArray< localIndex > >( string( surfaceName ) ).reference();
+    SortedArray< localIndex > & curNodeSet = nodeSets[surfaceName];
     for( auto const & subPart : surfacePtr->SubParts )
     {
       auto const cellBlockPAMELA = subPart.second;
@@ -374,6 +368,7 @@ void PAMELAMeshGenerator::generateMesh( DomainPartition & domain )
     }
   }
 
+  cellBlockManager.buildMaps();
 }
 
 REGISTER_CATALOG_ENTRY( MeshGeneratorBase, PAMELAMeshGenerator, string const &, Group * const )

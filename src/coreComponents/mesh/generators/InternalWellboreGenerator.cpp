@@ -292,27 +292,27 @@ void InternalWellboreGenerator::setConnectivityForPeriodicBoundaries( int ( & gl
   }
 }
 
-void InternalWellboreGenerator::coordinateTransformation( NodeManager & nodeManager )
+void InternalWellboreGenerator::coordinateTransformation( array2d< real64, nodes::REFERENCE_POSITION_PERM > & X, std::map< string, SortedArray< localIndex > > & nodeSets )
 {
-  arrayView2d< real64, nodes::REFERENCE_POSITION_USD > const & X = nodeManager.referencePosition();
+  localIndex const numNodes = X.size();
 
-  Group & nodeSets = nodeManager.sets();
-  SortedArray< localIndex > & xnegNodes = nodeSets.getReference< SortedArray< localIndex > >( string( "xneg" ) );
-  SortedArray< localIndex > & xposNodes = nodeSets.getReference< SortedArray< localIndex > >( string( "xpos" ) );
-  SortedArray< localIndex > & ynegNodes = nodeSets.getReference< SortedArray< localIndex > >( string( "yneg" ) );
-  SortedArray< localIndex > & yposNodes = nodeSets.getReference< SortedArray< localIndex > >( string( "ypos" ) );
-
-  SortedArray< localIndex > & rnegNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( string( "rneg" ) ).reference();
-  SortedArray< localIndex > & rposNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( string( "rpos" ) ).reference();
-  SortedArray< localIndex > & tnegNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( string( "tneg" ) ).reference();
-  SortedArray< localIndex > & tposNodes = nodeSets.registerWrapper< SortedArray< localIndex > >( string( "tpos" ) ).reference();
+  // Already existing
+  SortedArray< localIndex > & xnegNodes = nodeSets.at( "xneg" );
+  SortedArray< localIndex > & xposNodes = nodeSets.at( "xpos" );
+  SortedArray< localIndex > & ynegNodes = nodeSets.at( "yneg" );
+  SortedArray< localIndex > & yposNodes = nodeSets.at( "ypos" );
+  // Created on the fly
+  SortedArray< localIndex > & rnegNodes = nodeSets["rneg"];
+  SortedArray< localIndex > & rposNodes = nodeSets["rpos"];
+  SortedArray< localIndex > & tnegNodes = nodeSets["tneg"];
+  SortedArray< localIndex > & tposNodes = nodeSets["tpos"];
 
   real64 const cartesianMappingInnerRadius = m_cartesianOuterBoundary < m_vertices[0].size() ?
                                              m_vertices[0][m_cartesianOuterBoundary] :
                                              1e99;
 
   // Map to radial mesh
-  for( localIndex a = 0; a<nodeManager.size(); ++a )
+  for( localIndex a = 0; a < numNodes; ++a )
   {
     real64 meshTheta = X[a][1] * M_PI / 180.0;
     int meshAxis = static_cast< int >( round( meshTheta * 2.0 / M_PI ) );
@@ -377,7 +377,7 @@ void InternalWellboreGenerator::coordinateTransformation( NodeManager & nodeMana
 
   // Map to inclined wellbore
   {
-    for( int localNodeIndex=0; localNodeIndex<nodeManager.size(); ++localNodeIndex )
+    for( int localNodeIndex = 0; localNodeIndex < numNodes; ++localNodeIndex )
     {
       // Get Cartesian coordinates of a reference centered vertical wellbore
       real64 & xCoord = X( localNodeIndex, 0 );

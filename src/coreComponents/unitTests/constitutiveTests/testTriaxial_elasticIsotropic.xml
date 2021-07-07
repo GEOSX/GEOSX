@@ -59,4 +59,11 @@
       cellBlockNames="{ cellBlock01 }"/>
   </Mesh>
 
+  <ElementRegions>
+    <CellElementRegion
+      name="dummy"
+      cellBlocks="{ cellBlock01 }"
+      materialList="{ dummy }"/>
+  </ElementRegions>
+
 </Problem>

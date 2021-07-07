@@ -18,7 +18,6 @@
 #ifndef GEOSX_VIRTUALELEMENT_VIRTUALELEMENTBASE_HPP_
 #define GEOSX_VIRTUALELEMENT_VIRTUALELEMENTBASE_HPP_
 
-#include "mesh/CellBlock.hpp"
 #include "mesh/FaceManager.hpp"
 #include "mesh/EdgeManager.hpp"
 #include "mesh/NodeManager.hpp"

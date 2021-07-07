@@ -175,7 +175,7 @@ static void testCellsInMeshLevel( MeshLevel const & mesh )
   // Get geometric properties to be passed as inputs.
   arrayView2d< real64 const, nodes::REFERENCE_POSITION_USD > nodesCoords =
     nodeManager.referencePosition();
-  CellBlock::NodeMapType const & cellToNodeMap = cellSubRegion.nodeList();
+  CellElementSubRegion::NodeMapType const & cellToNodeMap = cellSubRegion.nodeList();
   arrayView2d< localIndex const > const & elementToFaceMap = cellSubRegion.faceList().toViewConst();
   ArrayOfArraysView< localIndex const > const faceToNodeMap = faceManager.nodeList().toViewConst();
   ArrayOfArraysView< localIndex const > const faceToEdgeMap = faceManager.edgeList().toViewConst();

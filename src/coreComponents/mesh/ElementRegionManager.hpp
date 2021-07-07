@@ -19,10 +19,10 @@
 #ifndef GEOSX_MESH_ELEMENTREGIONMANAGER_HPP
 #define GEOSX_MESH_ELEMENTREGIONMANAGER_HPP
 
-#include "CellBlock.hpp"
 #include "constitutive/ConstitutiveManager.hpp"
 #include "CellElementRegion.hpp"
 #include "CellElementSubRegion.hpp"
+#include "mesh/generators/CellBlockManagerABC.hpp"
 #include "mesh/ObjectManagerBase.hpp"
 #include "dataRepository/ReferenceWrapper.hpp"
 #include "SurfaceElementRegion.hpp"
@@ -135,9 +135,9 @@ public:
   localIndex getNumberOfElements() const
   {
     localIndex numElem = 0;
-    this->forElementSubRegions< T >( [&]( ElementSubRegionBase const & cellBlock )
+    this->forElementSubRegions< T >( [&]( ElementSubRegionBase const & elementSubRegion )
     {
-      numElem += cellBlock.size();
+      numElem += elementSubRegion.size();
     } );
     return numElem;
   }
@@ -146,22 +146,9 @@ public:
 
   /**
    * @brief Generate the mesh.
-   * @param [in] cellBlockManager pointer to the CellBlockManager
+   * @param [in,out] cellBlockManager Reference to the abstract cell block manager.
    */
-  void generateMesh( Group & cellBlockManager );
-
-  /**
-   * @brief Generate the cell-to-edge map
-   * @param [in] faceManager pointer to the FaceManager
-   */
-  void generateCellToEdgeMaps( FaceManager const & faceManager );
-
-  /**
-   * @brief Generate the aggregates.
-   * @param [in] faceManager pointer to the FaceManager
-   * @param [in] nodeManager pointer to the NodeManager
-   */
-  void generateAggregates( FaceManager const & faceManager, NodeManager const & nodeManager );
+  void generateMesh( CellBlockManagerABC & cellBlockManager );
 
   /**
    * @brief Generate the wells.
@@ -259,12 +246,6 @@ public:
   {
     return this->getRegions().size();
   }
-
-  /**
-   * @brief Get number of the cell blocks.
-   * @return number of the cell blocks
-   */
-  localIndex numCellBlocks() const;
 
   /**
    * @brief This function is used to launch kernel function over all the element regions with region type =

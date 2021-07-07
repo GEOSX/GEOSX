@@ -1863,8 +1863,6 @@ void SurfaceGenerator::performFracture( const localIndex nodeID,
           m_faceElemsRupturedThisSolve.insert( newFaceElement );
           modifiedObjects.newElements[ {fractureElementRegion.getIndexInParent(), 0} ].insert( newFaceElement );
         }
-//        externalFaceManager.SplitFace(parentFaceIndex, newFaceIndex, nodeManager);
-
       } // if( faceManager.SplitObject( faceIndex, newFaceIndex ) )
     } // if( location == -1 )
   } // for( map<localIndex,int>::const_iterator iter_face

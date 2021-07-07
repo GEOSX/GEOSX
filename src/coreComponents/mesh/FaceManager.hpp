@@ -19,8 +19,9 @@
 #ifndef GEOSX_MESH_FACEMANAGER_HPP_
 #define GEOSX_MESH_FACEMANAGER_HPP_
 
-#include "ToElementRelation.hpp"
+#include "mesh/generators/CellBlockManagerABC.hpp"
 #include "mesh/ObjectManagerBase.hpp"
+#include "ToElementRelation.hpp"
 
 namespace geosx
 {
@@ -73,16 +74,20 @@ public:
   /**
    * @brief Get the default number of node per face in node list
    * @return the default number of node per face in node list
+   *
+   * @note Value forwarding is due to refactoring.
    */
-  static localIndex nodeMapExtraSpacePerFace()
-  { return 4; }
+  static constexpr localIndex nodeMapExtraSpacePerFace()
+  { return CellBlockManagerABC::nodeMapExtraSpacePerFace(); }
 
   /**
    * @brief Get the default number of edge per face in edge list
    * @return the default number of edge per face in edge list
+   *
+   * @note Value forwarding is due to refactoring.
    */
-  static localIndex edgeMapExtraSpacePerFace()
-  { return 4; }
+  static constexpr localIndex edgeMapExtraSpacePerFace()
+  { return CellBlockManagerABC::edgeMapExtraSpacePerFace(); }
 
   /**
    * @name Constructors/destructor
@@ -128,10 +133,13 @@ public:
 
   /**
    * @brief Build faces in filling face-to-node and face-to-element mappings.
+   * @param[in] cellBlockManager cell block manager
    * @param[in] nodeManager mesh node manager
-   * @param[in] elemManager element manager
+   * @param[in] elementManager element manager
    */
-  void buildFaces( NodeManager & nodeManager, ElementRegionManager & elemManager );
+  void buildFaces( CellBlockManagerABC const & cellBlockManager,
+                   NodeManager & nodeManager,
+                   ElementRegionManager & elementManager );
 
   /**
    * @brief Compute faces center, area and normal.
@@ -300,12 +308,6 @@ public:
    * @name Accessors for FaceManager fixed data
    */
   ///@{
-
-  /**
-   * @brief Get the constant upper limit for number of faces per Node.
-   * @return constant expression of the max number of faces per node
-   */
-  constexpr int maxFacesPerNode() const { return 200; }
 
   /**
    * @brief Get a mutable accessor to a table containing all the face area.

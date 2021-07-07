@@ -19,16 +19,13 @@
 #ifndef GEOSX_MESH_NODEMANAGER_HPP_
 #define GEOSX_MESH_NODEMANAGER_HPP_
 
+#include "mesh/generators/CellBlockManagerABC.hpp"
 #include "mesh/ObjectManagerBase.hpp"
-#include "CellBlockManager.hpp"
 #include "ToElementRelation.hpp"
-
-class SiloFile;
 
 namespace geosx
 {
 
-class CellBlock;
 class FaceManager;
 class EdgeManager;
 class ElementRegionManager;
@@ -62,23 +59,27 @@ public:
   /**
    * @brief return default size of the value array in the node-to-edge mapping
    * @return default size of value array in the node-to-edge mapping
+   *
+   * @note Value forwarding is due to refactoring.
    */
-  inline localIndex getEdgeMapOverallocation()
-  { return 8; }
+  static constexpr inline localIndex getEdgeMapOverallocation()
+  { return CellBlockManagerABC::getEdgeMapOverallocation(); }
 
   /**
    * @brief return default size of the value in the node-to-face mapping
    * @return default size of value array in the node-to-face mapping
+   *
+   * @note Value forwarding is due to refactoring.
    */
-  inline localIndex getFaceMapOverallocation()
-  { return 8; }
+  static constexpr inline localIndex getFaceMapOverallocation()
+  { return CellBlockManagerABC::getEdgeMapOverallocation(); }
 
   /**
    * @brief return default size of the value array in the node-to-element mapping
    * @return default size of value array in the node-to-element mapping
    */
-  inline localIndex getElemMapOverAllocation()
-  { return 8; }
+  static constexpr inline localIndex getElemMapOverAllocation()
+  { return CellBlockManagerABC::getElemMapOverAllocation(); }
 
 /**
  * @name Constructors/destructor
@@ -146,22 +147,35 @@ public:
   ///@}
 
   /**
-   * @brief Link the EdgeManager \p edgeManager to the NodeManager, and performs the node-to-edge mapping.
-   * @param [in] edgeManager the edgeManager to assign this NodeManager
+   * @brief Copies the node information from @p cellBlockManager.
+   * @param [in] cellBlockManager the cell block manager providing the node information.
+   *
+   * Copies the nodes coordinates, the node sets (with their names) and the local to global mapping for nodes.
    */
-  void setEdgeMaps( EdgeManager const & edgeManager );
+  void setNodesInformation( CellBlockManagerABC const & cellBlockManager );
 
   /**
-   * @brief Link the FaceManager \p faceManager to the NodeManager, and performs the node-to-face mapping.
-   * @param [in] faceManager the faceManager to assign this NodeManager
+   * @brief Link the EdgeManager @p edgeManager to the NodeManager, and copies the the node-to-edge mapping from @p cellBlockManager.
+   * @param [in] cellBlockManager the cell block manager providing the node to edges mapping.
+   * @param [in] edgeManager the edgeManager to assign this NodeManager.
    */
-  void setFaceMaps( FaceManager const & faceManager );
+  void setEdgeMaps( CellBlockManagerABC const & cellBlockManager, EdgeManager const & edgeManager );
 
   /**
-   * @brief Assign the ElementRegionManager \p elementRegionManager to the NodeManager, and performs the node-to-element mapping
+   * @brief Link the FaceManager @p faceManager to the NodeManager, and copies the node-to-face mapping from @p cellBlockManager.
+   * @param [in] cellBlockManager the cell block manager providing the node to faces mapping.
+   * @param [in] faceManager the face manager for inter-object relations.
+   */
+  void setFaceMaps( CellBlockManagerABC const & cellBlockManager, FaceManager const & faceManager );
+
+  /**
+   * @brief Copies the node-to-element mapping from @p cellBlockManager and builds the node to region and node to sub-regions relations.
+   * @param [in] cellBlockManager Contains the raw mesh information.
    * @param [in] elementRegionManager the ElementRegionManager to assign this NodeManager
+   *
+   * @note maybe split into two parts: the @p cellBlockManager part and the @p elementRegionManager part.
    */
-  void setElementMaps( ElementRegionManager const & elementRegionManager );
+  void setElementMaps( CellBlockManagerABC const & cellBlockManager, ElementRegionManager const & elementRegionManager );
 
   /**
    * @brief Compress all NodeManager member arrays so that the values of each array are contiguous with no extra capacity inbetween.

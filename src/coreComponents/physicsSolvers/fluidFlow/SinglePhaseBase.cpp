@@ -379,7 +379,7 @@ void SinglePhaseBase::implicitStepComplete( real64 const & GEOSX_UNUSED_PARAM( t
     arrayView1d< real64 const > const dVol = subRegion.getReference< array1d< real64 > >( viewKeyStruct::deltaVolumeString() );
 
     arrayView1d< real64 > const pres = subRegion.getReference< array1d< real64 > >( viewKeyStruct::pressureString() );
-    arrayView1d< real64 > const vol = subRegion.getReference< array1d< real64 > >( CellBlock::viewKeyStruct::elementVolumeString() );
+    arrayView1d< real64 > const vol = subRegion.getReference< array1d< real64 > >( CellElementSubRegion::viewKeyStruct::elementVolumeString() );
 
     forAll< parallelDevicePolicy<> >( subRegion.size(), [=] GEOSX_HOST_DEVICE ( localIndex const ei )
     {

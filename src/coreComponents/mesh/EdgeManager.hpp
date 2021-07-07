@@ -19,8 +19,9 @@
 #ifndef GEOSX_MESH_EDGEMANAGER_HPP_
 #define GEOSX_MESH_EDGEMANAGER_HPP_
 
-#include "InterObjectRelation.hpp"
 #include "mesh/ObjectManagerBase.hpp"
+#include "mesh/generators/CellBlockManagerABC.hpp"
+#include "InterObjectRelation.hpp"
 #include "ToElementRelation.hpp"
 #include "LvArray/src/tensorOps.hpp"
 
@@ -29,8 +30,6 @@ namespace geosx
 {
 class FaceManager;
 class NodeManager;
-class CellBlockManager;
-
 
 /**
  * @class EdgeManager
@@ -73,9 +72,11 @@ public:
   /**
    * @brief Oversize the Face mapping by this amount for each edge (hardcoded)
    * @return extra space for each edge of the EdgetoFace map
+   *
+   * @note Value forwarding is due to refactoring.
    */
   static localIndex faceMapExtraSpacePerEdge()
-  { return 4; }
+  { return CellBlockManagerABC::faceMapExtraSpacePerEdge(); }
 
   /**
    * @name Constructors/destructors
@@ -119,11 +120,16 @@ public:
   void setIsExternal( FaceManager const & faceManager );
 
   /**
-   * @brief Build faces-to-edges and nodes-to-edges relation maps.
+   * @brief Copies faces-to-edges and nodes-to-edges relation maps from @p cellBlockManger.
+   * @param[in] cellBlockManager cell block manager.
    * @param[in] nodeManager manager of all nodes in the DomainPartition
    * @param[in] faceManager manager of all faces in the DomainPartition
+   *
+   * @p nodeManager and @p faceManager are given for inter-managers relations.
    */
-  void buildEdges( NodeManager & nodeManager, FaceManager & faceManager );
+  void buildEdges( CellBlockManagerABC const & cellBlockManager,
+                   NodeManager & nodeManager,
+                   FaceManager & faceManager );
 
   /**
    * @brief Build faces-to-edges and nodes-to-edges relation maps.
@@ -289,8 +295,11 @@ public:
   /**
    * @brief Return the  maximum number of edges per node.
    * @return Maximum allowable number of edges connected to one node (hardcoded for now)
+   *
+   * @note Value forwarding is due to refactoring.
    */
-  constexpr int maxEdgesPerNode() const { return 200; }
+  static constexpr int maxEdgesPerNode()
+  { return CellBlockManagerABC::maxEdgesPerNode(); }
 
   /**
    * @name Getters for stored value.

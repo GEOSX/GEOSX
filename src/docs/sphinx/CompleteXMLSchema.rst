@@ -1615,11 +1615,11 @@ Datastructure: WellElementRegionuniqueSubRegion
 .. include:: ../../coreComponents/schema/docs/WellElementRegionuniqueSubRegion_other.rst
 
 
-.. _DATASTRUCTURE_cellBlocks:
+.. _DATASTRUCTURE_cellBlocksKey:
 
-Datastructure: cellBlocks
-=========================
-.. include:: ../../coreComponents/schema/docs/cellBlocks_other.rst
+Datastructure: cellBlocksKey
+============================
+.. include:: ../../coreComponents/schema/docs/cellBlocksKey_other.rst
 
 
 .. _DATASTRUCTURE_cellManager:
