@@ -38,8 +38,8 @@ namespace geosx
  */
 struct CommandLineOptions
 {
-  /// The path to the input xml.
-  string inputFileName;
+  /// The paths to the input xml files.
+  string_array inputFileNames;
 
   /// True iff restarting from the middle of an existing run.
   bool beginFromRestart = false;

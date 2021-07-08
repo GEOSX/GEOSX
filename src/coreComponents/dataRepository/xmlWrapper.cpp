@@ -81,5 +81,29 @@ void xmlWrapper::addIncludedXML( xmlNode & targetNode )
   }
 }
 
+void xmlWrapper::buildMultipleInputXML( string_array const & inputFileList, string & inputFileName )
+{
+  if( inputFileList.size() == 1 )
+  {
+    inputFileName = inputFileList[0];
+  }
+  else
+  {
+    // Write the composite xml file
+    inputFileName = "composite_input.xml";
+    xmlWrapper::xmlDocument compositeTree;
+    xmlWrapper::xmlNode compositeRoot = compositeTree.append_child( "Problem" );
+    xmlWrapper::xmlNode includedRoot = compositeRoot.append_child( "Included" );
+
+    for( auto & fileName: inputFileList )
+    {
+      xmlWrapper::xmlNode fileNode = includedRoot.append_child( "File" );
+      fileNode.append_attribute( "name" ) = fileName.c_str();
+    }
+
+    compositeTree.save_file( inputFileName.c_str() );
+  }
+}
+
 
 } /* namespace geosx */
