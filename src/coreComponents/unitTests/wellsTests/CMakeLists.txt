@@ -6,14 +6,12 @@ set( gtest_geosx_tests
      testReservoirSinglePhaseMSWells.cpp
    )
 
-set( dependencyList gtest geosx_core )
+set( dependencyList gtest )
 
-if ( ENABLE_MPI )
-  set ( dependencyList ${dependencyList} mpi )
-endif()
-
-if( ENABLE_OPENMP )
-  set( dependencyList ${dependencyList} openmp )
+if ( GEOSX_BUILD_SHARED_LIBS )
+  set (dependencyList ${dependencyList} geosx_core )
+else()
+  set (dependencyList ${dependencyList} ${geosx_core_libs} )
 endif()
 
 if ( ENABLE_CUDA )

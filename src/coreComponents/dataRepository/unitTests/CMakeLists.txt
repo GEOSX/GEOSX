@@ -9,18 +9,10 @@ set( dataRepository_tests
      testBufferOps.cpp
    )
 
-set( dependencyList gtest dataRepository conduit RAJA )
-
-if ( ENABLE_OPENMP )
-  set( dependencyList ${dependencyList} openmp )
-endif()
+set( dependencyList gtest dataRepository )
 
 if ( ENABLE_CUDA )
   set( dependencyList ${dependencyList} cuda )
-endif()
-
-if ( ENABLE_CALIPER )
-  set( dependencyList ${dependencyList} caliper adiak )
 endif()
 
 #

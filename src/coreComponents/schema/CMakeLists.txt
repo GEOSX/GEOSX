@@ -16,10 +16,6 @@ set( schema_sources
 
 set( dependencyList dataRepository )
 
-if ( ENABLE_OPENMP )
-  set( dependencyList ${dependencyList} openmp )
-endif()
-
 if ( ENABLE_CUDA )
   set( dependencyList ${dependencyList} cuda )
 endif()

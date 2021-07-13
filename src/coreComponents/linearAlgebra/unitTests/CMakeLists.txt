@@ -12,10 +12,6 @@ set( nranks 2 )
 
 set( dependencyList gtest linearAlgebra )
 
-if ( ENABLE_OPENMP )
-  set( dependencyList ${dependencyList} openmp )
-endif()
-
 if ( ENABLE_CUDA )
   set( dependencyList ${dependencyList} cuda )
 endif()

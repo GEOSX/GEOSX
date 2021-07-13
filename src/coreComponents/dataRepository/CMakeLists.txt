@@ -34,30 +34,14 @@ set(dataRepository_sources
     xmlWrapper.cpp
     )
 
-set( extraComponentsLinkList "")
-
-if( ENABLE_MPI )
-  set( extraComponentsLinkList ${extraComponentsLinkList} mpi )
-endif()
-
-set (dependencyList codingUtilities pugixml )
-
-if ( ENABLE_OPENMP )
-  set( dependencyList ${dependencyList} openmp )
-endif()
+set (dependencyList codingUtilities )
 
 if ( ENABLE_CUDA )
   set( dependencyList ${dependencyList} cuda )
 endif()
 
-set( dependencyList ${dependencyList} common conduit )
-
 if( ENABLE_PYGEOSX )
   set( dependencyList ${dependencyList} pylvarray )
-endif()
-
-if( ENABLE_CALIPER )
-  set( dependencyList ${dependencyList} caliper adiak )
 endif()
 
 blt_add_library( NAME                  dataRepository

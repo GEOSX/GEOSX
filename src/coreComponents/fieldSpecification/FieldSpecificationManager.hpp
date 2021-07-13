@@ -19,8 +19,6 @@
 #ifndef GEOSX_FIELDSPECIFICATION_FIELDSPECIFICATIONMANAGER_HPP_
 #define GEOSX_FIELDSPECIFICATION_FIELDSPECIFICATIONMANAGER_HPP_
 
-#include "FieldSpecificationManager.hpp"
-
 #include "FieldSpecificationBase.hpp"
 
 #include "codingUtilities/StringUtilities.hpp"

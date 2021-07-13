@@ -26,7 +26,7 @@ set(events_sources
     tasks/TasksManager.cpp
    )
 
-set( dependencyList common RAJA )
+set( dependencyList fileIO )
 
 if( ENABLE_CUDA )
   set( dependencyList ${dependencyList} cuda )

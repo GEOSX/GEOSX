@@ -5,7 +5,6 @@ set( subdirs
      dataRepository
      schema
      functions
-     events
      constitutive
      mesh
      linearAlgebra
@@ -16,6 +15,7 @@ set( subdirs
      discretizationMethods
      fileIO
      physicsSolvers
+     events
      mainInterface
      python
      )
@@ -30,7 +30,6 @@ if ( GEOSX_BUILD_OBJ_LIBS )
   set( LVARRAY_BUILD_OBJ_LIBS TRUE CACHE BOOL "" FORCE)
 endif()
 
-list( APPEND coreLibs lvarray)
 add_subdirectory(LvArray)
 
 if( ENABLE_PYGEOSX )

@@ -28,24 +28,15 @@ if( ENABLE_MATHPRESSO )
 endif()
 
 
-set( dependencyList codingUtilities dataRepository )
+set( dependencyList dataRepository )
 
 if( ENABLE_MATHPRESSO )
    set( dependencyList ${dependencyList} mathpresso )
 endif()
 
-if ( ENABLE_OPENMP )
-  set( dependencyList ${dependencyList} openmp )
-endif()
-
 if ( ENABLE_CUDA )
   set( dependencyList ${dependencyList} cuda )
 endif()
-
-if ( ENABLE_CALIPER )
-  set( dependencyList ${dependencyList} caliper adiak )
-endif()
-
 
 blt_add_library( NAME                  functions
                  SOURCES               ${functions_sources}

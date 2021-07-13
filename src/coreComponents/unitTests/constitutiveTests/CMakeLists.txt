@@ -3,6 +3,7 @@
 #
 
 set( gtest_geosx_tests
+     testDamage.cpp
      testRelPerm.cpp
      testCapillaryPressure.cpp
    )
@@ -12,10 +13,12 @@ set( gtest_triaxial_xmls
      testTriaxial_druckerPragerExtended.xml
    )
 
-set( dependencyList gtest geosx_core conduit )
+set( dependencyList gtest )
 
-if( ENABLE_MPI )
-    set( dependencyList ${dependencyList} mpi )
+if ( GEOSX_BUILD_SHARED_LIBS )
+  set (dependencyList ${dependencyList} geosx_core )
+else()
+  set (dependencyList ${dependencyList} ${geosx_core_libs} )
 endif()
 
 if( ENABLE_PVTPackage )
@@ -24,10 +27,6 @@ if( ENABLE_PVTPackage )
           testCO2BrinePVTModels.cpp )
 
     set( dependencyList ${dependencyList} PVTPackage )
-endif()
-
-if( ENABLE_OPENMP )
-  set( dependencyList ${dependencyList} openmp )
 endif()
 
 if( ENABLE_CUDA )

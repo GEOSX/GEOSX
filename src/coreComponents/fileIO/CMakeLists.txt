@@ -72,19 +72,9 @@ if( ENABLE_VTK )
                VTK::loguru )
 endif()
 
-if( ENABLE_OPENMP )
-  list( APPEND dependencyList openmp )
-endif()
-
 if ( ENABLE_CUDA )
   list( APPEND dependencyList  cuda )
 endif()
-
-if( ENABLE_CALIPER )
-  list( APPEND dependencyList  caliper adiak )
-endif()
-
-
 
 blt_add_library( NAME                  fileIO
                  SOURCES               ${fileIO_sources}

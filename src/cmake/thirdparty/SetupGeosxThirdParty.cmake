@@ -259,7 +259,10 @@ if(DEFINED ADIAK_DIR)
 
     set_property(TARGET adiak
                  APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
-                 ${adiak_INCLUDE_DIRS} )
+                 ${adiak_INCLUDE_DIR} )
+    set_property(TARGET adiak
+                 APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+                 ${adiak_INCLUDE_DIR} )
 
     set(ENABLE_ADIAK ON CACHE BOOL "")
     set(thirdPartyLibs ${thirdPartyLibs} adiak)
@@ -286,9 +289,9 @@ if(DEFINED CALIPER_DIR)
                  APPEND PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
                  ${caliper_INCLUDE_PATH} )
 
-    get_target_property( includeDirs 
-                         caliper
-                         INTERFACE_SYSTEM_INCLUDE_DIRECTORIES)
+    set_property(TARGET caliper
+                 APPEND PROPERTY INTERFACE_INCLUDE_DIRECTORIES
+                 ${caliper_INCLUDE_PATH} )
 
     set(ENABLE_CALIPER ON CACHE BOOL "")
     set(thirdPartyLibs ${thirdPartyLibs} caliper)

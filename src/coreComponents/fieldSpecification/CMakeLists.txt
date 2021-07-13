@@ -22,24 +22,10 @@ set(fieldSpecification_sources
     TractionBoundaryCondition.cpp
    )
 
-
-
-set( dependencyList functions RAJA linearAlgebra conduit )
-
-if ( ENABLE_OPENMP )
-  set( dependencyList ${dependencyList} openmp )
-endif()
+set( dependencyList functions linearAlgebra )
 
 if ( ENABLE_CUDA )
   set( dependencyList ${dependencyList} cuda )
-endif()
-
-if ( ENABLE_CALIPER )
-  set( dependencyList ${dependencyList} caliper adiak )
-endif()
-
-if ( ENABLE_MKL )
-  set( dependencyList ${dependencyList} mkl )
 endif()
 
 blt_add_library( NAME                  fieldSpecification

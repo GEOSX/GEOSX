@@ -7,20 +7,12 @@ set( gtest_geosx_tests
    )
 
 
-set( dependencyList gtest fieldSpecification )
+set( dependencyList gtest )
 
 if ( GEOSX_BUILD_SHARED_LIBS )
-  set (dependencyList ${dependencyList} geosx_core conduit)
+  set (dependencyList ${dependencyList} geosx_core )
 else()
-  set (dependencyList ${dependencyList} ${geosx_core_libs} conduit)
-endif()
-
-if ( ENABLE_MPI )
-  set ( dependencyList ${dependencyList} mpi )
-endif()
-
-if ( ENABLE_OPENMP )
-  set( dependencyList ${dependencyList} openmp )
+  set (dependencyList ${dependencyList} ${geosx_core_libs} )
 endif()
 
 if ( ENABLE_CUDA )

@@ -28,11 +28,7 @@ set( finiteElement_sources
      FiniteElementDiscretizationManager.cpp
    )
 
-set( dependencyList dataRepository codingUtilities)
-
-if( ENABLE_OPENMP )
-    set( dependencyList ${dependencyList} openmp )
-endif()
+set( dependencyList dataRepository )
 
 if ( ENABLE_CUDA )
   set( dependencyList ${dependencyList} cuda )

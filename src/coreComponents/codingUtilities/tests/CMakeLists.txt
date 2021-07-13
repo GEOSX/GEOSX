@@ -6,16 +6,11 @@ set(testSources
     testGeosxTraits.cpp
    )
 
-set(dependencyList gtest codingUtilities RAJA)
-
-if ( ENABLE_OPENMP )
-  set( dependencyList ${dependencyList} openmp )
-endif()
+set(dependencyList gtest codingUtilities )
 
 if ( ENABLE_CUDA )
   set( dependencyList ${dependencyList} cuda )
 endif()
-
 
 #
 # Add gtest C++ based tests

@@ -7,21 +7,9 @@ set(mainInterface_headers
 
 set( dependencyList finiteElement finiteVolume virtualElement )
 
-if( ENABLE_OPENMP )
-  set( dependencyList ${dependencyList} openmp )
-endif( )
-
 if( ENABLE_CUDA )
   set( dependencyList ${dependencyList} cuda )
 endif( )
-
-if( ENABLE_MPI )
-  set( dependencyList ${dependencyList} mpi )
-endif()
-
-if( ENABLE_CALIPER )
-  set( dependencyList ${dependencyList} caliper )
-endif()
 
 #
 # Specify all sources

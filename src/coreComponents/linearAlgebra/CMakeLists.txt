@@ -52,7 +52,7 @@ set( linearAlgebra_sources
      solvers/SeparateComponentPreconditioner.cpp
      DofManager.cpp )
 
-set( dependencyList mesh blas lapack RAJA)
+set( dependencyList mesh blas lapack )
 
 
 list( APPEND linearAlgebra_headers
@@ -148,23 +148,9 @@ if( ENABLE_PETSC )
 
 endif()
 
-if( ENABLE_OPENMP )
-    list( APPEND dependencyList openmp )
-endif()
-
 if ( ENABLE_CUDA )
     list( APPEND dependencyList cuda )
 endif()
-
-if ( ENABLE_MKL )
-    list( APPEND dependencyList mkl )
-endif()
-
-if( ENABLE_MPI )
-    list( APPEND dependencyList mpi )
-endif()
-
-
 
 blt_add_library( NAME                  linearAlgebra
                  SOURCES               ${linearAlgebra_sources}

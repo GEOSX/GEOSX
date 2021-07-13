@@ -102,11 +102,6 @@ set(mesh_sources
 
 set(dependencyList schema dataRepository constitutive metis)
 
-
-if( ENABLE_OPENMP )
-    set( dependencyList ${dependencyList} openmp )
-endif()
-
 if ( ENABLE_CUDA )
   set( dependencyList ${dependencyList} cuda )
 endif()

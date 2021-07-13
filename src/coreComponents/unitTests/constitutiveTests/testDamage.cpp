@@ -12,7 +12,7 @@
  * ------------------------------------------------------------------------------------------------------------
  */
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 #include "constitutive/ConstitutiveManager.hpp"
 #include "constitutive/solid/ElasticIsotropic.hpp"
