@@ -83,12 +83,14 @@ public:
    * @brief Virtual getter for the number of quadrature points per element.
    * @return The number of quadrature points per element.
    */
+  GEOSX_HOST_DEVICE
   virtual localIndex getNumQuadraturePoints() const = 0;
 
   /**
    * @brief Virtual getter for the number of support points per element.
    * @return The number of support points per element.
    */
+  GEOSX_HOST_DEVICE
   virtual localIndex getNumSupportPoints() const = 0;
 
   /**

@@ -58,11 +58,13 @@ public:
   virtual ~H1_QuadrilateralFace_Lagrange1_GaussLegendre2() override
   {}
 
+  GEOSX_HOST_DEVICE
   virtual localIndex getNumQuadraturePoints() const override
   {
     return numQuadraturePoints;
   }
 
+  GEOSX_HOST_DEVICE
   virtual localIndex getNumSupportPoints() const override
   {
     return numNodes;

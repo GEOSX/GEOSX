@@ -12,7 +12,7 @@ set( virtualElement_headers
 set( virtualElement_sources
    )
 
-set( dependencyList mesh)
+set( dependencyList mesh finiteElement )
 
 blt_add_library( NAME                  virtualElement
 #                 SOURCES               ${virtualElement_sources}

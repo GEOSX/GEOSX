@@ -168,19 +168,34 @@ void LaplaceVEM::assembleSystem( real64 const GEOSX_UNUSED_PARAM( time_n ),
           real64 const cellCenter[3] { elemCenters( cellIndex, 0 ),
                                        elemCenters( cellIndex, 1 ),
                                        elemCenters( cellIndex, 2 ) };
-          VEM::computeProjectors( cellIndex,
-                                  nodesCoords,
-                                  elemToNodeMap,
-                                  elementToFaceMap,
-                                  faceToNodeMap,
-                                  faceToEdgeMap,
-                                  edgeToNodeMap,
-                                  faceCenters,
-                                  faceNormals,
-                                  faceAreas,
-                                  cellCenter,
-                                  cellVolume,
-                                  basisData );
+          // VEM::computeProjectors( cellIndex,
+          //                         nodesCoords,
+          //                         elemToNodeMap,
+          //                         elementToFaceMap,
+          //                         faceToNodeMap,
+          //                         faceToEdgeMap,
+          //                         edgeToNodeMap,
+          //                         faceCenters,
+          //                         faceNormals,
+          //                         faceAreas,
+          //                         cellCenter,
+          //                         cellVolume,
+          //                         basisData );
+
+          VEM virtualElement;
+          virtualElement.processLocalGeometry( cellIndex,
+                                               nodesCoords,
+                                               elemToNodeMap,
+                                               elementToFaceMap,
+                                               faceToNodeMap,
+                                               faceToEdgeMap,
+                                               edgeToNodeMap,
+                                               faceCenters,
+                                               faceNormals,
+                                               faceAreas,
+                                               cellCenter,
+                                               cellVolume );
+          basisData = virtualElement.m_basisData;
 
           real64 derivativesIntMean[VEM::maxSupportPoints][3] { { 0.0 } };
           globalIndex elemDofIndex[VEM::maxSupportPoints] { 0 };

@@ -65,11 +65,13 @@ public:
   virtual ~H1_Pyramid_Lagrange1_Gauss5() override
   {}
 
+  GEOSX_HOST_DEVICE
   virtual localIndex getNumQuadraturePoints() const override
   {
     return numQuadraturePoints;
   }
 
+  GEOSX_HOST_DEVICE
   virtual localIndex getNumSupportPoints() const override
   {
     return numNodes;

@@ -56,11 +56,13 @@ public:
   virtual ~H1_Tetrahedron_Lagrange1_Gauss1() override
   {}
 
+  GEOSX_HOST_DEVICE
   virtual localIndex getNumQuadraturePoints() const override
   {
     return numQuadraturePoints;
   }
 
+  GEOSX_HOST_DEVICE
   virtual localIndex getNumSupportPoints() const override
   {
     return numNodes;

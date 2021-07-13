@@ -18,6 +18,7 @@
 #ifndef GEOSX_VIRTUALELEMENT_VIRTUALELEMENTBASE_HPP_
 #define GEOSX_VIRTUALELEMENT_VIRTUALELEMENTBASE_HPP_
 
+#include "finiteElement/elementFormulations/FiniteElementBase.hpp"
 #include "mesh/CellBlock.hpp"
 #include "mesh/FaceManager.hpp"
 #include "mesh/EdgeManager.hpp"
@@ -30,7 +31,7 @@ namespace virtualElement
 /**
  * @brief Base class for VEM implementations.
  */
-class VirtualElementBase
+class VirtualElementBase : public finiteElement::FiniteElementBase
 {
 public:
 
