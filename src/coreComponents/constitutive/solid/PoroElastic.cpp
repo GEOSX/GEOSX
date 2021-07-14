@@ -23,6 +23,7 @@
 #include "ElasticTransverseIsotropic.hpp"
 #include "DruckerPrager.hpp"
 #include "DruckerPragerExtended.hpp"
+#include "ModifiedCamClay.hpp"
 
 namespace geosx
 {
@@ -126,11 +127,14 @@ typedef PoroElastic< ElasticIsotropic > PoroElasticIsotropic;
 typedef PoroElastic< ElasticTransverseIsotropic > PoroElasticTransverseIsotropic;
 typedef PoroElastic< DruckerPrager > PoroDruckerPrager;
 typedef PoroElastic< DruckerPragerExtended > PoroDruckerPragerExtended;
+typedef PoroElastic< ModifiedCamClay > PoroModifiedCamClay;
 
 REGISTER_CATALOG_ENTRY( ConstitutiveBase, PoroElasticIsotropic, string const &, Group * const )
 REGISTER_CATALOG_ENTRY( ConstitutiveBase, PoroElasticTransverseIsotropic, string const &, Group * const )
 REGISTER_CATALOG_ENTRY( ConstitutiveBase, PoroDruckerPrager, string const &, Group * const )
 REGISTER_CATALOG_ENTRY( ConstitutiveBase, PoroDruckerPragerExtended, string const &, Group * const )
+REGISTER_CATALOG_ENTRY( ConstitutiveBase, PoroModifiedCamClay, string const &, Group * const )
+
 
 }
 } /* namespace geosx */

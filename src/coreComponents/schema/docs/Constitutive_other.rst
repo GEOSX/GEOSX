@@ -18,8 +18,10 @@ DamageVolDevElasticIsotropic          node :ref:`DATASTRUCTURE_DamageVolDevElast
 DeadOilFluid                          node :ref:`DATASTRUCTURE_DeadOilFluid`                          
 DruckerPrager                         node :ref:`DATASTRUCTURE_DruckerPrager`                         
 ElasticIsotropic                      node :ref:`DATASTRUCTURE_ElasticIsotropic`                      
+ElasticIsotropicPressureDependent     node :ref:`DATASTRUCTURE_ElasticIsotropicPressureDependent`     
 ElasticTransverseIsotropic            node :ref:`DATASTRUCTURE_ElasticTransverseIsotropic`            
 ExtendedDruckerPrager                 node :ref:`DATASTRUCTURE_ExtendedDruckerPrager`                 
+ModifiedCamClay                       node :ref:`DATASTRUCTURE_ModifiedCamClay`                       
 NullModel                             node :ref:`DATASTRUCTURE_NullModel`                             
 ParticleFluid                         node :ref:`DATASTRUCTURE_ParticleFluid`                         
 PoreVolumeCompressibleSolid           node :ref:`DATASTRUCTURE_PoreVolumeCompressibleSolid`           
@@ -27,6 +29,7 @@ PoroDruckerPrager                     node :ref:`DATASTRUCTURE_PoroDruckerPrager
 PoroElasticIsotropic                  node :ref:`DATASTRUCTURE_PoroElasticIsotropic`                  
 PoroElasticTransverseIsotropic        node :ref:`DATASTRUCTURE_PoroElasticTransverseIsotropic`        
 PoroExtendedDruckerPrager             node :ref:`DATASTRUCTURE_PoroExtendedDruckerPrager`             
+PoroModifiedCamClay                   node :ref:`DATASTRUCTURE_PoroModifiedCamClay`                   
 ProppantSlurryFluid                   node :ref:`DATASTRUCTURE_ProppantSlurryFluid`                   
 TableRelativePermeability             node :ref:`DATASTRUCTURE_TableRelativePermeability`             
 VanGenuchtenBakerRelativePermeability node :ref:`DATASTRUCTURE_VanGenuchtenBakerRelativePermeability` 

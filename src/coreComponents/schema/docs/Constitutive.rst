@@ -18,8 +18,10 @@ DamageVolDevElasticIsotropic          node         :ref:`XML_DamageVolDevElastic
 DeadOilFluid                          node         :ref:`XML_DeadOilFluid`                          
 DruckerPrager                         node         :ref:`XML_DruckerPrager`                         
 ElasticIsotropic                      node         :ref:`XML_ElasticIsotropic`                      
+ElasticIsotropicPressureDependent     node         :ref:`XML_ElasticIsotropicPressureDependent`     
 ElasticTransverseIsotropic            node         :ref:`XML_ElasticTransverseIsotropic`            
 ExtendedDruckerPrager                 node         :ref:`XML_ExtendedDruckerPrager`                 
+ModifiedCamClay                       node         :ref:`XML_ModifiedCamClay`                       
 NullModel                             node         :ref:`XML_NullModel`                             
 ParticleFluid                         node         :ref:`XML_ParticleFluid`                         
 PoreVolumeCompressibleSolid           node         :ref:`XML_PoreVolumeCompressibleSolid`           
@@ -27,6 +29,7 @@ PoroDruckerPrager                     node         :ref:`XML_PoroDruckerPrager`
 PoroElasticIsotropic                  node         :ref:`XML_PoroElasticIsotropic`                  
 PoroElasticTransverseIsotropic        node         :ref:`XML_PoroElasticTransverseIsotropic`        
 PoroExtendedDruckerPrager             node         :ref:`XML_PoroExtendedDruckerPrager`             
+PoroModifiedCamClay                   node         :ref:`XML_PoroModifiedCamClay`                   
 ProppantSlurryFluid                   node         :ref:`XML_ProppantSlurryFluid`                   
 TableRelativePermeability             node         :ref:`XML_TableRelativePermeability`             
 VanGenuchtenBakerRelativePermeability node         :ref:`XML_VanGenuchtenBakerRelativePermeability` 

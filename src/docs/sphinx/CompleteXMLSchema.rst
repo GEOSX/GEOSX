@@ -218,6 +218,13 @@ Element: ElasticIsotropic
 .. include:: ../../coreComponents/schema/docs/ElasticIsotropic.rst
 
 
+.. _XML_ElasticIsotropicPressureDependent:
+
+Element: ElasticIsotropicPressureDependent
+==========================================
+.. include:: ../../coreComponents/schema/docs/ElasticIsotropicPressureDependent.rst
+
+
 .. _XML_ElasticTransverseIsotropic:
 
 Element: ElasticTransverseIsotropic
@@ -400,6 +407,13 @@ Element: Mesh
 .. include:: ../../coreComponents/schema/docs/Mesh.rst
 
 
+.. _XML_ModifiedCamClay:
+
+Element: ModifiedCamClay
+========================
+.. include:: ../../coreComponents/schema/docs/ModifiedCamClay.rst
+
+
 .. _XML_MultiphasePoromechanics:
 
 Element: MultiphasePoromechanics
@@ -531,6 +545,13 @@ Element: PoroElasticTransverseIsotropic
 Element: PoroExtendedDruckerPrager
 ==================================
 .. include:: ../../coreComponents/schema/docs/PoroExtendedDruckerPrager.rst
+
+
+.. _XML_PoroModifiedCamClay:
+
+Element: PoroModifiedCamClay
+============================
+.. include:: ../../coreComponents/schema/docs/PoroModifiedCamClay.rst
 
 
 .. _XML_Problem:
@@ -1020,6 +1041,13 @@ Datastructure: ElasticIsotropic
 .. include:: ../../coreComponents/schema/docs/ElasticIsotropic_other.rst
 
 
+.. _DATASTRUCTURE_ElasticIsotropicPressureDependent:
+
+Datastructure: ElasticIsotropicPressureDependent
+================================================
+.. include:: ../../coreComponents/schema/docs/ElasticIsotropicPressureDependent_other.rst
+
+
 .. _DATASTRUCTURE_ElasticTransverseIsotropic:
 
 Datastructure: ElasticTransverseIsotropic
@@ -1223,6 +1251,13 @@ Datastructure: MeshBodies
 .. include:: ../../coreComponents/schema/docs/MeshBodies_other.rst
 
 
+.. _DATASTRUCTURE_ModifiedCamClay:
+
+Datastructure: ModifiedCamClay
+==============================
+.. include:: ../../coreComponents/schema/docs/ModifiedCamClay_other.rst
+
+
 .. _DATASTRUCTURE_MultiphasePoromechanics:
 
 Datastructure: MultiphasePoromechanics
@@ -1354,6 +1389,13 @@ Datastructure: PoroElasticTransverseIsotropic
 Datastructure: PoroExtendedDruckerPrager
 ========================================
 .. include:: ../../coreComponents/schema/docs/PoroExtendedDruckerPrager_other.rst
+
+
+.. _DATASTRUCTURE_PoroModifiedCamClay:
+
+Datastructure: PoroModifiedCamClay
+==================================
+.. include:: ../../coreComponents/schema/docs/PoroModifiedCamClay_other.rst
 
 
 .. _DATASTRUCTURE_Problem:

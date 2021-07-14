@@ -4,15 +4,15 @@
   <Tasks>
     <TriaxialDriver
       name="triaxialDriver"
-      material="elastic"
+      material="MCC"
       mode="mixedControl" 
       axialControl="strainFunction"
       radialControl="stressFunction"
       initialStress="-1.0"
-      steps="50" 
-      output="none"
-      baseline="testTriaxial_elasticIsotropic.txt"
-      logLevel="0" />
+      steps="50"
+      logLevel="0"
+      baseline = "testTriaxial_delftEggUseLinear.txt"
+      output="none" />
   </Tasks>
 
   <Events
@@ -24,12 +24,18 @@
 
   <Constitutive>
 
-    <ElasticIsotropic 
-      name="elastic"
+    <ModifiedCamClay
+      name="MCC"
+      useLinear="1"
       defaultDensity="2700"
-      defaultBulkModulus="500"
-      defaultShearModulus="300"
-    />
+      defaultRefPressure="-1.0"
+      defaultRefStrainVol="0"
+      defaultShearModulus="200.0"
+      defaultPreConsolidationPressure="-2.1"
+      defaultShapeParameter="1.8"
+      defaultCslSlope="1.2"
+      defaultVirginCompressionIndex="0.003"
+      defaultRecompressionIndex="0.002"/>
 
   </Constitutive>
 
@@ -37,12 +43,12 @@
     <TableFunction
       name="strainFunction"
       inputVarNames="{ time }"
-      coordinates="{ 0.0, 3.0, 4.0, 7.0, 8.0 }"
-      values="{ 0, -0.003, -0.002, -0.005, -0.004 }"/>
+      coordinates="{ 0.0, 1.0 }"
+      values="{ 0, -0.005}"/>
     <TableFunction
       name="stressFunction"
       inputVarNames="{ time }"
-      coordinates="{ 0.0, 8.0  }"
+      coordinates="{ 0.0, 1.0 }"
       values="{ -1.0, -1.0 }"/>
   </Functions>
 

@@ -270,7 +270,7 @@ void testDruckerPragerExtendedDriver()
 }
 
 #ifdef USE_CUDA
-TEST( DruckerPragerTests, testDruckerPragerExtendedHost )
+TEST( DruckerPragerTests, testDruckerPragerExtendedDevice )
 {
   testDruckerPragerExtendedDriver< geosx::parallelDevicePolicy< > >();
 }

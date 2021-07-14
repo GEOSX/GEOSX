@@ -347,7 +347,7 @@ public:
     // TODO: asking for the stiffness here will only work for elastic models.  most other models
     //       need to know the strain increment to compute the current stiffness value.
 
-    m_constitutiveUpdate.getElasticStiffness( k, stack.constitutiveStiffness );
+    m_constitutiveUpdate.getElasticStiffness( k, q, stack.constitutiveStiffness );
 
     SolidMechanicsEFEMKernelsHelper::computeHeavisideFunction< numNodesPerElem >( Heaviside,
                                                                                   stack.X,
