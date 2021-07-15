@@ -17,8 +17,8 @@
  *
  */
 
-#ifndef GEOSX_PHYSICSSOLVERS_MULTIPHYSICS_SINGLEPHASEPOROMECHANICSSOLVER_HPP_
-#define GEOSX_PHYSICSSOLVERS_MULTIPHYSICS_SINGLEPHASEPOROMECHANICSSOLVER_HPP_
+#ifndef GEOSX_PHYSICSSOLVERS_MULTIPHYSICS_SinglePhaseTHMSolver_HPP_
+#define GEOSX_PHYSICSSOLVERS_MULTIPHYSICS_SinglePhaseTHMSolver_HPP_
 
 #include "codingUtilities/EnumStrings.hpp"
 #include "physicsSolvers/SolverBase.hpp"
@@ -30,18 +30,18 @@ namespace geosx
 class SolidMechanicsLagrangianFEM;
 class SinglePhaseBase;
 
-class SinglePhasePoromechanicsSolver : public SolverBase
+class SinglePhaseTHMSolver : public SolverBase
 {
 public:
-  SinglePhasePoromechanicsSolver( const string & name,
+  SinglePhaseTHMSolver( const string & name,
                                   Group * const parent );
-  ~SinglePhasePoromechanicsSolver() override;
+  ~SinglePhaseTHMSolver() override;
 
   /**
    * @brief name of the node manager in the object catalog
    * @return string that contains the catalog name to generate a new NodeManager object through the object catalog.
    */
-  static string catalogName() { return "SinglePhasePoromechanics"; }
+  static string catalogName() { return "SinglePhaseTHM"; }
 
   virtual void setupSystem( DomainPartition & domain,
                             DofManager & dofManager,
@@ -110,7 +110,6 @@ public:
   {
     constexpr static char const * solidSolverNameString() { return "solidSolverName"; }
     constexpr static char const * fluidSolverNameString() { return "fluidSolverName"; }
-    constexpr static char const * thermalCouplingString() { return "thermalCoupling"; }
   };
 
 protected:
@@ -128,9 +127,6 @@ protected:
   // pointer to the solid mechanics sub-solver
   SolidMechanicsLagrangianFEM * m_solidSolver;
 
-  /// Indicates whether or not thermal coupling is considered.
-  integer m_thermalCoupling;
-
 private:
 
   void createPreconditioner();
@@ -139,4 +135,4 @@ private:
 
 } /* namespace geosx */
 
-#endif /* GEOSX_PHYSICSSOLVERS_MULTIPHYSICS_SINGLEPHASEPOROMECHANICSSOLVER_HPP_ */
+#endif /* GEOSX_PHYSICSSOLVERS_MULTIPHYSICS_SinglePhaseTHMSolver_HPP_ */

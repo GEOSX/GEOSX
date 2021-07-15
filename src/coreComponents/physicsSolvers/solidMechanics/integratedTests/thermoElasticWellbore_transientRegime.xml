@@ -1,0 +1,195 @@
+<?xml version="1.0" ?>
+
+<Problem>
+  <!-- SPHINX_Gravity -->
+  <Solvers
+    gravityVector="{ 0.0, 0.0, 0.0 }">
+    <!-- SPHINX_GravityEnd -->
+    <!-- SPHINX_SolidMechanicsSolver -->
+    <SolidMechanicsLagrangianSSLE
+      name="lagsolve"
+      timeIntegrationOption="QuasiStatic"
+      discretization="FE1"
+      logLevel="0"
+      targetRegions="{ Omega }"
+      solidMaterialNames="{ shale }"
+      thermalStress="1">
+      <!-- SPHINX_SolidMechanicsSolverEnd -->
+      <NonlinearSolverParameters
+        newtonTol="1.0e-6"
+        newtonMaxIter="8"/>
+      <LinearSolverParameters
+        solverType="direct"
+        directParallel="0"
+        logLevel="0"/>
+    </SolidMechanicsLagrangianSSLE>
+
+    <ThermalDiffusion
+      name="laplace"
+      discretization="FE1"
+      thermalDiffusion="0.1"
+      logLevel="0"
+      targetRegions="{ Omega }">
+      <LinearSolverParameters
+        solverType="direct"
+        directParallel="0"
+        logLevel="0"/>
+    </ThermalDiffusion>
+  </Solvers>
+
+  <!-- SPHINX_WellboreMesh -->
+  <Mesh>
+    <InternalWellbore
+      name="mesh1"
+      elementTypes="{ C3D8 }"
+      radius="{ 0.1, 4 }"
+      theta="{ 0, 90 }"
+      zCoords="{ 0, 1 }"
+      nr="{ 30 }"
+      nt="{ 8 }"
+      nz="{ 4 }"
+      trajectory="{ { 0.0, 0.0, 0.0 },
+                    { 0.0, 0.0, 1.0 } }"
+      autoSpaceRadialElems="{ 1 }"
+      useCartesianOuterBoundary="1"
+      cellBlockNames="{ cb1 }"/>
+  </Mesh>
+
+  <!-- SPHINX_WellboreMeshEnd -->
+  <Events
+    maxTime="10.0">
+
+    <PeriodicEvent
+      name="solverApplications1"
+      forceDt="1.0"
+      target="/Solvers/laplace"/>
+
+    <!-- This event is applied every cycle, and overrides the
+    solver time-step request -->
+    <!-- SPHINX_Execution -->
+    <PeriodicEvent
+      name="solverApplications"
+      forceDt="1.0"
+      target="/Solvers/lagsolve"/>
+
+    <!-- SPHINX_ExecutionEnd -->
+    <!-- This event is applied every 5.0e-5s.  The targetExactTimestep
+    flag allows this event to request a dt modification to match an
+    integer multiple of the timeFrequency. -->
+    <PeriodicEvent
+      name="outputs"
+      timeFrequency="1.0"
+      targetExactTimestep="1"
+      target="/Outputs/siloOutput"/>
+
+    <!--PeriodicEvent
+      name="restarts"
+      timeFrequency="1e99"
+      targetExactTimestep="0"
+      target="/Outputs/restartOutput"/-->
+  </Events>
+
+  <!-- SPHINX_FEDiscretization -->
+  <NumericalMethods>
+    <FiniteElements>
+      <FiniteElementSpace
+        name="FE1"
+        order="1"/>
+    </FiniteElements>
+  </NumericalMethods>
+
+  <!-- SPHINX_FEDiscretizationEnd -->
+  <ElementRegions>
+    <CellElementRegion
+      name="Omega"
+      cellBlocks="{ cb1 }"
+      materialList="{ shale, nullModel }"/>
+      
+  </ElementRegions>
+
+  <Constitutive>
+    <!-- SPHINX_Material -->
+	<ThermoElasticIsotropic
+      name="shale"
+      defaultDensity="2700"
+      defaultBulkModulus="5.5556e9"
+      defaultShearModulus="4.16667e9"
+      thermalStressCoefficient="1e4"/>
+    <NullModel
+      name="nullModel"/>
+
+    <!-- SPHINX_MaterialEnd -->
+  </Constitutive>
+
+  <!-- SPHINX_BoundaryConditions -->
+  <FieldSpecifications>
+
+    <FieldSpecification
+      name="xConstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="0"
+      scale="0.0"
+      setNames="{ tpos, rpos }"/>
+
+    <FieldSpecification
+      name="yConstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="1"
+      scale="0.0"
+      setNames="{ tneg, rpos }"/>
+
+    <FieldSpecification
+      name="zconstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="2"
+      scale="0.0"
+      setNames="{ zneg, zpos }"/>
+
+    <!--Traction
+      name="innerPressure"
+      objectPath="faceManager"
+      tractionType="normal"
+      scale="-1.0e6"
+      functionName="timeFunction"
+      setNames="{ rneg }"/-->
+      
+    <FieldSpecification
+      name="boreholeTemperature"
+      fieldName="Temperature"
+      objectPath="nodeManager"
+      scale="100.0"
+      setNames="{ rneg }"/>  
+
+    <FieldSpecification
+      name="farfieldTemperature"
+      fieldName="Temperature"
+      objectPath="nodeManager"
+      scale="0.0"
+      setNames="{ rpos }"/>
+  </FieldSpecifications>
+
+  <!-- SPHINX_BoundaryConditionsEnd -->
+  <!-- SPHINX_TableFunction -->
+  <!--Functions>
+    <TableFunction
+      name="timeFunction"
+      inputVarNames="{ time }"
+      coordinates="{ 0.0, 1.0, 10.0 }"
+      values=     "{ 0.0, 0.0, 10.0 }"/>
+  </Functions-->
+
+  <!-- SPHINX_TableFunctionEnd -->
+  <Outputs>
+    <Silo
+      name="siloOutput"
+      parallelThreads="32"
+      plotFileRoot="plot"
+      childDirectory="sub"/>
+
+    <!--Restart
+      name="restartOutput"/-->
+  </Outputs>
+</Problem>

@@ -234,6 +234,8 @@ public:
     static constexpr char const * maxForceString() { return "maxForce"; }
     static constexpr char const * elemsAttachedToSendOrReceiveNodesString() { return "elemsAttachedToSendOrReceiveNodes"; }
     static constexpr char const * elemsNotAttachedToSendOrReceiveNodesString() { return "elemsNotAttachedToSendOrReceiveNodes"; }
+    static constexpr char const * effectiveStressString() { return "effectiveStress"; }
+    static constexpr char const * thermalStressString() { return "thermalStress"; }
 
     dataRepository::ViewKey vTilde = { vTildeString() };
     dataRepository::ViewKey uhatTilde = { uhatTildeString() };
@@ -289,6 +291,10 @@ protected:
   SortedArray< localIndex > m_nonSendOrReceiveNodes;
   SortedArray< localIndex > m_targetNodes;
   MPI_iCommData m_iComm;
+
+  /// Indicates whether or not to use thermal stress when integrating the
+  /// stress divergence in the kernels.
+  integer m_thermalStress;
 
   /// Rigid body modes
   array1d< ParallelVector > m_rigidBodyModes;

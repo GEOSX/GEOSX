@@ -44,6 +44,8 @@ set( constitutive_headers
      solid/ElasticIsotropic.hpp
      solid/ElasticTransverseIsotropic.hpp
      solid/PoroElastic.hpp
+     solid/ThermoElastic.hpp
+     solid/ThermoPoroElastic.hpp
      solid/PoreVolumeCompressibleSolid.hpp
      solid/PropertyConversions.hpp
      solid/SolidBase.hpp
@@ -100,6 +102,8 @@ set( constitutive_sources
      solid/ElasticIsotropic.cpp
      solid/ElasticTransverseIsotropic.cpp
      solid/PoroElastic.cpp
+     solid/ThermoElastic.cpp
+     solid/ThermoPoroElastic.cpp
      solid/PoreVolumeCompressibleSolid.cpp
      solid/SolidBase.cpp
      solid/TriaxialDriver.cpp

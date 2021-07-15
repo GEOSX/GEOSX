@@ -16,11 +16,11 @@
  * @file SinglePhasePoroelasticKernel.hpp
  */
 
+
 #ifndef GEOSX_PHYSICSSOLVERS_MULTIPHYSICS_SINGLEPHASEPOROMECHANICSKERNEL_HPP_
 #define GEOSX_PHYSICSSOLVERS_MULTIPHYSICS_SINGLEPHASEPOROMECHANICSKERNEL_HPP_
 #include "finiteElement/kernelInterface/ImplicitKernelBase.hpp"
 #include "physicsSolvers/fluidFlow/SinglePhaseBase.hpp"
-
 
 namespace geosx
 {
@@ -29,7 +29,7 @@ namespace PoromechanicsKernels
 {
 
 /**
- * @brief Implements kernels for solving quasi-static single-phase poromechanics.
+ * @brief Implements kernels for solving quasi-static single-phase THM problems with weak thermal coupling.
  * @copydoc geosx::finiteElement::ImplicitKernelBase
  * @tparam NUM_NODES_PER_ELEM The number of nodes per element for the
  *                            @p SUBREGION_TYPE.
@@ -210,11 +210,38 @@ public:
 
   }
 
+  /**
+   * @brief Internal struct to provide no-op defaults used in the inclusion
+   *   of lambda functions into kernel component functions.
+   * @struct NoOpFunctors
+   */
+  struct NoOpFunctors
+  {
+    /**
+     * @brief operator() no-op used for modifying the stress tensor ( prior to
+     *   integrating the divergence to produce nodal forces) and the porosity.
+     * @param stress The stress array.
+     * @param porosity The porosity.
+     */
+    GEOSX_HOST_DEVICE
+    GEOSX_FORCE_INLINE constexpr
+    void operator() ( real64 (& stress)[6], real64 & porosity, real64 & porosityOld )
+    {
+      GEOSX_UNUSED_VAR( stress );
+      GEOSX_UNUSED_VAR( porosity );
+      GEOSX_UNUSED_VAR( porosityOld );
+    }
+  };
+
+
+
+  template< typename MODIFIER = NoOpFunctors >
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
   void quadraturePointKernel( localIndex const k,
                               localIndex const q,
-                              StackVariables & stack ) const
+                              StackVariables & stack,
+                              MODIFIER && modifier = NoOpFunctors{} ) const
   {
     // Get displacement: (i) basis functions (N), (ii) basis function
     // derivatives (dNdX), and (iii) determinant of the Jacobian transformation
@@ -226,7 +253,7 @@ public:
 
     // Evaluate total stress tensor
     real64 strainIncrement[6] = {0};
-    real64 totalStress[6];
+    real64 totalStress[6] = {0};
 
     // --- Update effective stress tensor (stored in totalStress)
     typename CONSTITUTIVE_TYPE::KernelWrapper::DiscretizationOps stiffness;
@@ -249,7 +276,7 @@ public:
     real64 const biotSkeletonModulusInverse = 0.0; //TODO: 1/N = 0 correct only for biotCoefficient = 1                //
     real64 const volumetricStrainNew = FE_TYPE::symmetricGradientTrace( dNdX, stack.u_local );                         //
     real64 const volumetricStrainOld = volumetricStrainNew - FE_TYPE::symmetricGradientTrace( dNdX, stack.uhat_local );//
-    real64 const porosityOld = m_poroRef( k ) + m_biotCoefficient * volumetricStrainOld;// +  DeltaPoro                //
+    real64 porosityOld = m_poroRef( k ) + m_biotCoefficient * volumetricStrainOld;// +  DeltaPoro                //
     real64 const dPorosity_dPressure = biotSkeletonModulusInverse;                                                     //
     real64 const dPorosity_dVolStrainIncrement =  m_biotCoefficient;                                                   //
                                                                                                                        //
@@ -257,10 +284,12 @@ public:
                            1e-10,                                                                                      //
                            "Correct only for Biot's coefficient equal to 1" );                                         //
     // --------------------------------------------------------------------------------------------------------------- //
-    real64 const porosityNew = porosityOld
-                               + m_biotCoefficient * (strainIncrement[0] + strainIncrement[1] + strainIncrement[2] )
-                               + biotSkeletonModulusInverse * m_deltaFluidPressure[k];
+    real64 porosityNew = porosityOld
+                         + m_biotCoefficient * (strainIncrement[0] + strainIncrement[1] + strainIncrement[2] )
+                         + biotSkeletonModulusInverse * m_deltaFluidPressure[k];
 
+    // Modify stress and porosity in case of thermal coupling
+    modifier( totalStress, porosityNew, porosityOld );
 
     // Evaluate body force vector
     real64 bodyForce[3] = { m_gravityVector[0],
@@ -329,12 +358,14 @@ public:
   /**
    * @copydoc geosx::finiteElement::ImplicitKernelBase::complete
    */
+  template< typename MODIFIER = NoOpFunctors >
   GEOSX_HOST_DEVICE
   GEOSX_FORCE_INLINE
   real64 complete( localIndex const k,
                    StackVariables & stack ) const
   {
     GEOSX_UNUSED_VAR( k );
+
     real64 maxForce = 0;
 
     CONSTITUTIVE_TYPE::KernelWrapper::DiscretizationOps::template fillLowerBTDB< numNodesPerElem >( stack.localJacobian );

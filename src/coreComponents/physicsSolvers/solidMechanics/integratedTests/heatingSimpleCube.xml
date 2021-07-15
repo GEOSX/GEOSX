@@ -1,0 +1,166 @@
+<?xml version="1.0" ?>
+
+<Problem>
+    <!-- SPHINX_Gravity -->
+  <Solvers
+    gravityVector="{ 0.0, 0.0, 0.0 }">
+    <!-- SPHINX_GravityEnd -->
+    <!-- SPHINX_SolidMechanicsSolver -->
+    <SolidMechanicsLagrangianSSLE
+      name="lagsolve"
+      timeIntegrationOption="QuasiStatic"
+      discretization="FE1"
+      logLevel="0"
+      targetRegions="{ Region2 }"
+      solidMaterialNames="{ shale }"
+      thermalStress="1">
+      <!-- SPHINX_SolidMechanicsSolverEnd -->
+      <NonlinearSolverParameters
+        newtonTol="1.0e-8"
+        newtonMaxIter="8"/>
+      <LinearSolverParameters
+        solverType="direct"
+        directParallel="0"
+        logLevel="0"/>
+    </SolidMechanicsLagrangianSSLE>
+
+    <LaplaceFEM
+      name="laplace"
+      discretization="FE1"
+      timeIntegrationOption="SteadyState"
+      fieldName="Temperature"
+      logLevel="0"
+      targetRegions="{ Region2 }">
+      <LinearSolverParameters
+        solverType="direct"
+        directParallel="0"
+        logLevel="0"/>
+    </LaplaceFEM>
+  </Solvers>
+
+  <!-- SPHINX_Mesh -->
+  <Mesh>
+    <InternalMesh
+      name="mesh1"
+      elementTypes="{ C3D8 }"
+      xCoords="{ 0, 1 }"
+      yCoords="{ 0, 1 }"
+      zCoords="{ 0, 1 }"
+      nx="{ 5 }"
+      ny="{ 5 }"
+      nz="{ 5 }"
+      cellBlockNames="{ cb1 }"/>
+  </Mesh>
+
+  <!-- SPHINX_MeshEnd -->
+  <Events
+    maxTime="1">
+
+    <PeriodicEvent
+      name="solverApplications1"
+      forceDt="1.0"
+      target="/Solvers/laplace"/>
+
+    <PeriodicEvent
+      name="solverApplications"
+      forceDt="1"
+      target="/Solvers/lagsolve"/>
+
+    <PeriodicEvent
+      name="outputs"
+      timeFrequency="1.0"
+      targetExactTimestep="1"
+      target="/Outputs/siloOutput"/>
+
+  </Events>
+
+  <!-- SPHINX_FEDiscretization -->
+  <NumericalMethods>
+    <FiniteElements>
+      <FiniteElementSpace
+        name="FE1"
+        order="1"/>
+    </FiniteElements>
+  </NumericalMethods>
+
+  <!-- SPHINX_FEDiscretizationEnd -->
+  <ElementRegions>
+    <CellElementRegion
+      name="Region2"
+      cellBlocks="{ cb1 }"
+      materialList="{ shale, nullModel }"/>
+
+  </ElementRegions>
+
+
+  <Constitutive>
+	<ThermoElasticIsotropic
+      name="shale"
+      defaultDensity="2700"
+      defaultBulkModulus="5.5556e9"
+      defaultShearModulus="4.16667e9"
+      thermalStressCoefficient="1e4"/>
+    <NullModel
+      name="nullModel"/>
+  </Constitutive>
+
+  <!-- SPHINX_BoundaryConditions -->
+  <FieldSpecifications>
+    <FieldSpecification
+      name="xconstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="0"
+      scale="0.0"
+      setNames="{ xneg, xpos}"/>
+
+    <FieldSpecification
+      name="yconstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="1"
+      scale="0.0"
+      setNames="{ yneg, ypos }"/>
+
+    <FieldSpecification
+      name="zconstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="2"
+      scale="0.0"
+      setNames="{ zneg, zpos }"/>
+
+    <!--Traction
+      name="innerPressure"
+      objectPath="faceManager"
+      tractionType="normal"
+      scale="-0.0e6"
+      setNames="{ zpos }"/-->
+
+
+    <FieldSpecification
+      name="sourceTerm"
+      fieldName="Temperature"
+      objectPath="nodeManager"
+      scale="100.0"
+      setNames="{ xneg }"/>
+
+    <FieldSpecification
+      name="sinkTerm"
+      fieldName="Temperature"
+      objectPath="nodeManager"
+      scale="0.0"
+      setNames="{ xpos }"/>
+  </FieldSpecifications>
+
+  <Outputs>
+    <Silo
+      name="siloOutput"
+      parallelThreads="32"
+      plotFileRoot="plot"
+      childDirectory="sub"/>
+
+    <!--Restart
+      name="restartOutput"/-->
+  </Outputs>
+</Problem>

@@ -28,6 +28,8 @@
 #include "solid/ElasticIsotropic.hpp"
 #include "solid/ElasticTransverseIsotropic.hpp"
 #include "solid/PoroElastic.hpp"
+#include "solid/ThermoElastic.hpp"
+#include "solid/ThermoPoroElastic.hpp"
 
 namespace geosx
 {
@@ -153,6 +155,74 @@ struct ConstitutivePassThru< PoroElasticBase >
     else
     {
       GEOSX_ERROR( "ConstitutivePassThru< PoroElasticBase >::execute failed. The constitutive relation is named "
+                   << constitutiveRelation.getName() << " with type "
+                   << LvArray::system::demangleType( constitutiveRelation ) );
+    }
+  }
+};
+
+/**
+ * Specialization for the ThermoElastic models.
+ */
+template<>
+struct ConstitutivePassThru< ThermoElasticBase >
+{
+  template< typename LAMBDA >
+  static void execute( ConstitutiveBase & constitutiveRelation, LAMBDA && lambda )
+  {
+    if( auto * const ptr1 = dynamic_cast< ThermoElastic< DruckerPragerExtended > * >( &constitutiveRelation ) )
+    {
+      lambda( *ptr1 );
+    }
+    else if( auto * const ptr2 = dynamic_cast< ThermoElastic< DruckerPrager > * >( &constitutiveRelation ) )
+    {
+      lambda( *ptr2 );
+    }
+    else if( auto * const ptr3 = dynamic_cast< ThermoElastic< ElasticIsotropic > * >( &constitutiveRelation ) )
+    {
+      lambda( *ptr3 );
+    }
+    else if( auto * const ptr4 = dynamic_cast< ThermoElastic< ElasticTransverseIsotropic > * >( &constitutiveRelation ) )
+    {
+      lambda( *ptr4 );
+    }
+    else
+    {
+      GEOSX_ERROR( "ConstitutivePassThru< ThermoElasticBase >::execute failed. The constitutive relation is named "
+                   << constitutiveRelation.getName() << " with type "
+                   << LvArray::system::demangleType( constitutiveRelation ) );
+    }
+  }
+};
+
+/**
+ * Specialization for the ThermoPoroElastic models.
+ */
+template<>
+struct ConstitutivePassThru< ThermoPoroElasticBase >
+{
+  template< typename LAMBDA >
+  static void execute( ConstitutiveBase & constitutiveRelation, LAMBDA && lambda )
+  {
+    if( auto * const ptr1 = dynamic_cast< ThermoPoroElastic< DruckerPragerExtended > * >( &constitutiveRelation ) )
+    {
+      lambda( *ptr1 );
+    }
+    else if( auto * const ptr2 = dynamic_cast< ThermoPoroElastic< DruckerPrager > * >( &constitutiveRelation ) )
+    {
+      lambda( *ptr2 );
+    }
+    else if( auto * const ptr3 = dynamic_cast< ThermoPoroElastic< ElasticIsotropic > * >( &constitutiveRelation ) )
+    {
+      lambda( *ptr3 );
+    }
+    else if( auto * const ptr4 = dynamic_cast< ThermoPoroElastic< ElasticTransverseIsotropic > * >( &constitutiveRelation ) )
+    {
+      lambda( *ptr4 );
+    }
+    else
+    {
+      GEOSX_ERROR( "ConstitutivePassThru< ThermoPoroElasticBase >::execute failed. The constitutive relation is named "
                    << constitutiveRelation.getName() << " with type "
                    << LvArray::system::demangleType( constitutiveRelation ) );
     }
