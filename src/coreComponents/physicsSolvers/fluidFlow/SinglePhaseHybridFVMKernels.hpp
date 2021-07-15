@@ -21,6 +21,7 @@
 
 #include "common/DataTypes.hpp"
 #include "constitutive/fluid/SingleFluidBase.hpp"
+#include "constitutive/permeability/PermeabilityBase.hpp"
 #include "finiteVolume/mimeticInnerProducts/MimeticInnerProductBase.hpp"
 #include "finiteVolume/mimeticInnerProducts/TPFAInnerProduct.hpp"
 #include "finiteVolume/mimeticInnerProducts/QuasiTPFAInnerProduct.hpp"
@@ -532,6 +533,7 @@ struct FluxKernel
           arrayView1d< integer const > const & faceGhostRank,
           arrayView1d< real64 const > const & facePres,
           arrayView1d< real64 const > const & dFacePres,
+          arrayView2d< real64 const > const & elemPerm,
           arrayView1d< real64 const > const & faceGravCoef,
           arrayView1d< real64 const > const & transMultiplier,
           ElementViewConst< arrayView1d< real64 const > > const & mob,
@@ -560,8 +562,6 @@ struct FluxKernel
       subRegion.getReference< array2d< real64 > >( CellBlock::viewKeyStruct::elementCenterString() );
     arrayView1d< real64 const > const elemVolume =
       subRegion.getReference< array1d< real64 > >( CellBlock::viewKeyStruct::elementVolumeString() );
-    arrayView2d< real64 const > const elemPerm =
-      subRegion.getReference< array2d< real64 > >( SinglePhaseBase::viewKeyStruct::permeabilityString() );
 
     // get the cell-centered depth
     arrayView1d< real64 const > const elemGravCoef =

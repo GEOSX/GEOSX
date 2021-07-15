@@ -10,6 +10,7 @@
       targetRegions="{ Fracture }"
       fluidNames="{ water }"
       solidNames="{ rock }"
+      permeabilityNames="{ rockPerm }"
       inputFluxEstimate="1">
       <LinearSolverParameters
         solverType="gmres"

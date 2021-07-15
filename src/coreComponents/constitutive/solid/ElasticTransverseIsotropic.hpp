@@ -538,7 +538,7 @@ public:
    *        data in this.
    * @return An instantiation of ElasticTransverseIsotropicUpdates.
    */
-  ElasticTransverseIsotropicUpdates createKernelUpdates()
+  ElasticTransverseIsotropicUpdates createKernelUpdates() const
   {
     return ElasticTransverseIsotropicUpdates( m_c11,
                                               m_c13,

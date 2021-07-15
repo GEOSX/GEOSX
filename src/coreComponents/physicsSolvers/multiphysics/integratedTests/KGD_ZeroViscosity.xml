@@ -47,6 +47,7 @@
       targetRegions="{ Fracture }"
       fluidNames="{ water }"
       solidNames="{ rock }"
+      permeabilityNames="{fracPerm}"
       inputFluxEstimate="1"
       meanPermCoeff="0.8">
     </SinglePhaseFVM>
@@ -70,7 +71,7 @@
     <SurfaceElementRegion
       name="Fracture"
       defaultAperture="0.02e-3"
-      materialList="{ water, rock }"/>
+      materialList="{ water, rock, fracPerm }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -106,6 +107,10 @@
         coordinates="{ -1.0e-3, 0.0 }"
         values="{ 0.002e-3, 0.02e-3 }"/>
     </Contact>
+    
+    <ConstantPermeability
+      name="fracPerm"
+      permeabilityComponents="{1.0e-4, 1.0e-4, 1.0e-4}"/>              
   </Constitutive>
 
   <Outputs>

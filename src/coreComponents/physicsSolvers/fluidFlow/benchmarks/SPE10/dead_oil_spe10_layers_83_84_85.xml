@@ -30,6 +30,7 @@
       discretization="fluidTPFA"
       fluidNames="{ fluid }"
       solidNames="{ rock }"
+      permeabilityNames="{ rockPerm }"
       relPermNames="{ relperm }"
       maxCompFractionChange="0.3"
       temperature="297.15"
@@ -283,7 +284,8 @@
       <TwoPointFluxApproximation
         name="fluidTPFA"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{ rockPerm }"/>
     </FiniteVolume>
   </NumericalMethods>
   <!-- SPHINX_TUT_DEAD_OIL_BOTTOM_SPE10_NUMERICAL_METHODS_END -->
@@ -293,7 +295,7 @@
     <CellElementRegion
       name="reservoir"
       cellBlocks="{ DEFAULT_HEX }"
-      materialList="{ fluid, rock, relperm }"/>
+      materialList="{ fluid, rock, relperm, rockPerm }"/>
 
     <WellElementRegion
       name="wellRegion1"
@@ -337,6 +339,11 @@
       name="rock"
       referencePressure="1e7"
       compressibility="1e-10"/>
+      
+    <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{1.0e-4, 0.0, 1.0e-4}"/>              
+      
   </Constitutive>
   <!-- SPHINX_TUT_DEAD_OIL_BOTTOM_SPE10_CONSTITUTIVE_END -->
   

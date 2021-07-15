@@ -8,6 +8,7 @@
       discretization="fluidTPFA"
       fluidNames="{ fluid1 }"
       solidNames="{ rock }"
+      permeabilityNames="{rockPerm}"
       relPermNames="{ relperm }"
       temperature="368.15"
       useMass="1"
@@ -82,7 +83,8 @@
       <TwoPointFluxApproximation
         name="fluidTPFA"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{rockPerm}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -90,7 +92,7 @@
     <CellElementRegion
       name="Region1"
       cellBlocks="{ cb1 }"
-      materialList="{ fluid1, rock, relperm }"/>
+      materialList="{ fluid1, rock, relperm, rockPerm }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -113,36 +115,14 @@
       phaseMinVolumeFraction="{ 0.05, 0.05 }"
       phaseRelPermExponent="{ 1.5, 1.5 }"
       phaseRelPermMaxValue="{ 0.9, 0.9 }"/>
+      
+    <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{1.0e-13, 1.0e-13, 1.0e-13}"/>  
+      
   </Constitutive>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Region1/cb1"
-      fieldName="permeability"
-      scale="1.0e-13"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Region1/cb1"
-      fieldName="permeability"
-      scale="1.0e-13"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Region1/cb1"
-      fieldName="permeability"
-      scale="1.0e-13"/>
-
     <FieldSpecification
       name="referencePorosity"
       initialCondition="1"

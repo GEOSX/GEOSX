@@ -45,6 +45,7 @@
       targetRegions="{ Fracture }"
       fluidNames="{ water }"
       solidNames="{ rock }"
+      permeabilityNames="{fracPerm}"
       meanPermCoeff="0.8">
       <NonlinearSolverParameters
         newtonTol="1.0e-5"
@@ -148,7 +149,8 @@
       <TwoPointFluxApproximation
         name="singlePhaseTPFA"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{fracPerm}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -161,7 +163,7 @@
     <SurfaceElementRegion
       name="Fracture"
       defaultAperture="1.0e-4"
-      materialList="{ water, rock }"/>
+      materialList="{ water, rock, fracPerm }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -192,6 +194,10 @@
         coordinates="{ -1.0e-3, 0.0 }"
         values="{ 1.0e-6, 1.0e-4 }"/>
     </Contact>
+    
+    <ConstantPermeability
+      name="fracPerm"
+      permeabilityComponents="{1.0e-4, 1.0e-4, 1.0e-4}"/> 
   </Constitutive>
 
   <FieldSpecifications>

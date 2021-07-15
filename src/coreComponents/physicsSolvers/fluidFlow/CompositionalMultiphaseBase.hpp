@@ -187,7 +187,7 @@ public:
    * @param matrix the system matrix
    * @param rhs the system right-hand side vector
    */
-  void assembleAccumulationTerms( DomainPartition const & domain,
+  void assembleAccumulationTerms( DomainPartition & domain,
                                   DofManager const & dofManager,
                                   CRSMatrixView< real64, globalIndex const > const & localMatrix,
                                   arrayView1d< real64 > const & localRhs ) const;
@@ -293,6 +293,8 @@ public:
     static constexpr char const * phaseComponentFractionOldString() { return "phaseComponentFractionOld"; }
 
     static constexpr char const * phaseMobilityOldString() { return "phaseMobilityOld"; }
+
+    static constexpr char const * porosityString() { return "porosity"; }
 
     static constexpr char const * porosityOldString() { return "porosityOld"; }
 

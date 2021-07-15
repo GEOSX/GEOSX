@@ -22,7 +22,7 @@
 
 #include "common/DataLayouts.hpp"
 #include "constitutive/ConstitutiveManager.hpp"
-#include "constitutive/solid/PoroElastic.hpp"
+#include "constitutive/solid/PorousSolid.hpp"
 #include "constitutive/fluid/SingleFluidBase.hpp"
 #include "discretizationMethods/NumericalMethodsManager.hpp"
 #include "finiteElement/Kinematics.h"
@@ -53,11 +53,15 @@ SinglePhasePoromechanicsSolver::SinglePhasePoromechanicsSolver( const string & n
 {
   registerWrapper( viewKeyStruct::solidSolverNameString(), &m_solidSolverName ).
     setInputFlag( InputFlags::REQUIRED ).
-    setDescription( "Name of the solid mechanics solver to use in the poroelastic solver" );
+    setDescription( "Name of the solid mechanics solver to use in the poromechanics solver" );
 
   registerWrapper( viewKeyStruct::fluidSolverNameString(), &m_flowSolverName ).
     setInputFlag( InputFlags::REQUIRED ).
-    setDescription( "Name of the fluid mechanics solver to use in the poroelastic solver" );
+    setDescription( "Name of the fluid mechanics solver to use in the poromechanics solver" );
+
+  registerWrapper( viewKeyStruct::porousMaterialNamesString(), &m_porousMaterialNames ).
+    setInputFlag( InputFlags::REQUIRED ).
+    setDescription( "The name of the material that should be used in the constitutive updates" );
 
   m_linearSolverParameters.get().mgr.strategy = LinearSolverParameters::MGR::StrategyType::singlePhasePoromechanics;
   m_linearSolverParameters.get().mgr.separateComponents = true;
@@ -112,6 +116,14 @@ void SinglePhasePoromechanicsSolver::implicitStepComplete( real64 const & time_n
 {
   m_solidSolver->implicitStepComplete( time_n, dt, domain );
   m_flowSolver->implicitStepComplete( time_n, dt, domain );
+
+  MeshLevel & mesh = domain.getMeshBody( 0 ).getMeshLevel( 0 );
+
+  forTargetSubRegions( mesh, [&]( localIndex const targetIndex, ElementSubRegionBase & subRegion )
+  {
+    ConstitutiveBase const & porousMaterial = getConstitutiveModel< ConstitutiveBase >( subRegion, porousMaterialNames()[targetIndex] );
+    porousMaterial.saveConvergedState();
+  } );
 }
 
 void SinglePhasePoromechanicsSolver::postProcessInput()
@@ -197,11 +209,11 @@ void SinglePhasePoromechanicsSolver::assembleSystem( real64 const time_n,
   m_solidSolver->getMaxForce() =
     finiteElement::
       regionBasedKernelApplication< parallelDevicePolicy< 32 >,
-                                    constitutive::PoroElasticBase,
+                                    constitutive::PorousSolidBase,
                                     CellElementSubRegion >( mesh,
                                                             targetRegionNames(),
                                                             this->getDiscretizationName(),
-                                                            m_solidSolver->solidMaterialNames(),
+                                                            porousMaterialNames(),
                                                             kernelFactory );
 
   // Face-based contributions

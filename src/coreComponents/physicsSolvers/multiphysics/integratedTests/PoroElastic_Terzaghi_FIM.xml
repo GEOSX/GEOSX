@@ -8,6 +8,7 @@
       name="PoroelasticitySolver"
       solidSolverName="LinearElasticitySolver"
       fluidSolverName="SinglePhaseFlowSolver"
+      porousMaterialNames="{porousRock}"
       logLevel="1"
       discretization="FE1"
       targetRegions="{ Domain }">
@@ -32,7 +33,8 @@
       discretization="singlePhaseTPFA"
       targetRegions="{ Domain }"
       fluidNames="{ fluid }"
-      solidNames="{ skeleton }">
+      solidNames="{ skeleton }"
+      permeabilityNames="{ skeletonPerm }">
     </SinglePhaseFVM>
   </Solvers>
   <!-- SPHINX_POROELASTIC_SOLVER_END -->
@@ -123,7 +125,8 @@
       <TwoPointFluxApproximation
         name="singlePhaseTPFA"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{skeletonPerm}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -132,17 +135,23 @@
     <CellElementRegion
       name="Domain"
       cellBlocks="{ cb1 }"
-      materialList="{ skeleton, fluid }"/>
+      materialList="{ skeleton, fluid, porousRock, skeletonPerm, skeletonPorosity }"/>
   </ElementRegions>
 
   <!-- SPHINX_POROELASTIC_CONSTITUTIVE -->
   <Constitutive>
-    <PoroElasticIsotropic
+  
+     <PorousElasticIsotropic
+      name="porousRock"
+      solidModelName="skeleton"
+      porosityModelName="skeletonPorosity"
+      permeabilityModelName="skeletonPerm"/>
+  
+    <ElasticIsotropic
       name="skeleton"
       defaultDensity="0"
       defaultYoungsModulus="1.0e4"
-      defaultPoissonRatio="0.2"
-      BiotCoefficient="1.0"/>
+      defaultPoissonRatio="0.2"/>
 
     <CompressibleSinglePhaseFluid
       name="fluid"
@@ -153,10 +162,27 @@
       compressibility="0.0e0"
       referenceViscosity="1"
       viscosibility="0.0"/>
+    
+    <BiotPorosity
+      name="skeletonPorosity"
+      grainBulkModulus="1.0e27"
+      defaultReferencePorosity="0.3"/>  
+      
+     <ConstantPermeability
+      name="skeletonPerm"
+      permeabilityComponents="{1.0e-4, 1.0e-4, 1.0e-4}"/>   
   </Constitutive>
 
   <!-- SPHINX_POROELASTIC_CONSTITUTIVE_END -->
   <FieldSpecifications>
+    <FieldSpecification
+      name="Porosity"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="skeletonPorosity_porosity"
+      scale="0.3"/>  
+  
     <FieldSpecification
       name="initialPressure"
       initialCondition="1"
@@ -191,41 +217,6 @@
       fieldName="TotalDisplacement"
       component="2"
       scale="0.0"/>
-
-    <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="1.0e-4"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="1.0e-4"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="1.0e-4"/>
-
-    <FieldSpecification
-      name="referencePorosity"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="referencePorosity"
-      scale="0.3"/>
 
     <FieldSpecification
       name="xnegconstraint"

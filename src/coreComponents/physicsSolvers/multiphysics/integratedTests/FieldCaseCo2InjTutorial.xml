@@ -30,6 +30,7 @@
       discretization="fluidTPFA"
       fluidNames="{ fluid }"
       solidNames="{ rock }"
+      permeabilityNames="{ rockPerm }"
       relPermNames="{ relperm }"
       temperature="368.15"
       maxCompFractionChange="0.2"
@@ -84,7 +85,7 @@
     <CellElementRegion
       name="Reservoir"
       cellBlocks="{ Reservoir_TETRA }"
-      materialList="{ fluid, rock, relperm }"/>
+      materialList="{ fluid, rock, relperm, rockPerm }"/>
 
     <CellElementRegion
       name="Burden"
@@ -140,7 +141,8 @@
         name="fluidTPFA"
         targetRegions="{ Reservoir }"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{ rockPerm }"/>
     </FiniteVolume>
   </NumericalMethods>
   <!-- SPHINX_FIELD_CASE_Co2_NUMERICAL_END -->
@@ -166,41 +168,15 @@
       phaseMinVolumeFraction="{ 0.05, 0.30 }"
       phaseRelPermExponent="{ 2.0, 2.0 }"
       phaseRelPermMaxValue="{ 1.0, 1.0 }"/>
+      
+    <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{1.0e-14, 1.0e-14, 1.0e-17}"/>       
   </Constitutive>
   <!-- SPHINX_FIELD_CASE_Co2_CONSTITUTIVE_END -->
 
   <!-- SPHINX_FIELD_CASE_Co2_FIELD -->
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx"
-      initialCondition="1"
-      component="0"
-      setNames="{ all }"
-      objectPath="ElementRegions/Reservoir"
-      fieldName="permeability"
-      scale="1e-14"
-      functionName="permxFunc"/>
-
-    <FieldSpecification
-      name="permy"
-      initialCondition="1"
-      component="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Reservoir"
-      fieldName="permeability"
-      scale="1e-14"
-      functionName="permyFunc"/>
-
-    <FieldSpecification
-      name="permz"
-      initialCondition="1"
-      component="2"
-      setNames="{ all }"
-      objectPath="ElementRegions/Reservoir"
-      fieldName="permeability"
-      scale="1e-17"
-      functionName="permzFunc"/>
-
     <FieldSpecification
       name="referencePorosity"
       initialCondition="1"

@@ -1483,6 +1483,7 @@ void
 FluxKernel::
   launch( localIndex er, localIndex esr,
           CellElementSubRegion const & subRegion,
+          constitutive::PermeabilityBase const & permeabilityModel,
           SortedArrayView< localIndex const > const & regionFilter,
           arrayView2d< real64 const, nodes::REFERENCE_POSITION_USD > const & nodePosition,
           arrayView2d< localIndex const > const & elemRegionList,
@@ -1533,8 +1534,8 @@ FluxKernel::
     subRegion.getReference< array2d< real64 > >( CellBlock::viewKeyStruct::elementCenterString() );
   arrayView1d< real64 const > const & elemVolume =
     subRegion.getReference< array1d< real64 > >( CellBlock::viewKeyStruct::elementVolumeString() );
-  arrayView2d< real64 const > const & elemPerm =
-    subRegion.getReference< array2d< real64 > >( CompositionalMultiphaseBase::viewKeyStruct::permeabilityString() );
+
+  arrayView2d< real64 const > const & elemPerm = permeabilityModel.permeability();
 
   // get the cell-centered depth
   arrayView1d< real64 const > const & elemGravCoef =
@@ -1622,6 +1623,7 @@ FluxKernel::
   FluxKernel:: \
     launch< NF, NC, NP, IP_TYPE >( localIndex er, localIndex esr, \
                                    CellElementSubRegion const & subRegion, \
+                                   constitutive::PermeabilityBase const & permeabilityModel, \
                                    SortedArrayView< localIndex const > const & regionFilter, \
                                    arrayView2d< real64 const, nodes::REFERENCE_POSITION_USD > const & nodePosition, \
                                    arrayView2d< localIndex const > const & elemRegionList, \

@@ -155,7 +155,7 @@ public:
   virtual string getCatalogName() const override { return catalogName(); }
 
 
-  KernelWrapper createKernelUpdates()
+  KernelWrapper createKernelUpdates() const
   {
     return BASE::template createDerivedKernelUpdates< KernelWrapper >( m_damage.toView(),
                                                                        m_strainEnergyDensity.toView(),

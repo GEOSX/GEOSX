@@ -743,13 +743,18 @@
 	</xsd:complexType>
 	<xsd:complexType name="ConstitutiveType">
 		<xsd:choice minOccurs="0" maxOccurs="unbounded">
+			<xsd:element name="BiotPorosity" type="BiotPorosityType" />
 			<xsd:element name="BlackOilFluid" type="BlackOilFluidType" />
 			<xsd:element name="BrooksCoreyBakerRelativePermeability" type="BrooksCoreyBakerRelativePermeabilityType" />
 			<xsd:element name="BrooksCoreyCapillaryPressure" type="BrooksCoreyCapillaryPressureType" />
 			<xsd:element name="BrooksCoreyRelativePermeability" type="BrooksCoreyRelativePermeabilityType" />
 			<xsd:element name="CO2BrineFluid" type="CO2BrineFluidType" />
+			<xsd:element name="CarmanKozenyPermeability" type="CarmanKozenyPermeabilityType" />
 			<xsd:element name="CompositionalMultiphaseFluid" type="CompositionalMultiphaseFluidType" />
 			<xsd:element name="CompressibleSinglePhaseFluid" type="CompressibleSinglePhaseFluidType" />
+			<xsd:element name="CompressibleSolidPressurePorosityCarmanKozenyPermeability" type="CompressibleSolidPressurePorosityCarmanKozenyPermeabilityType" />
+			<xsd:element name="CompressibleSolidPressurePorosityConstantPermeability" type="CompressibleSolidPressurePorosityConstantPermeabilityType" />
+			<xsd:element name="ConstantPermeability" type="ConstantPermeabilityType" />
 			<xsd:element name="Contact" type="ContactType" />
 			<xsd:element name="Coulomb" type="CoulombType" />
 			<xsd:element name="DamageElasticIsotropic" type="DamageElasticIsotropicType" />
@@ -761,17 +766,37 @@
 			<xsd:element name="ElasticTransverseIsotropic" type="ElasticTransverseIsotropicType" />
 			<xsd:element name="ExtendedDruckerPrager" type="ExtendedDruckerPragerType" />
 			<xsd:element name="NullModel" type="NullModelType" />
+			<xsd:element name="ParallelPlatesPermeability" type="ParallelPlatesPermeabilityType" />
 			<xsd:element name="ParticleFluid" type="ParticleFluidType" />
+			<xsd:element name="PermeabilityBase" type="PermeabilityBaseType" />
 			<xsd:element name="PoreVolumeCompressibleSolid" type="PoreVolumeCompressibleSolidType" />
 			<xsd:element name="PoroDruckerPrager" type="PoroDruckerPragerType" />
 			<xsd:element name="PoroElasticIsotropic" type="PoroElasticIsotropicType" />
 			<xsd:element name="PoroElasticTransverseIsotropic" type="PoroElasticTransverseIsotropicType" />
 			<xsd:element name="PoroExtendedDruckerPrager" type="PoroExtendedDruckerPragerType" />
+			<xsd:element name="PorousDruckerPrager" type="PorousDruckerPragerType" />
+			<xsd:element name="PorousElasticIsotropic" type="PorousElasticIsotropicType" />
+			<xsd:element name="PorousElasticTransverseIsotropic" type="PorousElasticTransverseIsotropicType" />
+			<xsd:element name="PorousExtendedDruckerPrager" type="PorousExtendedDruckerPragerType" />
+			<xsd:element name="PressurePorosity" type="PressurePorosityType" />
 			<xsd:element name="ProppantSlurryFluid" type="ProppantSlurryFluidType" />
+			<xsd:element name="StrainDependentPermeability" type="StrainDependentPermeabilityType" />
 			<xsd:element name="TableRelativePermeability" type="TableRelativePermeabilityType" />
 			<xsd:element name="VanGenuchtenBakerRelativePermeability" type="VanGenuchtenBakerRelativePermeabilityType" />
 			<xsd:element name="VanGenuchtenCapillaryPressure" type="VanGenuchtenCapillaryPressureType" />
 		</xsd:choice>
+	</xsd:complexType>
+	<xsd:complexType name="BiotPorosityType">
+		<!--biotCoefficient => Biot coefficient.-->
+		<xsd:attribute name="biotCoefficient" type="real64_array" />
+		<!--dPorosity_dPressure => (no description available)-->
+		<xsd:attribute name="dPorosity_dPressure" type="real64_array2d" />
+		<!--oldPorosity => (no description available)-->
+		<xsd:attribute name="oldPorosity" type="real64_array2d" />
+		<!--porosity => (no description available)-->
+		<xsd:attribute name="porosity" type="real64_array2d" />
+		<!--referencePorosity => (no description available)-->
+		<xsd:attribute name="referencePorosity" type="real64_array" />
 	</xsd:complexType>
 	<xsd:complexType name="BlackOilFluidType">
 		<!--dPhaseCompFraction_dGlobalCompFraction => (no description available)-->
@@ -913,6 +938,14 @@
 		<!--useMass => (no description available)-->
 		<xsd:attribute name="useMass" type="integer" />
 	</xsd:complexType>
+	<xsd:complexType name="CarmanKozenyPermeabilityType">
+		<!--dPerm_dPorosity => (no description available)-->
+		<xsd:attribute name="dPerm_dPorosity" type="real64_array2d" />
+		<!--dPerm_dPressure =>  dPerm_dPressure of the rock.-->
+		<xsd:attribute name="dPerm_dPressure" type="real64_array2d" />
+		<!--permeability =>  permeability of the rock.-->
+		<xsd:attribute name="permeability" type="real64_array2d" />
+	</xsd:complexType>
 	<xsd:complexType name="CompositionalMultiphaseFluidType">
 		<!--dPhaseCompFraction_dGlobalCompFraction => (no description available)-->
 		<xsd:attribute name="dPhaseCompFraction_dGlobalCompFraction" type="LvArray_Array&lt;double, 5, camp_int_seq&lt;long, 0l, 1l, 2l, 3l, 4l&gt;, long, LvArray_ChaiBuffer&gt;" />
@@ -974,6 +1007,14 @@
 		<xsd:attribute name="density" type="real64_array2d" />
 		<!--viscosity => (no description available)-->
 		<xsd:attribute name="viscosity" type="real64_array2d" />
+	</xsd:complexType>
+	<xsd:complexType name="CompressibleSolidPressurePorosityCarmanKozenyPermeabilityType" />
+	<xsd:complexType name="CompressibleSolidPressurePorosityConstantPermeabilityType" />
+	<xsd:complexType name="ConstantPermeabilityType">
+		<!--dPerm_dPressure =>  dPerm_dPressure of the rock.-->
+		<xsd:attribute name="dPerm_dPressure" type="real64_array2d" />
+		<!--permeability =>  permeability of the rock.-->
+		<xsd:attribute name="permeability" type="real64_array2d" />
 	</xsd:complexType>
 	<xsd:complexType name="ContactType">
 		<xsd:choice minOccurs="0" maxOccurs="1">
@@ -1164,6 +1205,14 @@
 		<xsd:attribute name="stress" type="real64_array3d" />
 	</xsd:complexType>
 	<xsd:complexType name="NullModelType" />
+	<xsd:complexType name="ParallelPlatesPermeabilityType">
+		<!--dPerm_dAperture => (no description available)-->
+		<xsd:attribute name="dPerm_dAperture" type="real64_array2d" />
+		<!--dPerm_dPressure =>  dPerm_dPressure of the rock.-->
+		<xsd:attribute name="dPerm_dPressure" type="real64_array2d" />
+		<!--permeability =>  permeability of the rock.-->
+		<xsd:attribute name="permeability" type="real64_array2d" />
+	</xsd:complexType>
 	<xsd:complexType name="ParticleFluidType">
 		<!--collisionFactor => (no description available)-->
 		<xsd:attribute name="collisionFactor" type="real64_array" />
@@ -1179,6 +1228,12 @@
 		<xsd:attribute name="proppantPackPermeability" type="real64_array" />
 		<!--settlingFactor => (no description available)-->
 		<xsd:attribute name="settlingFactor" type="real64_array" />
+	</xsd:complexType>
+	<xsd:complexType name="PermeabilityBaseType">
+		<!--dPerm_dPressure =>  dPerm_dPressure of the rock.-->
+		<xsd:attribute name="dPerm_dPressure" type="real64_array2d" />
+		<!--permeability =>  permeability of the rock.-->
+		<xsd:attribute name="permeability" type="real64_array2d" />
 	</xsd:complexType>
 	<xsd:complexType name="PoreVolumeCompressibleSolidType">
 		<!--dPVMult_dDensity => (no description available)-->
@@ -1280,6 +1335,20 @@
 		<!--stress => Current Material Stress-->
 		<xsd:attribute name="stress" type="real64_array3d" />
 	</xsd:complexType>
+	<xsd:complexType name="PorousDruckerPragerType" />
+	<xsd:complexType name="PorousElasticIsotropicType" />
+	<xsd:complexType name="PorousElasticTransverseIsotropicType" />
+	<xsd:complexType name="PorousExtendedDruckerPragerType" />
+	<xsd:complexType name="PressurePorosityType">
+		<!--dPorosity_dPressure => (no description available)-->
+		<xsd:attribute name="dPorosity_dPressure" type="real64_array2d" />
+		<!--oldPorosity => (no description available)-->
+		<xsd:attribute name="oldPorosity" type="real64_array2d" />
+		<!--porosity => (no description available)-->
+		<xsd:attribute name="porosity" type="real64_array2d" />
+		<!--referencePorosity => (no description available)-->
+		<xsd:attribute name="referencePorosity" type="real64_array" />
+	</xsd:complexType>
 	<xsd:complexType name="ProppantSlurryFluidType">
 		<!--FluidDensity => (no description available)-->
 		<xsd:attribute name="FluidDensity" type="real64_array2d" />
@@ -1315,6 +1384,12 @@
 		<xsd:attribute name="density" type="real64_array2d" />
 		<!--viscosity => (no description available)-->
 		<xsd:attribute name="viscosity" type="real64_array2d" />
+	</xsd:complexType>
+	<xsd:complexType name="StrainDependentPermeabilityType">
+		<!--dPerm_dPressure =>  dPerm_dPressure of the rock.-->
+		<xsd:attribute name="dPerm_dPressure" type="real64_array2d" />
+		<!--permeability =>  permeability of the rock.-->
+		<xsd:attribute name="permeability" type="real64_array2d" />
 	</xsd:complexType>
 	<xsd:complexType name="TableRelativePermeabilityType">
 		<!--dPhaseRelPerm_dPhaseVolFraction => (no description available)-->

@@ -14,7 +14,7 @@
     <CellElementRegion
       name="Reservoir"
       cellBlocks="{ Reservoir_TETRA }"
-      materialList="{ water, rock }"/>
+      materialList="{ water, rock, rockPerm}"/>
 
     <CellElementRegion
       name="Burden"
@@ -37,6 +37,10 @@
       name="rock"
       referencePressure="0.0"
       compressibility="1e-9"/>
+      
+    <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{1.0e-14, 1.0e-14, 1.0e-18}"/>      
   </Constitutive>
 
   <!-- SPHINX_FIELD_CASE_CONSTITUTIVE_END -->
@@ -61,6 +65,7 @@
       discretization="singlePhaseTPFA"
       fluidNames="{ water }"
       solidNames="{ rock }"
+      permeabilityNames="{ rockPerm }"
       targetRegions="{ Reservoir }">
       <NonlinearSolverParameters
         newtonTol="1.0e-6"
@@ -94,36 +99,6 @@
   <!-- SPHINX_FIELD_CASE_GEOMETRY_END -->
   <!-- SPHINX_FIELD_CASE_FIELD -->
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx"
-      initialCondition="1"
-      component="0"
-      setNames="{ all }"
-      objectPath="ElementRegions/Reservoir/Reservoir_TETRA"
-      fieldName="permeability"
-      scale="1e-14"
-      functionName="permxFunc"/>
-
-    <FieldSpecification
-      name="permy"
-      initialCondition="1"
-      component="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Reservoir/Reservoir_TETRA"
-      fieldName="permeability"
-      scale="1e-14"
-      functionName="permyFunc"/>
-
-    <FieldSpecification
-      name="permz"
-      initialCondition="1"
-      component="2"
-      setNames="{ all }"
-      objectPath="ElementRegions/Reservoir/Reservoir_TETRA"
-      fieldName="permeability"
-      scale="1e-18"
-      functionName="permzFunc"/>
-
     <FieldSpecification
       name="referencePorosity"
       initialCondition="1"

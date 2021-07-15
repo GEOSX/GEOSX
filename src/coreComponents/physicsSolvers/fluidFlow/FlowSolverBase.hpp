@@ -89,6 +89,7 @@ public:
     // misc inputs
     static constexpr char const * fluidNamesString() { return "fluidNames"; }
     static constexpr char const * solidNamesString() { return "solidNames"; }
+    static constexpr char const * permeabilityNamesString() { return "permeabilityNames"; }
     static constexpr char const * pressureString() { return "pressure"; }
     static constexpr char const * deltaPressureString() { return "deltaPressure"; }
     static constexpr char const * deltaVolumeString() { return "deltaVolume"; }
@@ -146,6 +147,9 @@ protected:
 
   /// name of the solid constitutive model
   array1d< string > m_solidModelNames;
+
+  /// name of the permeability constituive model
+  array1d< string > m_permeabilityModelNames;
 
   /// flag to determine whether or not coupled with solid solver
   integer m_poroElasticFlag;

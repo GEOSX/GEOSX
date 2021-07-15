@@ -26,6 +26,7 @@
 #include "linearAlgebra/interfaces/InterfaceTypes.hpp"
 #include "mesh/MeshLevel.hpp"
 #include "physicsSolvers/fluidFlow/CompositionalMultiphaseBase.hpp"
+#include "constitutive/permeability/PermeabilityBase.hpp"
 
 namespace geosx
 {
@@ -627,6 +628,7 @@ struct FluxKernel
   static void
   launch( localIndex er, localIndex esr,
           CellElementSubRegion const & subRegion,
+          constitutive::PermeabilityBase const & permeabilityModel,
           SortedArrayView< localIndex const > const & regionFilter,
           arrayView2d< real64 const, nodes::REFERENCE_POSITION_USD > const & nodePosition,
           arrayView2d< localIndex const > const & elemRegionList,

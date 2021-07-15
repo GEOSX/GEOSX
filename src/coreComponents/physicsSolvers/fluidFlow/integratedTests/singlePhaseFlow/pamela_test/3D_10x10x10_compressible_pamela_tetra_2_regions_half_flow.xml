@@ -8,6 +8,7 @@
       logLevel="1"
       fluidNames="{ water }"
       solidNames="{ rock }"
+      permeabilityNames="{ rockPerm }"
       discretization="singlePhaseTPFA"
       targetRegions="{ Bot }">
       <NonlinearSolverParameters
@@ -63,6 +64,7 @@
         name="singlePhaseTPFA"
         fieldName="pressure"
         coefficientName="permeability"
+        coefficientModelNames="{ rockPerm }"
         targetRegions="{ Bot }"/>
     </FiniteVolume>
   </NumericalMethods>
@@ -76,7 +78,7 @@
     <CellElementRegion
       name="Bot"
       cellBlocks="{ Bottom_TETRA }"
-      materialList="{ water, rock }"/>
+      materialList="{ water, rock, rockPerm }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -94,36 +96,13 @@
       name="rock"
       referencePressure="1e6"
       compressibility="1e-9"/>
+      
+    <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{2.0e-14, 2.0e-14, 2.0e-14}"/>   
   </Constitutive>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="BotPermx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Bot/Bottom_TETRA"
-      fieldName="permeability"
-      scale="2.0e-14"/>
-
-    <FieldSpecification
-      name="BotPermy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Bot/Bottom_TETRA"
-      fieldName="permeability"
-      scale="2.0e-14"/>
-
-    <FieldSpecification
-      name="BotPermz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Bot/Bottom_TETRA"
-      fieldName="permeability"
-      scale="2.0e-14"/>
-
     <FieldSpecification
       name="BotReferencePorosity"
       initialCondition="1"

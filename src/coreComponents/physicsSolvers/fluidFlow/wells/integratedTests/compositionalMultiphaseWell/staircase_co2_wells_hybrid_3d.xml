@@ -26,6 +26,7 @@
       targetRegions="{ Channel }"
       fluidNames="{ fluid1 }"
       solidNames="{ rock }"
+      permeabilityNames="{rockPerm}"
       relPermNames="{ relperm }"
       temperature="368.15"
       maxCompFractionChange="0.2"
@@ -122,7 +123,7 @@
     <CellElementRegion
       name="Channel"
       cellBlocks="{ DEFAULT_TETRA }"
-      materialList="{ fluid1, rock, relperm }"/>
+      materialList="{ fluid1, rock, relperm, rockPerm }"/>
     
     <WellElementRegion
       name="wellRegion1"
@@ -162,36 +163,13 @@
       phaseMinVolumeFraction="{ 0.05, 0.05 }"
       phaseRelPermExponent="{ 2, 1.5 }"
       phaseRelPermMaxValue="{ 0.8, 0.9 }"/>
+      
+    <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{2.0e-16, 2.0e-16, 2.0e-16}"/>    
   </Constitutive>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx_channel"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Channel"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
-    <FieldSpecification
-      name="permy_channel"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Channel"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
-    <FieldSpecification
-      name="permz_channel"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Channel"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
     <FieldSpecification
       name="porosity_channel"
       initialCondition="1"

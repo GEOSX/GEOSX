@@ -9,6 +9,7 @@
       discretization="tpfa"
       fluidNames="{ water }"
       solidNames="{ rock }"
+      permeabilityNames="{rockPerm}"
       targetRegions="{ Region2 }">
       <NonlinearSolverParameters
         newtonTol="1.0e-6"
@@ -71,7 +72,8 @@
       <TwoPointFluxApproximation
         name="tpfa"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{rockPerm}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -79,7 +81,7 @@
     <CellElementRegion
       name="Region2"
       cellBlocks="{ cb1 }"
-      materialList="{ water, rock }"/>
+      materialList="{ water, rock, rockPerm }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -97,6 +99,10 @@
       name="rock"
       referencePressure="0.0"
       compressibility="0.0"/>
+      
+    <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{1.0e-12, 1.0e-12, 1.0e-15}"/>  
   </Constitutive>
 
   <Functions>
@@ -109,33 +115,6 @@
   </Functions>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Region2/cb1"
-      fieldName="permeability"
-      scale="1.0e-12"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Region2/cb1"
-      fieldName="permeability"
-      scale="1.0e-12"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Region2/cb1"
-      fieldName="permeability"
-      scale="1.0e-15"/>
-
     <FieldSpecification
       name="referencePorosity"
       initialCondition="1"

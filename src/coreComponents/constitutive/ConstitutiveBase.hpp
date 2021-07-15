@@ -70,6 +70,10 @@ public:
     GEOSX_UNUSED_VAR( dPres )
   }
 
+  /// Save state data in preparation for next timestep
+  virtual void saveConvergedState() const
+  {}
+
   /**
    * @name Static Factory Catalog members and functions
    */

@@ -7,6 +7,7 @@
       name="poroSolve"
       solidSolverName="lagsolve"
       fluidSolverName="SinglePhaseFlow"
+      porousMaterialNames="{shale}"
       logLevel="1"
       discretization="FE1"
       targetRegions="{ Domain }">
@@ -27,7 +28,7 @@
       logLevel="1"
       discretization="FE1"
       targetRegions="{ Domain }"
-      solidMaterialNames="{ shale }">
+      solidMaterialNames="{ shaleSolid }">
     </SolidMechanicsLagrangianSSLE>
 
     <SinglePhaseFVM
@@ -36,7 +37,8 @@
       discretization="singlePhaseTPFA"
       targetRegions="{ Domain }"
       fluidNames="{ water }"
-      solidNames="{ shale }">
+      solidNames="{ shale}"
+      permeabilityNames="{shalePerm}">
     </SinglePhaseFVM>
   </Solvers>
 
@@ -100,7 +102,7 @@
       timeFrequency="4.5000000e-03"
       targetExactTimestep="1"
       target="/Outputs/siloOutput"/>
-
+    
     <!-- This event is applied every cycle, and overrides the
     solver time-step request -->
     <PeriodicEvent
@@ -141,7 +143,8 @@
       <TwoPointFluxApproximation
         name="singlePhaseTPFA"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{shalePerm}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -149,16 +152,30 @@
     <CellElementRegion
       name="Domain"
       cellBlocks="{ cb1 }"
-      materialList="{ shale, water }"/>
+      materialList="{ shale, water, shaleSolid, shalePorosity, shalePerm }"/>
   </ElementRegions>
 
   <Constitutive>
-    <PoroElasticIsotropic
+    <PorousElasticIsotropic
       name="shale"
+      solidModelName="shaleSolid"
+      porosityModelName="shalePorosity"
+      permeabilityModelName="shalePerm"/>
+      
+   <ElasticIsotropic
+      name="shaleSolid"
       defaultDensity="0"
       defaultBulkModulus="5.55555555555555555556e3"
-      defaultShearModulus="4.16666666666666666667e3"
-      BiotCoefficient="1.0"/>
+      defaultShearModulus="4.16666666666666666667e3"/>
+   
+   <BiotPorosity
+      name="shalePorosity"
+      grainBulkModulus="1.0e27"
+      defaultReferencePorosity="0.00"/> 
+      
+   <ConstantPermeability
+      name="shalePerm"
+      permeabilityComponents="{1.0e-4, 0.0, 1.0e-4}"/>              
 
     <CompressibleSinglePhaseFluid
       name="water"
@@ -172,6 +189,14 @@
   </Constitutive>
 
   <FieldSpecifications>
+    <FieldSpecification
+      name="Porosity"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/cb1"
+      fieldName="shalePorosity_porosity"
+      scale="0.00"/>
+  
     <FieldSpecification
       name="initialPressure"
       initialCondition="1"
@@ -212,41 +237,6 @@
       objectPath="nodeManager"
       fieldName="TotalDisplacement"
       component="2"
-      scale="0.0"/>
-
-    <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="1.000e-4"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="0.0"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="1.000e-4"/>
-
-    <FieldSpecification
-      name="referencePorosity"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="referencePorosity"
       scale="0.0"/>
 
     <FieldSpecification
@@ -307,7 +297,7 @@
   <Outputs>
     <Silo
       name="siloOutput"/>
-
+    
     <Restart
       name="restartOutput"/>
 

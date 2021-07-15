@@ -9,6 +9,7 @@
       targetRegions="{ Channel }"
       fluidNames="{ fluid1 }"
       solidNames="{ rock }"
+      permeabilityNames="{rockPerm}"
       relPermNames="{ relperm }"
       temperature="300"
       computeCFLNumbers="1"
@@ -63,7 +64,7 @@
     <CellElementRegion
       name="Channel"
       cellBlocks="{ b08, b00, b01, b05, b06, b14, b15, b11 }"
-      materialList="{ fluid1, rock, relperm }"/>
+      materialList="{ fluid1, rock, relperm, rockPerm }"/>
 
     <CellElementRegion
       name="Barrier"
@@ -77,7 +78,8 @@
         name="fluidTPFA"
         fieldName="pressure"
         targetRegions="{ Channel }"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{rockPerm}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -100,36 +102,13 @@
       phaseMinVolumeFraction="{ 0.05, 0.05 }"
       phaseRelPermExponent="{ 1.5, 1.5 }"
       phaseRelPermMaxValue="{ 0.9, 0.9 }"/>
+      
+    <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{1.0e-15, 1.0e-15, 1.0e-15}"/>   
   </Constitutive>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx_channel"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Channel"
-      fieldName="permeability"
-      scale="1.0e-15"/>
-
-    <FieldSpecification
-      name="permy_channel"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Channel"
-      fieldName="permeability"
-      scale="1.0e-15"/>
-
-    <FieldSpecification
-      name="permz_channel"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Channel"
-      fieldName="permeability"
-      scale="1.0e-15"/>
-
     <FieldSpecification
       name="porosity_channel"
       initialCondition="1"

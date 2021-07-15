@@ -413,6 +413,7 @@ AccumulationKernel::
           arrayView1d< globalIndex const > const & dofNumber,
           arrayView1d< integer const > const & elemGhostRank,
           arrayView1d< real64 const > const & volume,
+          arrayView1d< real64 >       const & porosityNew,
           arrayView1d< real64 const > const & porosityOld,
           arrayView1d< real64 const > const & porosityRef,
           arrayView2d< real64 const > const & pvMult,
@@ -442,6 +443,9 @@ AccumulationKernel::
 
     real64 localAccum[NC];
     real64 localAccumJacobian[NC][NDOF];
+
+    // update porosity
+    porosityNew[ei] = pvMult[ei][0]*porosityRef[ei];
 
     compute< NC >( numPhases,
                    volume[ei],
@@ -497,6 +501,7 @@ AccumulationKernel::
                   arrayView1d< globalIndex const > const & dofNumber, \
                   arrayView1d< integer const > const & elemGhostRank, \
                   arrayView1d< real64 const > const & volume, \
+                  arrayView1d< real64 >       const & porosityNew, \
                   arrayView1d< real64 const > const & porosityOld, \
                   arrayView1d< real64 const > const & porosityRef, \
                   arrayView2d< real64 const > const & pvMult, \

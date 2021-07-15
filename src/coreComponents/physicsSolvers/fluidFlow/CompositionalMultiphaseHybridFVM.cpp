@@ -182,7 +182,7 @@ void CompositionalMultiphaseHybridFVM::precomputeData( MeshLevel & mesh )
   real64 const lengthTolerance = m_lengthTolerance;
 
   forTargetSubRegionsComplete< CellElementSubRegion >( mesh,
-                                                       [&]( localIndex const,
+                                                       [&]( localIndex const targetIndex,
                                                             localIndex const,
                                                             localIndex const,
                                                             ElementRegionBase const &,
@@ -191,7 +191,7 @@ void CompositionalMultiphaseHybridFVM::precomputeData( MeshLevel & mesh )
     arrayView2d< real64 const > const & elemCenter =
       subRegion.template getReference< array2d< real64 > >( CellBlock::viewKeyStruct::elementCenterString() );
     arrayView2d< real64 const > const & elemPerm =
-      subRegion.template getReference< array2d< real64 > >( CompositionalMultiphaseBase::viewKeyStruct::permeabilityString() );
+      getConstitutiveModel< PermeabilityBase >( subRegion, m_permeabilityModelNames[targetIndex] ).permeability();
     arrayView1d< real64 const > const elemGravCoef =
       subRegion.template getReference< array1d< real64 > >( viewKeyStruct::gravityCoefString() );
     arrayView1d< real64 const > const & elemVolume = subRegion.getElementVolume();
@@ -420,12 +420,16 @@ void CompositionalMultiphaseHybridFVM::assembleFluxTerms( real64 const dt,
   real64 const lengthTolerance = m_lengthTolerance;
 
   forTargetSubRegionsComplete< CellElementSubRegion >( mesh,
-                                                       [&]( localIndex const,
+                                                       [&]( localIndex const targetIndex,
                                                             localIndex const er,
                                                             localIndex const esr,
                                                             ElementRegionBase const &,
                                                             auto const & subRegion )
   {
+
+    PermeabilityBase const & permeabilityModel =
+      getConstitutiveModel< PermeabilityBase >( subRegion, m_permeabilityModelNames[targetIndex] );
+
     mimeticInnerProductReducedDispatch( mimeticInnerProductBase,
                                         [&] ( auto const mimeticInnerProduct )
     {
@@ -434,6 +438,7 @@ void CompositionalMultiphaseHybridFVM::assembleFluxTerms( real64 const dt,
                             IP_TYPE >( subRegion.numFacesPerElement(),
                                        m_numComponents, m_numPhases,
                                        er, esr, subRegion,
+                                       permeabilityModel,
                                        m_regionFilter.toViewConst(),
                                        nodePosition,
                                        elemRegionList,

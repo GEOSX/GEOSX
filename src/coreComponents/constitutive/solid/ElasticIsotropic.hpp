@@ -126,6 +126,13 @@ public:
                                  localIndex const q,
                                  real64 ( &elasticStrain )[6] ) const override final;
 
+  GEOSX_HOST_DEVICE
+  virtual real64 getBulkModulus( localIndex const k ) const override final
+  {
+    return m_bulkModulus[k];
+  }
+
+
   // TODO: confirm hyper stress/strain measures before activatiing
 
   /*
@@ -471,7 +478,7 @@ public:
    * @return An @p UPDATE_KERNEL object.
    */
   template< typename UPDATE_KERNEL, typename ... PARAMS >
-  UPDATE_KERNEL createDerivedKernelUpdates( PARAMS && ... constructorParams )
+  UPDATE_KERNEL createDerivedKernelUpdates( PARAMS && ... constructorParams ) const
   {
     return UPDATE_KERNEL( std::forward< PARAMS >( constructorParams )...,
                           m_bulkModulus,

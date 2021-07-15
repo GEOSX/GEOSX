@@ -58,6 +58,7 @@
       discretization="singlePhaseTPFA"
       name="SinglePhaseFlow"
       solidNames="{rock}"
+      permeabilityNames="{fracPerm}"
       logLevel="0"
       fluidNames="{water}"
       meanPermCoeff="0.8"
@@ -91,7 +92,7 @@
     <SurfaceElementRegion
       name="Fracture"
       defaultAperture="0.02e-3"
-      materialList="{ water, rock }"/>
+      materialList="{ water, rock, fracPerm }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -122,6 +123,9 @@
         coordinates="{ -1.0e-3, 0.0 }"
         values="{ 0.002e-3, 0.02e-3 }"/>
     </Contact>
+    
+    <ParallelPlatesPermeability
+      name="fracPerm"/> 
   </Constitutive>
 
   <Outputs>
@@ -195,7 +199,8 @@
       <TwoPointFluxApproximation
         name="singlePhaseTPFA"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{fracPerm}"/>
     </FiniteVolume>
   </NumericalMethods>
 

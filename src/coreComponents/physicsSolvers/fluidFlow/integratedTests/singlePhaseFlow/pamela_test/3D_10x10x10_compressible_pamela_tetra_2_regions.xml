@@ -8,6 +8,7 @@
       logLevel="1"
       fluidNames="{ water }"
       solidNames="{ rock }"
+      permeabilityNames="{ rockPerm }"
       discretization="singlePhaseTPFA"
       targetRegions="{ Top, Bot }">
       <NonlinearSolverParameters
@@ -62,7 +63,8 @@
       <TwoPointFluxApproximation
         name="singlePhaseTPFA"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{rockPerm}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -70,12 +72,12 @@
     <CellElementRegion
       name="Top"
       cellBlocks="{ Top_TETRA }"
-      materialList="{ water, rock }"/>
+      materialList="{ water, rock, rockPerm }"/>
 
     <CellElementRegion
       name="Bot"
       cellBlocks="{ Bottom_TETRA }"
-      materialList="{ water, rock }"/>
+      materialList="{ water, rock, rockPerm }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -93,36 +95,13 @@
       name="rock"
       referencePressure="1e6"
       compressibility="1e-9"/>
+      
+    <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{2.0e-14, 2.0e-14, 2.0e-14}"/>   
   </Constitutive>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="TopPermx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Top/Top_TETRA"
-      fieldName="permeability"
-      scale="2.0e-14"/>
-
-    <FieldSpecification
-      name="TopPermy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Top/Top_TETRA"
-      fieldName="permeability"
-      scale="2.0e-14"/>
-
-    <FieldSpecification
-      name="TopPermz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Top/Top_TETRA"
-      fieldName="permeability"
-      scale="2.0e-14"/>
-
     <FieldSpecification
       name="TopReferencePorosity"
       initialCondition="1"
@@ -138,33 +117,6 @@
       objectPath="ElementRegions/Top/Top_TETRA"
       fieldName="pressure"
       scale="2e5"/>
-
-    <FieldSpecification
-      name="BotPermx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Bot/Bottom_TETRA"
-      fieldName="permeability"
-      scale="2.0e-14"/>
-
-    <FieldSpecification
-      name="BotPermy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Bot/Bottom_TETRA"
-      fieldName="permeability"
-      scale="2.0e-14"/>
-
-    <FieldSpecification
-      name="BotPermz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Bot/Bottom_TETRA"
-      fieldName="permeability"
-      scale="2.0e-14"/>
 
     <FieldSpecification
       name="BotReferencePorosity"

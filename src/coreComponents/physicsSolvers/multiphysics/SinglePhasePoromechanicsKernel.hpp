@@ -116,9 +116,7 @@ public:
     m_dFluidDensity_dPressure( elementSubRegion.template getConstitutiveModel< constitutive::SingleFluidBase >( fluidModelNames[targetRegionIndex] ).dDensity_dPressure() ),
     m_flowDofNumber( elementSubRegion.template getReference< array1d< globalIndex > >( inputFlowDofKey )),
     m_fluidPressure( elementSubRegion.template getReference< array1d< real64 > >( SinglePhaseBase::viewKeyStruct::pressureString() ) ),
-    m_deltaFluidPressure( elementSubRegion.template getReference< array1d< real64 > >( SinglePhaseBase::viewKeyStruct::deltaPressureString() ) ),
-    m_poroRef( elementSubRegion.template getReference< array1d< real64 > >( SinglePhaseBase::viewKeyStruct::referencePorosityString() ) ),
-    m_biotCoefficient( m_constitutiveUpdate.getBiotCoefficient() )
+    m_deltaFluidPressure( elementSubRegion.template getReference< array1d< real64 > >( SinglePhaseBase::viewKeyStruct::deltaPressureString() ) )
   {}
 
   //*****************************************************************************
@@ -227,39 +225,30 @@ public:
     // Evaluate total stress tensor
     real64 strainIncrement[6] = {0};
     real64 totalStress[6];
+    real64 dPorosity_dPressure;
+    real64 dPorosity_dVolStrainIncrement;
+    real64 dTotalStress_dPressure;
 
     // --- Update effective stress tensor (stored in totalStress)
     typename CONSTITUTIVE_TYPE::KernelWrapper::DiscretizationOps stiffness;
     FE_TYPE::symmetricGradient( dNdX, stack.uhat_local, strainIncrement );
-    m_constitutiveUpdate.smallStrainUpdate( k, q, strainIncrement, totalStress, stiffness );
 
-    // --- Subtract pressure term
-    real64 const biotTimesPressure = m_biotCoefficient * ( m_fluidPressure[k] + m_deltaFluidPressure[k] );
-    totalStress[0] -= biotTimesPressure;
-    totalStress[1] -= biotTimesPressure;
-    totalStress[2] -= biotTimesPressure;
+    m_constitutiveUpdate.smallStrainUpdate( k,
+                                            q,
+                                            m_deltaFluidPressure[k],
+                                            strainIncrement,
+                                            totalStress,
+                                            dPorosity_dPressure,
+                                            dPorosity_dVolStrainIncrement,
+                                            dTotalStress_dPressure,
+                                            stiffness );
 
-    // Evaluate fluid phase mass content
-    // --- TODO: temporary solution -----------------------------------------------------------------------------------//
-    //           update PoroElastic Constitutive Model (PECM) such that:                                               //
-    //           (  i) the kernel has a view m_porosityOld to the field stored in PECM                                 //
-    //           ( ii) the newPororosity, stored in PECM, is updated as                                                //
-    //                 m_constitutiveUpdate.porosityUpdate( k, q, m_deltaFluidPressure, volStrainIncrement );          //
-    //           (iii) get methods for porosityNew, dPorosity_dFluidPressure, dPorosity_dVolStrainIncrement            //
-    real64 const biotSkeletonModulusInverse = 0.0; //TODO: 1/N = 0 correct only for biotCoefficient = 1                //
-    real64 const volumetricStrainNew = FE_TYPE::symmetricGradientTrace( dNdX, stack.u_local );                         //
-    real64 const volumetricStrainOld = volumetricStrainNew - FE_TYPE::symmetricGradientTrace( dNdX, stack.uhat_local );//
-    real64 const porosityOld = m_poroRef( k ) + m_biotCoefficient * volumetricStrainOld;// +  DeltaPoro                //
-    real64 const dPorosity_dPressure = biotSkeletonModulusInverse;                                                     //
-    real64 const dPorosity_dVolStrainIncrement =  m_biotCoefficient;                                                   //
-                                                                                                                       //
-    GEOSX_ERROR_IF_GT_MSG( fabs( m_biotCoefficient - 1.0 ),                                                            //
-                           1e-10,                                                                                      //
-                           "Correct only for Biot's coefficient equal to 1" );                                         //
-    // --------------------------------------------------------------------------------------------------------------- //
-    real64 const porosityNew = porosityOld
-                               + m_biotCoefficient * (strainIncrement[0] + strainIncrement[1] + strainIncrement[2] )
-                               + biotSkeletonModulusInverse * m_deltaFluidPressure[k];
+    real64 const porosityNew = m_constitutiveUpdate.getPorosity( k, q );
+    real64 const porosityOld = m_constitutiveUpdate.getOldPorosity( k, q );
+
+    real64 const pressureStressTerm = -dTotalStress_dPressure * ( m_fluidPressure[k] + m_deltaFluidPressure[k] );
+
+    LvArray::tensorOps::symAddIdentity< 3 >( totalStress, pressureStressTerm );
 
 
     // Evaluate body force vector
@@ -293,9 +282,9 @@ public:
 
     for( integer a = 0; a < numNodesPerElem; ++a )
     {
-      stack.localDispFlowJacobian[a*3+0][0] += dNdX[a][0] * m_biotCoefficient * detJxW;
-      stack.localDispFlowJacobian[a*3+1][0] += dNdX[a][1] * m_biotCoefficient * detJxW;
-      stack.localDispFlowJacobian[a*3+2][0] += dNdX[a][2] * m_biotCoefficient * detJxW;
+      stack.localDispFlowJacobian[a*3+0][0] += dNdX[a][0] * dTotalStress_dPressure * detJxW;
+      stack.localDispFlowJacobian[a*3+1][0] += dNdX[a][1] * dTotalStress_dPressure * detJxW;
+      stack.localDispFlowJacobian[a*3+2][0] += dNdX[a][2] * dTotalStress_dPressure * detJxW;
     }
 
     if( m_gravityAcceleration > 0.0 )
@@ -337,6 +326,7 @@ public:
     GEOSX_UNUSED_VAR( k );
     real64 maxForce = 0;
 
+//    CONSTITUTIVE_TYPE::KernelWrapper::DiscretizationOps::template fillLowerBTDB< numNodesPerElem >( stack.localJacobian );
     CONSTITUTIVE_TYPE::KernelWrapper::DiscretizationOps::template fillLowerBTDB< numNodesPerElem >( stack.localJacobian );
 
     constexpr int nUDof = numNodesPerElem * numDofPerTestSupportPoint;
@@ -411,13 +401,6 @@ protected:
 
   /// The rank-global delta-fluid pressure array.
   arrayView1d< real64 const > const m_deltaFluidPressure;
-
-  /// The rank-global reference porosity array
-  arrayView1d< real64 const > const m_poroRef;
-
-  /// Biot's coefficient
-  real64 const m_biotCoefficient;
-
 
 };
 

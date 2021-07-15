@@ -9,7 +9,8 @@
       discretization="tpfaFlow"
       targetRegions="{ Region1, Region2 }"
       fluidNames="{ fluid }"
-      solidNames="{ rock1, rock2 }">
+      solidNames="{ rock1, rock2 }"
+      permeabilityNames="{ rock1Perm, rock2Perm }">
       <NonlinearSolverParameters
         newtonTol="1.0e-6"
         newtonMaxIter="8"/>
@@ -70,7 +71,8 @@
       <TwoPointFluxApproximation
         name="tpfaFlow"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{rock1Perm, rock2Perm}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -78,12 +80,12 @@
     <CellElementRegion
       name="Region1"
       cellBlocks="{ block1 }"
-      materialList="{ fluid, rock1 }"/>
+      materialList="{ fluid, rock1, rock1Perm }"/>
 
     <CellElementRegion
       name="Region2"
       cellBlocks="{ block2 }"
-      materialList="{ fluid, rock2 }"/>
+      materialList="{ fluid, rock2, rock2Perm }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -106,36 +108,18 @@
       name="rock2"
       referencePressure="0.0"
       compressibility="1e-10"/>
+      
+    <ConstantPermeability
+      name="rock1Perm"
+      permeabilityComponents="{2.0e-16, 2.0e-16, 2.0e-16}"/>   
+      
+    <ConstantPermeability
+      name="rock2Perm"
+      permeabilityComponents="{2.0e-16, 2.0e-16, 2.0e-16}"/>       
+      
   </Constitutive>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
     <FieldSpecification
       name="referencePorosity"
       initialCondition="1"

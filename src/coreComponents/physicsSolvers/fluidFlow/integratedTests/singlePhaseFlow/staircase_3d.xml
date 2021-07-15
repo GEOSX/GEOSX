@@ -9,6 +9,7 @@
       discretization="singlePhaseTPFA"
       fluidNames="{ water }"
       solidNames="{ rock }"
+      permeabilityNames="{ channelPerm }"
       targetRegions="{ Channel }">
       <NonlinearSolverParameters
         newtonTol="1.0e-6"
@@ -83,7 +84,8 @@
         name="singlePhaseTPFA"
         fieldName="pressure"
         targetRegions="{ Channel }"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{ channelPerm }"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -102,36 +104,14 @@
       name="rock"
       referencePressure="0.0"
       compressibility="1e-9"/>
+         
+    <ConstantPermeability
+      name="channelPerm"
+      permeabilityComponents="{2.0e-16, 2.0e-16, 2.0e-16}"/>  
+      
   </Constitutive>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx_channel"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Channel"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
-    <FieldSpecification
-      name="permy_channel"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Channel"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
-    <FieldSpecification
-      name="permz_channel"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Channel"
-      fieldName="permeability"
-      scale="2.0e-16"/>
-
     <FieldSpecification
       name="porosity_channel"
       initialCondition="1"

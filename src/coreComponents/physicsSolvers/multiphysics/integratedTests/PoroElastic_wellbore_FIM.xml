@@ -11,6 +11,7 @@
       name="poroSolve"
       solidSolverName="lagsolve"
       fluidSolverName="SinglePhaseFlow"
+      porousMaterialNames="{porousRock}"
       logLevel="1"
       discretization="FE1"
       targetRegions="{ Omega }">
@@ -42,7 +43,8 @@
       discretization="singlePhaseTPFA"
       targetRegions="{ Omega }"
       fluidNames="{ water }"
-      solidNames="{ rock }">
+      solidNames="{ rock }"
+      permeabilityNames="{rockPerm}">
       <!-- SPHINX_SinglePhaseFVMEnd -->
     </SinglePhaseFVM>
   </Solvers>
@@ -105,6 +107,7 @@
         name="singlePhaseTPFA"
         fieldName="pressure"
         coefficientName="permeability"
+        coefficientModelNames="{rockPerm}"
       />
     </FiniteVolume>
   </NumericalMethods>
@@ -114,18 +117,25 @@
     <CellElementRegion 
     name="Omega" 
     cellBlocks="{cb1}" 
-    materialList="{rock, water}"/>
+    materialList="{rock, water, rockPerm}"/>
   </ElementRegions>
 
   <Constitutive>
     <!-- SPHINX_Material -->
+    <PorousElasticIsotropic
+      name="porousRock"
+      solidModelName="rock"
+      porosityModelName="rockPorosity"
+      permeabilityModelName="rockPerm"/>
+    
     <PoroElasticIsotropic 
       name="rock"
       defaultDensity="0"
       defaultBulkModulus="11039657020.4"
       defaultShearModulus="8662741799.83"
-      BiotCoefficient="0.771"
-    />
+      />
+      <!-- BiotCoefficient="0.771" -->
+      
     <CompressibleSinglePhaseFluid 
       name="water"
       defaultDensity="1000"
@@ -136,46 +146,20 @@
       referenceViscosity="0.001"
       viscosibility="0.0"
     />
+    
+   <BiotPorosity
+      name="rockPorosity"
+      grainBulkModulus="1.0e27"
+      defaultReferencePorosity="0.3"/> 
+      
+   <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{1.0e-17, 1.0e-17, 1.0e-17}"/> 
     <!-- SPHINX_MaterialEnd -->
   </Constitutive>
 
   <!-- SPHINX_BoundaryConditions -->
   <FieldSpecifications>
-    <FieldSpecification 
-      name="permx"
-      component="0"
-      initialCondition="1"  
-      setNames="{all}"
-      objectPath="ElementRegions/Omega/cb1"
-      fieldName="permeability"
-      scale="1e-17"/>
-
-    <FieldSpecification 
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{all}"
-      objectPath="ElementRegions/Omega/cb1"
-      fieldName="permeability"
-      scale="1e-17"/>
-
-    <FieldSpecification 
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{all}"
-      objectPath="ElementRegions/Omega/cb1"
-      fieldName="permeability"
-      scale="1e-17"/>
-
-    <FieldSpecification 
-      name="referencePorosity"
-      initialCondition="1"
-      setNames="{all}"
-      objectPath="ElementRegions/Omega/cb1"
-      fieldName="referencePorosity"
-      scale="0.3"/>
-
     <FieldSpecification 
       name="initialPressure"
       initialCondition="1"

@@ -62,6 +62,11 @@ FlowSolverBase::FlowSolverBase( string const & name,
     setSizedFromParent( 0 ).
     setDescription( "Names of solid constitutive models for each region." );
 
+  this->registerWrapper( viewKeyStruct::permeabilityNamesString(), &m_permeabilityModelNames ).
+    setInputFlag( InputFlags::REQUIRED ).
+    setSizedFromParent( 0 ).
+    setDescription( "Names of permeability constitutive models for each region." );
+
   this->registerWrapper( viewKeyStruct::inputFluxEstimateString(), &m_fluxEstimate ).
     setApplyDefaultValue( 1.0 ).
     setInputFlag( InputFlags::OPTIONAL ).
@@ -89,9 +94,7 @@ void FlowSolverBase::registerDataOnMesh( Group & meshBodies )
     {
       subRegion.registerWrapper< array1d< real64 > >( viewKeyStruct::referencePorosityString() ).
         setPlotLevel( PlotLevel::LEVEL_0 );
-      subRegion.registerWrapper< array2d< real64 > >( viewKeyStruct::permeabilityString() ).
-        setPlotLevel( PlotLevel::LEVEL_0 ).
-        reference().resizeDimension< 1 >( 3 );
+
       subRegion.registerWrapper< array1d< real64 > >( viewKeyStruct::gravityCoefString() ).
         setApplyDefaultValue( 0.0 );
     } );
@@ -107,10 +110,6 @@ void FlowSolverBase::registerDataOnMesh( Group & meshBodies )
 
       subRegion.registerWrapper< array1d< real64 > >( viewKeyStruct::referencePorosityString() ).
         setApplyDefaultValue( 1.0 );
-
-      subRegion.registerWrapper< array2d< real64 > >( viewKeyStruct::permeabilityString() ).
-        setPlotLevel( PlotLevel::LEVEL_0 ).
-        reference().resizeDimension< 1 >( 3 );
 
       subRegion.registerWrapper< array1d< real64 > >( viewKeyStruct::gravityCoefString() ).
         setApplyDefaultValue( 0.0 );

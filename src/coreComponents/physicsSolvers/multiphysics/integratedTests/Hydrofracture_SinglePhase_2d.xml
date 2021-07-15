@@ -37,7 +37,8 @@
       discretization="singlePhaseTPFA"
       targetRegions="{ Fracture }"
       fluidNames="{ water }"
-      solidNames="{ rock }">
+      solidNames="{ rock }"
+      permeabilityNames="{fracPerm}">
     </SinglePhaseFVM>
 
     <SurfaceGenerator
@@ -124,7 +125,8 @@
       <TwoPointFluxApproximation
         name="singlePhaseTPFA"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{fracPerm}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -136,7 +138,7 @@
 
     <SurfaceElementRegion
       name="Fracture"
-      materialList="{ water, rock }"
+      materialList="{ water, rock, fracPerm }"
       defaultAperture="1e-4"/>
   </ElementRegions>
 
@@ -168,6 +170,9 @@
         coordinates="{ -1.0e-3, 0.0 }"
         values="{ 1.0e-6, 1.0e-4 }"/>
     </Contact>
+    <ConstantPermeability
+      name="fracPerm"
+      permeabilityComponents="{1.0e-4, 1.0e-4, 1.0e-4}"/> 
   </Constitutive>
 
   <FieldSpecifications>

@@ -7,6 +7,7 @@
       name="MultiphasePoroelasticitySolver"
       solidSolverName="LinearElasticitySolver"
       fluidSolverName="TwoPhaseFlowSolver"
+      porousMaterialNames="{porousRock}"
       logLevel="1"
       discretization="FE1"
       targetRegions="{ Domain }">
@@ -37,6 +38,7 @@
       targetRegions="{ Domain }"
       fluidNames="{ fluid1 }"
       solidNames="{ skeleton }"
+      permeabilityNames="{ rockPerm }"
       relPermNames="{ relperm }"
       temperature="300"
       useMass="0">
@@ -112,7 +114,8 @@
       <TwoPointFluxApproximation
         name="fluidTPFA"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{ rockPerm }"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -120,7 +123,7 @@
     <CellElementRegion
       name="Domain"
       cellBlocks="{ block1 }"
-      materialList="{ fluid1, skeleton, relperm }"/>
+      materialList="{ fluid1, skeleton, relperm, rockPerm, porousRock, rockPorosity }"/>
   </ElementRegions>
 
   <Constitutive>
@@ -131,12 +134,17 @@
       componentMolarWeight="{ 114e-3, 16e-3, 18e-3 }"
       tableFiles="{ pvt_tables/pvdo.txt, pvt_tables/pvdg.txt, pvt_tables/pvtw.txt }"/>
 
-    <PoroElasticIsotropic
+     <PorousElasticIsotropic
+      name="porousRock"
+      solidModelName="skeleton"
+      porosityModelName="rockPorosity"
+      permeabilityModelName="rockPerm"/>
+      
+    <ElasticIsotropic
       name="skeleton"
       defaultDensity="1.0"
       defaultYoungsModulus="1.e9"
-      defaultPoissonRatio="0.2"
-      BiotCoefficient="1.0"/>
+      defaultPoissonRatio="0.2"/>
 
     <BrooksCoreyBakerRelativePermeability
       name="relperm"
@@ -146,44 +154,34 @@
       waterOilRelPermMaxValue="{ 0.8, 0.9 }"
       gasOilRelPermExponent="{ 3, 3 }"
       gasOilRelPermMaxValue="{ 0.4, 0.9 }"/>
+      
+    <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{1.0e-16, 1.0e-16, 1.0e-16}"/> 
+      
+    <BiotPorosity
+      name="rockPorosity"
+      grainBulkModulus="1.0e27"
+      defaultReferencePorosity="0.05"/>               
   </Constitutive>
 
   <FieldSpecifications>
-    <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/block1"
-      fieldName="permeability"
-      scale="1.0e-16"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/block1"
-      fieldName="permeability"
-      scale="1.0e-16"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/block1"
-      fieldName="permeability"
-      scale="1.0e-16"/>
-
-    <FieldSpecification
+   <FieldSpecification
       name="referencePorosity"
       initialCondition="1"
       setNames="{ all }"
-      objectPath="ElementRegions/Domain/block1"
+      objectPath="ElementRegions"
       fieldName="referencePorosity"
-      scale="0.05"/>
-
+      scale="0.05"/>   
+      
+   <FieldSpecification
+      name="Porosity"
+      initialCondition="1"
+      setNames="{ all }"
+      objectPath="ElementRegions/Domain/block1"
+      fieldName="rockPorosity_porosity"
+      scale="0.05"/>   
+      
     <!-- Initial pressure: ~5 bar -->
     <FieldSpecification
       name="initialPressure"

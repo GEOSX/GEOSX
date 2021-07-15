@@ -24,7 +24,6 @@
 #include "constitutive/ConstitutiveManager.hpp"
 #include "constitutive/contact/ContactRelationBase.hpp"
 #include "constitutive/fluid/SingleFluidBase.hpp"
-#include "constitutive/solid/PoroElastic.hpp"
 #include "finiteElement/Kinematics.h"
 #include "linearAlgebra/interfaces/dense/BlasLapackLA.hpp"
 #include "linearAlgebra/solvers/BlockPreconditioner.hpp"

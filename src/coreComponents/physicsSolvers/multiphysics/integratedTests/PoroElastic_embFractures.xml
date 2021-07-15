@@ -10,6 +10,7 @@
       fracturesSolverName = "fractureMechSolver"
       fluidSolverName = "flowSolver"
       solidSolverName = "matrixMechSolver"
+      porousMaterialNames="{porousRock}"
       logLevel="1">
       <NonlinearSolverParameters
         newtonMaxIter="5"
@@ -42,7 +43,8 @@
       discretization="singlePhaseTPFA"
       targetRegions="{ Domain, Fracture }"
       fluidNames="{ water }"
-      solidNames="{ rock }"/>
+      solidNames="{ rock }"
+      permeabilityNames="{rockPerm, fracPerm}"/>
 
     <EmbeddedSurfaceGenerator
       name="SurfaceGenerator"
@@ -111,7 +113,8 @@
       <TwoPointFluxApproximation
         name="singlePhaseTPFA"
         fieldName="pressure"
-        coefficientName="permeability"/>
+        coefficientName="permeability"
+        coefficientModelNames="{rockPerm, fracPerm}"/>
     </FiniteVolume>
   </NumericalMethods>
 
@@ -119,22 +122,27 @@
     <CellElementRegion
       name="Domain"
       cellBlocks="{ cb1 }"
-      materialList="{ rock, water }"/>
+      materialList="{ rock, water, rockPerm }"/>
 
     <SurfaceElementRegion
       name="Fracture"
       subRegionType="embeddedElement"
-      materialList="{ rock, water }"
+      materialList="{ rock, water, fracPerm }"
       defaultAperture="1e-3"/>
   </ElementRegions>
 
 <Constitutive>
-    <PoroElasticIsotropic
+     <PorousElasticIsotropic
+      name="porousRock"
+      solidModelName="rock"
+      porosityModelName="rockPorosity"
+      permeabilityModelName="rockPerm"/>
+   
+    <ElasticIsotropic
       name="rock"
       defaultDensity="1"
       defaultBulkModulus="5555555555.5556"
-      defaultShearModulus="4166666666.6667"
-      BiotCoefficient="1.0"/>
+      defaultShearModulus="4166666666.6667"/>
 
     <CompressibleSinglePhaseFluid
       name="water"
@@ -154,6 +162,19 @@
         coordinates="{ -1.0e-3, 0.0 }"
         values="{ 1.0e-6, 1.0e-3 }"/>
     </Contact>
+    
+    <BiotPorosity
+      name="rockPorosity"
+      grainBulkModulus="1.0e27"
+      defaultReferencePorosity="0.2"/> 
+      
+   <ConstantPermeability
+      name="rockPerm"
+      permeabilityComponents="{1.0e-12, 1.0e-12, 1.0e-12}"/> 
+
+   <ParallelPlatesPermeability
+      name="fracPerm"/>                        
+    
   </Constitutive>
   
 <FieldSpecifications>
@@ -196,41 +217,6 @@
       component="2"
       scale="0.0"
       setNames="{ zneg, zpos }"/>
-      
-      <FieldSpecification
-      name="permx"
-      component="0"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="1.000e-12"/>
-
-    <FieldSpecification
-      name="permy"
-      component="1"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="1.000e-12"/>
-
-    <FieldSpecification
-      name="permz"
-      component="2"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="permeability"
-      scale="1.000e-12"/>
-
-    <FieldSpecification
-      name="referencePorosity"
-      initialCondition="1"
-      setNames="{ all }"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="referencePorosity"
-      scale="0.2"/>
       
      <FieldSpecification
       name="leftPressure"
