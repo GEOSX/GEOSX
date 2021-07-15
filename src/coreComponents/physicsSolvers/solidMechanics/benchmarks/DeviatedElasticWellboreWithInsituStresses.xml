@@ -1,0 +1,168 @@
+<?xml version="1.0" ?>
+
+<Problem>
+  <!-- SPHINX_Gravity -->
+  <Solvers
+    gravityVector="{ 0.0, 0.0, 0.0 }">
+    <!-- SPHINX_GravityEnd -->
+    <!-- SPHINX_SolidMechanicsSolver -->
+    <SolidMechanicsLagrangianSSLE
+      name="lagsolve"
+      timeIntegrationOption="QuasiStatic"
+      discretization="FE1"
+      logLevel="0"
+      targetRegions="{ Omega }"
+      solidMaterialNames="{ shale }">
+      <!-- SPHINX_SolidMechanicsSolverEnd -->
+      <NonlinearSolverParameters
+        newtonTol="1.0e-6"
+        newtonMaxIter="8"/>
+      <LinearSolverParameters
+        solverType="gmres"
+        directParallel="0"
+        logLevel="0"/>
+    </SolidMechanicsLagrangianSSLE>
+  </Solvers>
+
+  <!-- SPHINX_WellboreMesh -->
+  <Mesh>
+    <InternalWellbore
+      name="mesh1"
+      elementTypes="{ C3D8 }"
+      radius="{ 0.1, 2 }"
+      theta="{ 0, 180 }"
+      zCoords="{ -0.5, 0.5 }"
+      nr="{ 30 }"
+      nt="{ 80 }"
+      nz="{ 10 }"
+      trajectory="{ { -0.5, 0.0, -0.5 },
+                    {  0.5, 0.0,  0.5 } }"
+      autoSpaceRadialElems="{ 1 }"
+      useCartesianOuterBoundary="0"
+      cellBlockNames="{ cb1 }"/>
+  </Mesh>
+
+  <!-- SPHINX_WellboreMeshEnd -->
+  <Events
+    maxTime="10.0">
+    <!-- This event is applied every cycle, and overrides the
+    solver time-step request -->
+    <!-- SPHINX_Execution -->
+    <PeriodicEvent
+      name="solverApplications"
+      forceDt="1.0"
+      target="/Solvers/lagsolve"/>
+
+    <!-- SPHINX_ExecutionEnd -->
+    <!-- This event is applied every 5.0e-5s.  The targetExactTimestep
+    flag allows this event to request a dt modification to match an
+    integer multiple of the timeFrequency. -->
+    <PeriodicEvent
+      name="outputs"
+      timeFrequency="1.0"
+      targetExactTimestep="1"
+      target="/Outputs/siloOutput"/>
+
+    <!--PeriodicEvent
+      name="restarts"
+      timeFrequency="1e99"
+      targetExactTimestep="0"
+      target="/Outputs/restartOutput"/-->
+  </Events>
+
+  <!-- SPHINX_FEDiscretization -->
+  <NumericalMethods>
+    <FiniteElements>
+      <FiniteElementSpace
+        name="FE1"
+        order="1"/>
+    </FiniteElements>
+  </NumericalMethods>
+
+  <!-- SPHINX_FEDiscretizationEnd -->
+  <ElementRegions>
+    <CellElementRegion
+      name="Omega"
+      cellBlocks="{ cb1 }"
+      materialList="{ shale }"/>
+      
+  </ElementRegions>
+
+  <Constitutive>
+    <!-- SPHINX_Material -->
+    <ElasticIsotropic
+      name="shale"
+      defaultDensity="2700"
+      defaultBulkModulus="5.5556e9"
+      defaultShearModulus="4.16667e9"/>
+
+    <!-- SPHINX_MaterialEnd -->
+  </Constitutive>
+
+  <!-- SPHINX_BoundaryConditions -->
+  <FieldSpecifications>
+    <FieldSpecification
+      name="xConstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="0"
+      scale="0.0"
+      setNames="{ xneg }"/>
+
+    <FieldSpecification
+      name="yConstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="1"
+      scale="0.0"
+      setNames="{ tneg, tpos }"/>
+
+    <FieldSpecification
+      name="zconstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="2"
+      scale="0.0"
+      setNames="{ zneg }"/>
+
+    <Traction
+      name="innerPressure"
+      objectPath="faceManager"
+      tractionType="normal"
+      scale="-10.0e6"
+      setNames="{ rneg }"/>
+      
+    <Traction
+      name="Sx"
+      objectPath="faceManager"
+      tractionType="normal"
+      scale="-29.0e6"
+      setNames="{ xpos }"/>
+
+    <Traction
+      name="Sy"
+      objectPath="faceManager"
+      tractionType="normal"
+      scale="-20.0e6"
+      setNames="{ ypos }"/>
+
+    <Traction
+      name="Sz"
+      objectPath="faceManager"
+      tractionType="normal"
+      scale="-25.0e6"
+      setNames="{ zpos }"/>
+  </FieldSpecifications>
+  <!-- SPHINX_BoundaryConditionsEnd -->
+
+  <Outputs>
+    <Silo
+      name="siloOutput"
+      parallelThreads="32"
+      plotFileRoot="plot"
+      childDirectory="sub"/>
+
+    <!--Restart
+      name="restartOutput"/-->
+  </Outputs>
+</Problem>

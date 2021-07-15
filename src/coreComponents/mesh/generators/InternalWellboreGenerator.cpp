@@ -451,7 +451,18 @@ void InternalWellboreGenerator::coordinateTransformation( NodeManager & nodeMana
         // This transformation ensures that the outer square boundary is unchanged
         // TODO create a function in ComputationalGeometry class for this pure geometrical transformation
         real64 transformCoeff = sqrt ( ( 1.0 + tanDTheta * tanDTheta )/( dz*dz/dl/dl + tanDTheta * tanDTheta ) );
-        real64 rCoordTransform = rCoord * ( ( meshRout - rCoord ) / ( meshRout - m_min[0] ) * ( transformCoeff - 1.0 ) + 1.0 );
+
+        // rCoordRelative = 1 on the borehole, = 0 on the outer boundary
+        // A power parameter round( dl/dz ) >= 1 is added
+        // to control the decay of rCoordRelative to 0 at the farfield zone.
+        // This consideration is userful for highly deviated wellbore problem
+        // of which a large transformation is required for the near borehole zone.
+        real64 rCoordRelative = pow( ( meshRout - rCoord ) / ( meshRout - m_min[0] ), round( dl/dz ) );
+
+        // Transform the radial coordinate such that:
+        // rCoordTransform = rCoord * transformCoeff on the borehole
+        // rCoordTransform = rCoord on the boundary (the boundary is not transformed)
+        real64 rCoordTransform = rCoord * ( rCoordRelative * ( transformCoeff - 1.0 ) + 1.0 );
 
         // Compute transformed cartesian coordinates
         xCoord = rCoordTransform * cos( meshTheta );
