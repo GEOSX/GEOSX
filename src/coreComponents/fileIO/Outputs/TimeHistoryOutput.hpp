@@ -82,10 +82,15 @@ public:
   /// @cond DO_NOT_DOCUMENT
   struct viewKeys
   {
-    static constexpr auto timeHistoryOutputTarget = "sources";
-    static constexpr auto timeHistoryOutputFilename = "filename";
-    static constexpr auto timeHistoryOutputFormat = "format";
-    static constexpr auto timeHistoryRestart = "restart";
+    static constexpr char const * timeHistoryOutputTargetString() { return "sources"; }
+    static constexpr char const * timeHistoryOutputFilenameString() { return "filename"; }
+    static constexpr char const * timeHistoryOutputFormatString() { return "format"; }
+    static constexpr char const * timeHistoryRestartString() { return "restart"; }
+
+    dataRepository::ViewKey timeHistoryOutputTarget = { "sources" };
+    dataRepository::ViewKey timeHistoryOutputFilename = { "filename" };
+    dataRepository::ViewKey timeHistoryOutputFormat = { "format" };
+    dataRepository::ViewKey timeHistoryRestart = { "restart" };
   } timeHistoryOutputViewKeys;
   /// @endcond
 

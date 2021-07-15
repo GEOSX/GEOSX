@@ -247,7 +247,7 @@ public:
         if( ( isInitialCondition && fieldName=="" ) ||
             ( !isInitialCondition && time >= fs.getStartTime() && time < fs.getEndTime() && targetName==fieldName ) )
         {
-          dataRepository::Group * targetGroup = &domain.getMeshBody( 0 ).getMeshLevel( 0 );;
+          dataRepository::Group * targetGroup = &domain.getMeshBody( 0 ).getMeshLevel( 0 );
 
           for( localIndex pathLevel=0; pathLevel<targetPathLength; ++pathLevel )
           {

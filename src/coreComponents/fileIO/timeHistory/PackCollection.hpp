@@ -69,33 +69,33 @@ public:
    */
   virtual void updateSetsIndices( DomainPartition & domain ) override final;
 
-  /**
-   * @brief Filters out ghost rank indices from setIndices to be collected.
-   * @param setIndex which set (collection item) needs to be filtered
-   * @param set the set of indices without the ghost ones
-   * @param ghostRank the ghost rank of each index for the target object
-   */
-  void filterGhostIndices( localIndex const setIndex,
-                           array1d< localIndex > & set,
-                           arrayView1d< integer const > const & ghostRank );
+  virtual localIndex getNumMetaCollectors( ) const override final;
 
   /// @cond DO_NOT_DOCUMENT
   struct viewKeysStruct
   {
-    static constexpr auto objectPath = "objectPath";
-    static constexpr auto fieldName = "fieldName";
-    static constexpr auto setNames = "setNames";
-    static constexpr auto minSetSize = "minSetSize";
-  } keys;
+    static constexpr char const * objectPathString() { return "objectPath"; }
+    static constexpr char const * fieldNameString() { return "fieldName"; }
+    static constexpr char const * setNamesString() { return "setNames"; }
+    static constexpr char const * onlyOnSetChangeString() { return "onlyOnSetChange"; }
+
+    dataRepository::ViewKey objectPath = { "objectPath" };
+    dataRepository::ViewKey fieldName = { "fieldName" };
+    dataRepository::ViewKey setNames = { "setNames" };
+    dataRepository::ViewKey onlyOnSetChange = { "onlyOnSetChange" };
+  } viewKeys;
   /// @endcond
 
 protected:
-  /**
-   * @brief Get the target object from which to collect time history data.
-   * @param domain The problem domain.
-   * @return The target object as an ObjectManager.
-   */
-  ObjectManagerBase const * getTargetObject( DomainPartition const & domain );
+  /// Construct the metadata collectors for this collector.
+  void buildMetaCollectors( );
+
+  /// Do not construct metadata collectors to collect coordinate information.
+  ///   ( Prevents reccuring initialization of coordinate collection for coordinate collectors ).
+  void disableCoordCollection( )
+  {
+    m_disableCoordCollection = true;
+  }
 
   /// @copydoc geosx::HistoryCollection::collect
   virtual void collect( DomainPartition & domain,
@@ -109,14 +109,23 @@ private:
   // for indexing)
   /// The indices for the specified sets to pack
   std::vector< array1d< localIndex > > m_setsIndices;
-  /// The dataRepository name/path to get history data from
+  /// The dataRepository name/path to get history data from, relative paths are assumed to be relative to mesh body 0, mesh level 0
   string m_objectPath;
   /// The (packable) field associated with the specified object to get data from
   string m_fieldName;
   /// The names of the sets to collect history info from
   string_array m_setNames;
-  /// Set the minimum size of all the sets being collected on each process
-  localIndex m_minimumSetSize;
+  /// Whether any of the collected set(s) have changed since the last collection
+  bool m_setChanged;
+  /// Whether to only pack when the collected set(s) change size (mostly used for collecting metadata)
+  localIndex m_onlyOnSetChange;
+  /// Whether to create coordinate meta-collectors if collected objects are mesh objects (set to true for coordinate meta-collectors to
+  /// avoid init recursion)
+  bool m_disableCoordCollection;
+  /// Whether initializePostSubGroups has been called, since we only wan't to execute it once
+  ///  It is called explicitly by the output to ensure this is in a valid state to collect info from to perform setup
+  ///  It is also called by the normal initialization process
+  bool m_initialized;
 };
 
 }

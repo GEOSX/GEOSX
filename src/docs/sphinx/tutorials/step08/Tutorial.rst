@@ -338,19 +338,14 @@ times with the numerical solution (markers).
 
    def main():
        # File path
-       hdf5File1Path = "pressure_history.hdf5"
-       hdf5File2Path = "cell_centers.hdf5"
+       hdf5FilePath = "pressure_history.hdf5"
        xmlFilePath = "../../../../coreComponents/physicsSolvers/multiphysics/integratedTests/PoroElastic_Terzaghi_FIM.xml"
 
        # Read HDF5
-       hf = h5py.File(hdf5File1Path, 'r')
-       time = hf.get('Time')
-       time = np.array(time)
+       hf = h5py.File(hdf5FilePath, 'r')
+       time = hf.get('pressure Time')
        pressure = hf.get('pressure')
-       pressure = np.array(pressure)
-       hf = h5py.File(hdf5File2Path, 'r')
-       x = hf.get('elementCenter')
-       x = x[0,:,0]
+       x = hf.get('pressure elementCenter')
 
        # Extract info from XML
        hydromechanicalParameters = getHydromechanicalParametersFromXML(xmlFilePath)
@@ -377,7 +372,7 @@ times with the numerical solution (markers).
                pressure_analytical[i] = terzaghiAnalyticalSolution.computePressure(xScaled, t)
                i += 1
            plt.plot(x_analytical, pressure_analytical, color=cmap(iplt), label='t = ' + str(t) + ' s')
-           plt.plot(x, pressure[k, :], 'o', color=cmap(iplt))
+           plt.plot(x[k, :, 0], pressure[k, :], 'o', color=cmap(iplt))
 
        plt.grid()
        plt.xlabel('$x$ [m]')
@@ -387,8 +382,6 @@ times with the numerical solution (markers).
 
    if __name__ == "__main__":
        main()
-
-
 
 
 

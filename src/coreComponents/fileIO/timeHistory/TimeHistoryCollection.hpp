@@ -44,6 +44,7 @@ public:
   /// @copydoc geosx::dataRepository::Group::Group(string const & name, Group * const parent)
   HistoryCollection( string const & name, Group * parent ):
     TaskBase( name, parent ),
+    m_targetIsMeshObject( false ),
     m_collectionCount( 1 ),
     m_timeBufferCall(),
     m_bufferCalls()
@@ -94,9 +95,6 @@ public:
                         real64 const eventProgress,
                         DomainPartition & domain ) override
   {
-    GEOSX_UNUSED_VAR( cycleNumber );
-    GEOSX_UNUSED_VAR( eventCounter );
-    GEOSX_UNUSED_VAR( eventProgress );
     for( localIndex collectionIdx = 0; collectionIdx < getCollectionCount(); ++collectionIdx )
     {
       // std::function defines the == and =! comparable against nullptr_t to check the
@@ -104,10 +102,14 @@ public:
       GEOSX_ERROR_IF( m_bufferCalls[collectionIdx] == nullptr,
                       "History collection buffer retrieval function is unassigned, did you declare a related TimeHistoryOutput event?" );
       // using GEOSX_ERROR_IF_EQ caused type issues since the values are used in streams
-      // TODO : grab the metadata again, determine if the size has changed, update the buffer call if so...
-      buffer_unit_type * buffer = m_bufferCalls[collectionIdx]();
-      updateSetsIndices( domain );
+      // we don't explicitly update the index sets here as they are updated in the buffer callback (see
+      // TimeHistoryOutput.cpp::initCollectorParallel( ) )
+      buffer_unit_type * buffer = m_bufferCalls[collectionIdx]( );
       collect( domain, time_n, dt, collectionIdx, buffer );
+    }
+    for( auto & metaCollector : m_metaCollectors )
+    {
+      metaCollector->execute( time_n, dt, cycleNumber, eventCounter, eventProgress, domain );
     }
     int rank = MpiWrapper::commRank();
     if( rank == 0 && m_timeBufferCall )
@@ -115,11 +117,10 @@ public:
       buffer_unit_type * timeBuffer = m_timeBufferCall();
       memcpy( timeBuffer, &time_n, sizeof(time_n) );
     }
-
     return false;
   }
 
-  /**s
+  /**
    * @brief Register a callback that gives the current head of the time history data buffer.
    * @param collectionIdx Which collection item to register the buffer callback for.
    * @param bufferCall A functional that when invoked returns a pointer to the head of a buffer at least large enough to
@@ -128,7 +129,7 @@ public:
    */
   void registerBufferCall( localIndex collectionIdx, std::function< buffer_unit_type *() > bufferCall )
   {
-    GEOSX_ERROR_IF( collectionIdx >= this->getCollectionCount( ), "Invalid collection index specified." );
+    GEOSX_ERROR_IF( collectionIdx < 0 || collectionIdx >= this->getCollectionCount( ), "Invalid collection index specified." );
     m_bufferCalls[collectionIdx] = bufferCall;
   }
 
@@ -138,7 +139,7 @@ public:
    */
   HistoryMetadata getTimeMetadata( ) const
   {
-    return HistoryMetadata( "Time", 1, std::type_index( typeid(real64) ) );
+    return HistoryMetadata( this->getTargetName( ) + " Time", 1, std::type_index( typeid(real64) ) );
   }
 
   /**
@@ -163,19 +164,16 @@ public:
 
   /**
    * @brief Get a pointer to a collector of meta-information for this collector.
-   * @param domain The DomainPartition.
-   * @param metaIdx Which of the meta-info collectors to return. (see HistoryCollection::GetNumMetaCollectors( ) ).
+   * @param metaIdx Which of the meta-info collectors to return. (see HistoryCollection::getNumMetaCollectors( ) ).
    * @return A unique pointer to the HistoryCollection object used for meta-info collection. Intented to fall out of scope and desctruct
    * immediately
    *         after being used to perform output during simulation initialization.
    */
-  virtual std::unique_ptr< HistoryCollection > getMetaCollector( DomainPartition const & domain, localIndex metaIdx )
+  virtual HistoryCollection & getMetaCollector( localIndex metaIdx )
   {
-    GEOSX_UNUSED_VAR( domain );
-    GEOSX_UNUSED_VAR( metaIdx );
-    return std::unique_ptr< HistoryCollection >( nullptr );
+    GEOSX_ASSERT_MSG( metaIdx >= 0 && metaIdx < getNumMetaCollectors( ), "Requesting nonexistent meta collector index." );
+    return *m_metaCollectors[ metaIdx ].get( );
   }
-
   /**
    * @brief Update the indices from the sets being collected.
    * @param domain The DomainPartition of the problem.
@@ -183,6 +181,51 @@ public:
   virtual void updateSetsIndices ( DomainPartition & domain ) = 0;
 
 protected:
+
+  /**
+   * @brief Retrieve the target object from the data repository.
+   * @param domain The DomainPartition of the problem.
+   * @param objectPath The data repo path of the target object.
+   * @return The target object as a Group
+   * @note If the object path is absolute this returns the target object by calling getGroupByPath. If the
+   *        object path is relative, it searches relative to the mesh in the same way the fieldSpecification does,
+   *        so any objectPath that works in fieldSpecification will also work here.
+   */
+  inline dataRepository::Group const * getTargetObject( DomainPartition const & domain, string const & objectPath )
+  {
+    // absolute objectPaths can be used to target anything in the data repo that is packable
+    if( objectPath[0] == '/' )
+    {
+      return &Group::getGroupByPath( objectPath );
+    }
+    else // relative objectPaths use relative lookup identical to fieldSpecification to make xml input spec easier
+    {
+      string_array const targetTokens = stringutilities::tokenize( objectPath, "/" );
+      localIndex const targetTokenLength = LvArray::integerConversion< localIndex >( targetTokens.size() );
+
+      dataRepository::Group const * targetGroup = &domain.getMeshBody( 0 ).getMeshLevel( 0 );
+      for( localIndex pathLevel = 0; pathLevel < targetTokenLength; ++pathLevel )
+      {
+        dataRepository::Group const * elemRegionSubGroup = targetGroup->getGroupPointer( ElementRegionManager::groupKeyStruct::elementRegionsGroup() );
+        if( elemRegionSubGroup != nullptr )
+        {
+          targetGroup = elemRegionSubGroup;
+        }
+        dataRepository::Group const * elemSubRegionSubGroup = targetGroup->getGroupPointer( ElementRegionBase::viewKeyStruct::elementSubRegions() );
+        if( elemSubRegionSubGroup != nullptr )
+        {
+          targetGroup = elemSubRegionSubGroup;
+        }
+        if( targetTokens[pathLevel] == ElementRegionManager::groupKeyStruct::elementRegionsGroup() ||
+            targetTokens[pathLevel] == ElementRegionBase::viewKeyStruct::elementSubRegions() )
+        {
+          continue;
+        }
+        targetGroup = &targetGroup->getGroup( targetTokens[pathLevel] );
+      }
+      return targetGroup;
+    }
+  }
 
   /**
    * @brief Collect history information into the provided buffer. Typically called from HistoryCollection::execute .
@@ -195,12 +238,17 @@ protected:
   virtual void collect( DomainPartition & domain, real64 const time_n, real64 const dt, localIndex const collectionIdx, buffer_unit_type * & buffer ) = 0;
 
 protected:
+  /// whether the target object is associated with mesh entities (fields, etc)
+  bool m_targetIsMeshObject;
   /// The number of discrete collection operations described by metadata this collection collects.
   localIndex m_collectionCount;
   /// Callbacks to get the current time buffer head to write time data into
   std::function< buffer_unit_type *() > m_timeBufferCall;
   /// Callbacks to get the current buffer head to write history data into
   std::vector< std::function< buffer_unit_type *() > > m_bufferCalls;
+  /// The set of metadata collectors for this collector ( currently only used to collect coordinates of mesh
+  ///   objects when collecting field data )
+  std::vector< std::unique_ptr< HistoryCollection > > m_metaCollectors;
 };
 
 }

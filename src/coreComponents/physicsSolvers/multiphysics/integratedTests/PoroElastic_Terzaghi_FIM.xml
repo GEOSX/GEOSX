@@ -97,14 +97,6 @@
       targetExactTimestep="0"
       target="/Outputs/timeHistoryOutput" />
 
-    <SoloEvent
-      name="cellCentersCollection" 
-      target="/Tasks/cellCentersCollection" />
-
-    <SoloEvent
-      name="cellCentersOutput" 
-      target="/Outputs/cellCentersOutput" />
-
     <PeriodicEvent
       name="restarts"
       cycleFrequency="50"
@@ -285,13 +277,9 @@
       sources="{/Tasks/pressureCollection}"
       filename="pressure_history" />
 
-    <TimeHistory
-      name="cellCentersOutput"
-      sources="{/Tasks/cellCentersCollection}"
-      filename="cell_centers" />
-
     <Restart
       name="restartOutput"/>
+
   </Outputs>
 
   <Tasks>
@@ -299,11 +287,6 @@
       name="pressureCollection"
       objectPath="ElementRegions/Domain/cb1"
       fieldName="pressure"/>
-
-    <PackCollection
-      name="cellCentersCollection"
-      objectPath="ElementRegions/Domain/cb1"
-      fieldName="elementCenter"/>
   </Tasks>
 
 </Problem>

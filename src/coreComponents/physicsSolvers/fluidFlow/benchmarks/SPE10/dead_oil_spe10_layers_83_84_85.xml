@@ -222,28 +222,10 @@
       target="/Outputs/restartOutput"/>
     
     <PeriodicEvent
-      name="timeHistoryOutput1"
+      name="timeHistoryOutput"
       timeFrequency="1.5e7"
       targetExactTimestep="1"
-      target="/Outputs/timeHistoryOutput1" />
-
-    <PeriodicEvent
-      name="timeHistoryOutput2"
-      timeFrequency="1.5e7"
-      targetExactTimestep="1"
-      target="/Outputs/timeHistoryOutput2" />
-
-    <PeriodicEvent
-      name="timeHistoryOutput3"
-      timeFrequency="1.5e7"
-      targetExactTimestep="1"
-      target="/Outputs/timeHistoryOutput3" />
-    
-    <PeriodicEvent
-      name="timeHistoryOutput4"
-      timeFrequency="1.5e7"
-      targetExactTimestep="1"
-      target="/Outputs/timeHistoryOutput4" />
+      target="/Outputs/timeHistoryOutput" />
 
     <PeriodicEvent
       name="solverApplications"
@@ -251,28 +233,27 @@
       target="/Solvers/coupledFlowAndWells"/>
 
     <PeriodicEvent
-      name="timeHistoryCollection1"
+      name="timeHistoryCollection"
       timeFrequency="5e5"
-      targetExactTimestep="1"
-      target="/Tasks/wellRateCollection1" />
+      targetExactTimestep="1" >
 
-    <PeriodicEvent
-      name="timeHistoryCollection2"
-      timeFrequency="5e5"
-      targetExactTimestep="1"
-      target="/Tasks/wellRateCollection2" />
+      <PeriodicEvent
+        name="timeHistoryCollection1"
+        target="/Tasks/wellRateCollection1" />
 
-    <PeriodicEvent
-      name="timeHistoryCollection3"
-      timeFrequency="5e5"
-      targetExactTimestep="1"
-      target="/Tasks/wellRateCollection3" />
+      <PeriodicEvent
+        name="timeHistoryCollection2"
+        target="/Tasks/wellRateCollection2" />
 
-    <PeriodicEvent
-      name="timeHistoryCollection4"
-      timeFrequency="5e5"
-      targetExactTimestep="1"
-      target="/Tasks/wellRateCollection4" />
+      <PeriodicEvent
+        name="timeHistoryCollection3"
+        target="/Tasks/wellRateCollection3" />
+
+      <PeriodicEvent
+        name="timeHistoryCollection4"
+        target="/Tasks/wellRateCollection4" />
+
+    </PeriodicEvent>
 
   </Events>
   <!-- SPHINX_TUT_DEAD_OIL_BOTTOM_SPE10_EVENTS_END -->
@@ -380,24 +361,9 @@
       name="restartOutput"/>
 
     <TimeHistory
-      name="timeHistoryOutput1"
-      sources="{/Tasks/wellRateCollection1}"
-      filename="wellRateHistory1" />
-
-    <TimeHistory
-      name="timeHistoryOutput2"
-      sources="{/Tasks/wellRateCollection2}"
-      filename="wellRateHistory2" />
-
-    <TimeHistory
-      name="timeHistoryOutput3"
-      sources="{/Tasks/wellRateCollection3}"
-      filename="wellRateHistory3" />
-
-    <TimeHistory
-      name="timeHistoryOutput4"
-      sources="{/Tasks/wellRateCollection4}"
-      filename="wellRateHistory4" />
+      name="timeHistoryOutput"
+      sources="{/Tasks/wellRateCollection1, /Tasks/wellRateCollection2, /Tasks/wellRateCollection3, /Tasks/wellRateCollection4}"
+      filename="wellRateHistory" />
 
   </Outputs>
   <!-- SPHINX_TUT_DEAD_OIL_BOTTOM_SPE10_OUTPUT_END -->

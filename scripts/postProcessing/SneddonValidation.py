@@ -30,7 +30,7 @@ class Sneddon:
 def getMechanicalParametersFromXML( xmlFilePath ):
     tree = ElementTree.parse(xmlFilePath)
 
-    param = tree.find('Constitutive/LinearElasticIsotropic')
+    param = tree.find('Constitutive/ElasticIsotropic')
 
     mechanicalParameters = dict.fromkeys(["bulkModulus", "shearModulus"])
 
@@ -63,14 +63,13 @@ def getFractureLengthFromXML(xmlFilePath):
     length = dimensions[0] / 2
 
     origin = boundedPlane.get("origin")
-    origin = [float(i) for i in origin.split(",")]
+    origin = [float(i) for i in origin[1:-1].split(",")]
     return length, origin[0]
 
 def main(filesPaths):
     # File path
     hdf5File1Path = filesPaths[0]
-    hdf5File2Path = filesPaths[1]
-    xmlFilePath   = filesPaths[2]
+    xmlFilePath   = filesPaths[1]
 
     # Read HDF5
     hf = h5py.File(hdf5File1Path, 'r')
@@ -78,8 +77,8 @@ def main(filesPaths):
     jump = np.array(jump)
     aperture = jump[0,:,0]
 
-    hf = h5py.File(hdf5File2Path, 'r')
-    x = hf.get('elementCenter')
+    hf = h5py.File(hdf5File1Path, 'r')
+    x = hf.get('displacementJump elementCenter')
     x = x[0,:,0]
 
     # Filter out extra entries in the hdf5 file. It is just to make the plot look nicer
@@ -142,7 +141,6 @@ def parseArguments():
     if args.datapath != "":
         # get path to the hdf5 files
         filesPaths.append(args.datapath + "displacementJump_history.hdf5")
-        filesPaths.append(args.datapath + "cell_centers.hdf5")
     else:
         print("The path to the hdf5 files must be specified. Use -dp to specify it.")
 

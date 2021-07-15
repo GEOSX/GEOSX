@@ -51,16 +51,17 @@ public:
    */
   buffer_unit_type * getBufferHead( )
   {
-    resizeBuffer();
+    resizeBuffer( );
     m_bufferedCount++;
-    return m_bufferHead;
+    buffer_unit_type * const currentBufferHead = m_bufferHead;
+    m_bufferHead += getRowBytes( );
+    return currentBufferHead;
   }
 
   /**
    * @brief Perform and intialization needed for time-history output.
    * @param existsOkay Whether it is acceptable for the intended output target to already exist ( false on start from scratch, true on
-   * restart ).
-   * data).
+   *                    restart ).
    */
   virtual void init( bool existsOkay ) = 0;
 
@@ -76,10 +77,27 @@ public:
   virtual void compressInFile( ) = 0;
 
   /**
+   * @brief Update the number of items being stored for IO in this object.
+   * @param count [in] The new number of items being collected
+   */
+  virtual void updateCollectingCount( localIndex count ) = 0;
+
+  /**
+   * @brief Get the size in bytes the buffer is currently set to hold per collection operation.
+   * @return The size in bytes.
+   */
+  virtual size_t getRowBytes( ) = 0;
+
+  /**
    * @brief Query the number of history states currently stored in the internal buffer.
    * @return The number of discrete time history records buffered to be written.
+   * @note Since the size of each discrete time history can change, this should not be used
+   *        to calculate size, but is useful to check for consistency between collectors
+   *        that should be operating at the same cadence (ie the time collector and the data
+   *        collector).
    */
   localIndex getBufferedCount( ) { return m_bufferedCount; }
+
 protected:
   /// @brief Resize the buffer to accomodate additional history collection.
   virtual void resizeBuffer( ) = 0;

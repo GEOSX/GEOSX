@@ -1737,10 +1737,10 @@ Equal to 1 for surface conditions, and to 0 for reservoir conditions-->
 	<xsd:complexType name="PackCollectionType">
 		<!--fieldName => The name of the (packable) field associated with the specified object to retrieve data from-->
 		<xsd:attribute name="fieldName" type="string" use="required" />
-		<!--minSetSize => The minimum size of the set(s) to be collected (use for sets that expand during the simulation).-->
-		<xsd:attribute name="minSetSize" type="localIndex" default="-1" />
 		<!--objectPath => The name of the object from which to retrieve field values.-->
 		<xsd:attribute name="objectPath" type="string" use="required" />
+		<!--onlyOnSetChange => Whether or not to only collect when the collected sets of indices change in any way.-->
+		<xsd:attribute name="onlyOnSetChange" type="localIndex" default="0" />
 		<!--setNames => The set(s) for which to retrieve data.-->
 		<xsd:attribute name="setNames" type="string_array" default="{}" />
 		<!--name => A name is required for any non-unique nodes-->

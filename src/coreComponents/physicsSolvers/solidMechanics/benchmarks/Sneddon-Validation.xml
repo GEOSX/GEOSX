@@ -97,14 +97,6 @@
       timeFrequency="10.0"
       targetExactTimestep="0"
       target="/Outputs/timeHistoryOutput"/>
-
-    <SoloEvent
-      name="cellCentersCollection" 
-      target="/Tasks/cellCentersCollection" />
-
-    <SoloEvent
-      name="cellCentersOutput" 
-      target="/Outputs/cellCentersOutput" />      
   </Events>
 
   <NumericalMethods>
@@ -187,14 +179,7 @@
     <PackCollection
       name="displacementJumpCollection"
       objectPath="ElementRegions/Fracture/embeddedSurfaceSubRegion"
-      fieldName="displacementJump"
-      minSetSize="120"/>
-      
-    <PackCollection
-      name="cellCentersCollection"
-      objectPath="ElementRegions/Fracture/embeddedSurfaceSubRegion"
-      fieldName="elementCenter"
-      minSetSize="120"/>      
+      fieldName="displacementJump" />
   </Tasks>
 
   <Outputs>
@@ -208,10 +193,5 @@
       name="timeHistoryOutput"
       sources="{/Tasks/displacementJumpCollection}"
       filename="displacementJump_history" />
-      
-    <TimeHistory
-      name="cellCentersOutput"
-      sources="{/Tasks/cellCentersCollection}"
-      filename="cell_centers" />
   </Outputs>
 </Problem>

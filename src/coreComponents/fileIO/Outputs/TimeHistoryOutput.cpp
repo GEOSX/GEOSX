@@ -25,21 +25,21 @@ TimeHistoryOutput::TimeHistoryOutput( string const & name,
   m_recordCount( 0 ),
   m_io( )
 {
-  registerWrapper( viewKeys::timeHistoryOutputTarget, &m_collectorPaths ).
+  registerWrapper( viewKeys::timeHistoryOutputTargetString(), &m_collectorPaths ).
     setInputFlag( InputFlags::REQUIRED ).
     setDescription( "A list of collectors from which to collect and output time history information." );
 
-  registerWrapper( viewKeys::timeHistoryOutputFilename, &m_filename ).
+  registerWrapper( viewKeys::timeHistoryOutputFilenameString(), &m_filename ).
     setApplyDefaultValue( "TimeHistory" ).
     setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "The filename to which to write time history output." );
 
-  registerWrapper( viewKeys::timeHistoryOutputFormat, &m_format ).
+  registerWrapper( viewKeys::timeHistoryOutputFormatString(), &m_format ).
     setApplyDefaultValue( "hdf" ).
     setInputFlag( InputFlags::OPTIONAL ).
     setDescription( "The output file format for time history output." );
 
-  registerWrapper( viewKeys::timeHistoryRestart, &m_recordCount ).
+  registerWrapper( viewKeys::timeHistoryRestartString(), &m_recordCount ).
     setApplyDefaultValue( 0 ).
     setInputFlag( InputFlags::FALSE ).
     setRestartFlags( RestartFlags::WRITE_AND_READ ).
@@ -54,47 +54,56 @@ void TimeHistoryOutput::initCollectorParallel( DomainPartition & domain, History
   string const outputDirectory = getOutputDirectory();
   string const outputFile = joinPath( outputDirectory, m_filename );
 
-  // rank == 0 do time output for the collector
+  localIndex ioCount = 0;
   for( localIndex ii = 0; ii < collector.getCollectionCount( ); ++ii )
   {
     HistoryMetadata metadata = collector.getMetadata( domain, ii );
     m_io.emplace_back( std::make_unique< HDFHistIO >( outputFile, metadata, m_recordCount ) );
-    collector.registerBufferCall( ii, [this, ii]() { return m_io[ii]->getBufferHead( ); } );
+    collector.registerBufferCall( ii, [this, ii, ioCount, &domain, &collector]()
+    {
+      collector.updateSetsIndices( domain );
+      HistoryMetadata md = collector.getMetadata( domain, ii );
+      m_io[ioCount]->updateCollectingCount( md.getDims( )[0] );
+      return m_io[ioCount]->getBufferHead( );
+    } );
     m_io.back()->init( !freshInit );
+    ++ioCount;
   }
 
-  if( MpiWrapper::commRank( MPI_COMM_GEOSX ) == 0 )
+  localIndex metaCollectorCount = collector.getNumMetaCollectors( );
+  for( localIndex metaIdx = 0; metaIdx < metaCollectorCount; ++metaIdx )
+  {
+    HistoryCollection & metaCollector = collector.getMetaCollector( metaIdx );
+    for( localIndex ii = 0; ii < metaCollector.getCollectionCount( ); ++ii )
+    {
+      HistoryMetadata metaMetadata = metaCollector.getMetadata( domain, ii );
+      metaMetadata.setName( collector.getTargetName() + " " + metaMetadata.getName( ) );
+      m_io.emplace_back( std::make_unique< HDFHistIO >( outputFile, metaMetadata, m_recordCount ) );
+      metaCollector.registerBufferCall( ii, [this, ii, ioCount, &domain, &metaCollector] ()
+      {
+        metaCollector.updateSetsIndices( domain );
+        HistoryMetadata md = metaCollector.getMetadata( domain, ii );
+        m_io[ ioCount ]->updateCollectingCount( md.getDims()[0] );
+        return m_io[ ioCount ]->getBufferHead( );
+      } );
+      m_io.back()->init( !freshInit );
+      ++ioCount;
+    }
+
+  }
+
+  // do the time output last so its at the end of the m_io list, since writes are parallel we need
+  //  the rest of the collectors to share position in the list across the world comm
+
+  // rank == 0 does time output for the collector
+  if( MpiWrapper::commRank( ) == 0 )
   {
     HistoryMetadata timeMetadata = collector.getTimeMetadata( );
-    m_io.emplace_back( std::make_unique< HDFHistIO >( outputFile, timeMetadata, m_recordCount, 2, 2, MPI_COMM_SELF ) );
+    m_io.emplace_back( std::make_unique< HDFHistIO >( outputFile, timeMetadata, m_recordCount, 1, 2, MPI_COMM_SELF ) );
     collector.registerTimeBufferCall( [this]() { return m_io.back()->getBufferHead( ); } );
     m_io.back()->init( !freshInit );
   }
-  if( freshInit )
-  {
-    GEOSX_MARK_SCOPE( "Fresh Time-hist initialization." );
-    // do any 1-time metadata output
-    localIndex metaCollectorCount = collector.getNumMetaCollectors( );
-    for( localIndex metaIdx = 0; metaIdx < metaCollectorCount; ++metaIdx )
-    {
-      std::unique_ptr< HistoryCollection > metaCollector = collector.getMetaCollector( domain, metaIdx );
-      std::vector< std::unique_ptr< HDFHistIO > > metaIOs( metaCollector->getCollectionCount( ) );
-      for( localIndex ii = 0; ii < metaCollector->getCollectionCount( ); ++ii )
-      {
-        HistoryMetadata metaMetadata = metaCollector->getMetadata( domain, ii );
-        metaMetadata.setName( collector.getTargetName() + " " + metaMetadata.getName( ) );
-        metaIOs[ii] = std::make_unique< HDFHistIO >( outputFile, metaMetadata, 0, 1 );
-        metaCollector->registerBufferCall( ii, [&metaIOs, ii] () { return metaIOs[ii]->getBufferHead( ); } );
-        metaIOs[ii]->init( false );
-      }
 
-      metaCollector->execute( 0.0, 0.0, 0, 0, 0, domain );
-      for( localIndex ii = 0; ii < metaCollector->getCollectionCount( ); ++ii )
-      {
-        metaIOs[ii]->write( );
-      }
-    }
-  }
   MpiWrapper::barrier( MPI_COMM_GEOSX );
 }
 
@@ -113,9 +122,9 @@ void TimeHistoryOutput::initializePostSubGroups()
   }
 
   DomainPartition & domain = this->getGroupByPath< DomainPartition >( "/Problem/domain" );
-  for( auto collector_path : m_collectorPaths )
+  for( auto collectorPath : m_collectorPaths )
   {
-    HistoryCollection & collector = this->getGroupByPath< HistoryCollection >( collector_path );
+    HistoryCollection & collector = this->getGroupByPath< HistoryCollection >( collectorPath );
     collector.initializePostSubGroups();
     initCollectorParallel( domain, collector );
   }
@@ -132,11 +141,9 @@ bool TimeHistoryOutput::execute( real64 const GEOSX_UNUSED_PARAM( time_n ),
   localIndex newBuffered = m_io.front()->getBufferedCount( );
   for( auto & th_io : m_io )
   {
-    GEOSX_ERROR_IF( newBuffered != th_io->getBufferedCount( ), "Inconsistent buffered time history count from single collector." );
     th_io->write( );
   }
   m_recordCount += newBuffered;
-
   return false;
 }
 
