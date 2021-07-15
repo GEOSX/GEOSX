@@ -1,0 +1,181 @@
+<?xml version="1.0" ?>
+
+<Problem>
+  <!-- SPHINX_Gravity -->
+  <Solvers
+    gravityVector="{ 0.0, 0.0, 0.0 }">
+    <!-- SPHINX_GravityEnd -->
+    <!-- SPHINX_SolidMechanicsSolver -->
+    <SolidMechanicsLagrangianSSLE
+      name="lagsolve"
+      timeIntegrationOption="QuasiStatic"
+      discretization="FE1"
+      logLevel="0"
+      targetRegions="{ casing, cement, rock }"
+      solidMaterialNames="{ casing, cement, rock }">
+      <!-- SPHINX_SolidMechanicsSolverEnd -->
+      <NonlinearSolverParameters
+        newtonTol="1.0e-9"
+        newtonMaxIter="8"/>
+      <LinearSolverParameters
+        solverType="gmres"
+        directParallel="0"
+        logLevel="0"/>
+    </SolidMechanicsLagrangianSSLE>
+  </Solvers>
+
+  <!-- SPHINX_WellboreMesh -->
+  <Mesh>
+    <InternalWellbore
+      name="mesh1"
+      elementTypes="{ C3D8, C3D8, C3D8 }"
+      radius="{ 0.1, 0.106, 0.133, 2.0 }"
+      theta="{ 0, 360 }"
+      zCoords="{ 0, 1 }"
+      nr="{ 10, 20, 10 }"
+      nt="{ 320 }"
+      nz="{ 1 }"
+      trajectory="{ { 0.0, 0.0, 0.0 },
+                    { 0.0, 0.0, 1.0 } }"
+      autoSpaceRadialElems="{ 0, 0, 1 }"
+      useCartesianOuterBoundary="2"
+      cellBlockNames="{ casing, cement, rock }"
+      />
+  </Mesh>
+
+  <!-- SPHINX_WellboreMeshEnd -->
+  <Events
+    maxTime="1.0">
+    <!-- This event is applied every cycle, and overrides the
+    solver time-step request -->
+    <!-- SPHINX_Execution -->
+    <PeriodicEvent
+      name="solverApplications"
+      forceDt="0.1"
+      target="/Solvers/lagsolve"/>
+
+    <!-- SPHINX_ExecutionEnd -->
+    <!-- This event is applied every 5.0e-5s.  The targetExactTimestep
+    flag allows this event to request a dt modification to match an
+    integer multiple of the timeFrequency. -->
+    <PeriodicEvent
+      name="outputs"
+      timeFrequency="1.0"
+      targetExactTimestep="1"
+      target="/Outputs/siloOutput"/>
+
+    <PeriodicEvent
+      name="restarts"
+      timeFrequency="2"
+      targetExactTimestep="0"
+      target="/Outputs/restartOutput"/>
+  </Events>
+
+  <!-- SPHINX_FEDiscretization -->
+  <NumericalMethods>
+    <FiniteElements>
+      <FiniteElementSpace
+        name="FE1"
+        order="1"/>
+    </FiniteElements>
+  </NumericalMethods>
+
+  <!-- SPHINX_FEDiscretizationEnd -->
+  <ElementRegions>
+    <CellElementRegion
+      name="casing"
+      cellBlocks="{ casing }"
+      materialList="{ casing }"/>
+      
+    <CellElementRegion
+      name="cement"
+      cellBlocks="{ cement }"
+      materialList="{ cement }"/>
+
+    <CellElementRegion
+      name="rock"
+      cellBlocks="{ rock }"
+      materialList="{ rock }"/>
+      
+  </ElementRegions>
+
+  <Constitutive>
+    <!-- SPHINX_Material -->
+    <ElasticIsotropic
+      name="casing"
+      defaultDensity="2700"
+      defaultBulkModulus="175e9"
+      defaultShearModulus="80.8e9"/>
+
+    <ElasticIsotropic
+      name="cement"
+      defaultDensity="2700"
+      defaultBulkModulus="10.3e9"
+      defaultShearModulus="6.45e9"/>
+
+    <ElasticIsotropic
+      name="rock"
+      defaultDensity="2700"
+      defaultBulkModulus="5.5556e9"
+      defaultShearModulus="4.16667e9"/>
+
+    <!-- SPHINX_MaterialEnd -->
+  </Constitutive>
+
+  <!-- SPHINX_BoundaryConditions -->
+  <FieldSpecifications>
+
+    <FieldSpecification
+      name="xConstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="0"
+      scale="0.0"
+      setNames="{ xneg, xpos }"/>
+
+    <FieldSpecification
+      name="yConstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="1"
+      scale="0.0"
+      setNames="{ yneg, ypos }"/>
+
+    <FieldSpecification
+      name="zconstraint"
+      objectPath="nodeManager"
+      fieldName="TotalDisplacement"
+      component="2"
+      scale="0.0"
+      setNames="{ zneg, zpos }"/>
+
+    <Traction
+      name="innerPressure"
+      objectPath="faceManager"
+      tractionType="normal"
+      scale="-10.0e6"
+      setNames="{ rneg }"/>
+  </FieldSpecifications>
+
+  <!-- SPHINX_BoundaryConditionsEnd -->
+  <!-- SPHINX_TableFunction -->
+  <!--Functions>
+    <TableFunction
+      name="timeFunction"
+      inputVarNames="{ time }"
+      coordinates="{ 0.0, 1.0, 10.0 }"
+      values=     "{ 0.0, 0.0, 10.0 }"/>
+  </Functions-->
+
+  <!-- SPHINX_TableFunctionEnd -->
+  <Outputs>
+    <Silo
+      name="siloOutput"
+      parallelThreads="32"
+      plotFileRoot="plot"
+      childDirectory="sub"/>
+
+    <Restart
+      name="restartOutput"/>
+  </Outputs>
+</Problem>
